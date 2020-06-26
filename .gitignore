@@ -1,0 +1,11 @@
+# Maven build files
+target/
+
+google3ba4d81d268069c0.html
+
+*.json
+.DS_Store
+
+# IntelliJ specific files
+.idea/
+*.iml
