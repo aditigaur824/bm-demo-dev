@@ -71,9 +71,31 @@ public class KitchenSinkBot {
   // The current representative
   private BusinessMessagesRepresentative representative;
 
+  //List to track store's inventory
+  private List<BusinessMessagesCardContent> inventoryContent;
+
+  //List to track user's cart
+  private List<BusinessMessagesCardContent> cartContent;
+
+
+
   public KitchenSinkBot(BusinessMessagesRepresentative representative) {
     this.representative = representative;
-
+    this.inventoryContent = new ArrayList<>();
+    //initializing inventory
+    for (int i = 0; i < BotConstants.SAMPLE_IMAGES.length; i++) {
+      inventoryContent.add(new BusinessMessagesCardContent()
+          .setTitle("Item #" + (i + 1))
+          .setDescription("What do you think?")
+          .setSuggestions(getInventorySuggestions(i+1))
+          .setMedia(new BusinessMessagesMedia()
+              .setHeight(MediaHeight.MEDIUM.toString())
+              .setContentInfo(new BusinessMessagesContentInfo()
+                  .setFileUrl(BotConstants.SAMPLE_IMAGES[i]))));
+    }
+    this.cartContent = new ArrayList<>();
+    //cartContent.add(inventoryContent.get(0));
+    //cartContent.add(inventoryContent.get(1));
     initBmApi();
   }
 
@@ -109,9 +131,28 @@ public class KitchenSinkBot {
       showCSAT(conversationId);
     } else if (normalizedMessage.matches(BotConstants.CMD_HELP)) {
       sendResponse(BotConstants.RSP_HELP_TEXT, conversationId);
-    } else { // Echo received message
-      sendResponse(message, conversationId);
+    } else if (normalizedMessage.matches(BotConstants.CMD_HOURS)) {
+      sendResponse(BotConstants.RSP_HOURS_TEXT, conversationId);
+    } else if (normalizedMessage.matches(BotConstants.CMD_SHOP)) {
+      sendInventoryCarousel(conversationId);
+    } else if (normalizedMessage.matches(BotConstants.CMD_VIEW_CART)) {
+      sendCartCarousel(conversationId);
+    } else if (normalizedMessage.startsWith(BotConstants.CMD_ADD_ITEM_SUB)) {
+      String resp = addItemToCart(normalizedMessage);
+      sendResponse(resp, conversationId);
+    } else {  // Echo received message
+      sendResponse(BotConstants.RSP_DEFAULT, conversationId);
     }
+  }
+
+  /**
+   * Adds specified item to the user's cart.
+   * @param message The message that contains which item to add to the cart.
+   */
+  public String addItemToCart(String message) {
+    int itemNum = Integer.valueOf(message.substring(message.length() - 1));
+    cartContent.add(inventoryContent.get(itemNum - 1));
+    return "Item " + String.valueOf(itemNum) + " has been added to your cart.";
   }
 
   /**
@@ -352,6 +393,72 @@ public class KitchenSinkBot {
   }
 
   /**
+   * Sends the inventory rich card carousel to the user.
+   *
+   * @param conversationId The conversation ID that uniquely maps to the user and agent.
+   */
+  private void sendInventoryCarousel(String conversationId) {
+    try {
+      List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+      suggestions.add(getHelpMenuItem());
+
+      BusinessMessagesCarouselCard carouselCard = getShopCarousel();
+
+      StringBuilder fallbackTextBuilder = new StringBuilder();
+      for (BusinessMessagesCardContent cardContent : carouselCard.getCardContents()) {
+        fallbackTextBuilder.append(cardContent.getTitle() + "\n\n");
+        fallbackTextBuilder.append(cardContent.getDescription() + "\n\n");
+        fallbackTextBuilder.append(cardContent.getMedia().getContentInfo().getFileUrl() + "\n");
+        fallbackTextBuilder.append(("---------------------------------------------\n\n"));
+      }
+
+      // Send the carousel card message and suggestions to the user
+      sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setRichCard(new BusinessMessagesRichCard()
+              .setCarouselCard(carouselCard))
+          .setRepresentative(representative)
+          .setFallback(fallbackTextBuilder.toString())
+          .setSuggestions(suggestions), conversationId);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+    }
+  }
+
+  /**
+   * Sends the cart rich card carousel to the user.
+   *
+   * @param conversationId The conversation ID that uniquely maps to the user and agent.
+   */
+  private void sendCartCarousel(String conversationId) {
+    try {
+      List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+      suggestions.add(getHelpMenuItem());
+
+      BusinessMessagesCarouselCard carouselCard = getCartCarousel();
+
+      StringBuilder fallbackTextBuilder = new StringBuilder();
+      for (BusinessMessagesCardContent cardContent : carouselCard.getCardContents()) {
+        fallbackTextBuilder.append(cardContent.getTitle() + "\n\n");
+        fallbackTextBuilder.append(cardContent.getDescription() + "\n\n");
+        fallbackTextBuilder.append(cardContent.getMedia().getContentInfo().getFileUrl() + "\n");
+        fallbackTextBuilder.append(("---------------------------------------------\n\n"));
+      }
+
+      // Send the carousel card message and suggestions to the user
+      sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setRichCard(new BusinessMessagesRichCard()
+              .setCarouselCard(carouselCard))
+          .setRepresentative(representative)
+          .setFallback(fallbackTextBuilder.toString())
+          .setSuggestions(suggestions), conversationId);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+    }
+  }
+
+  /**
    * Creates a sample carousel rich card.
    *
    * @return A carousel rich card.
@@ -377,12 +484,74 @@ public class KitchenSinkBot {
   }
 
   /**
+   * Creates a rich card carousel out of items in business inventory.
+   *
+   * @return A carousel rich card.
+   */
+  private BusinessMessagesCarouselCard getShopCarousel() {
+    List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
+
+    // Create individual cards for the carousel using the inventory
+    for (int i = 0; i < inventoryContent.size(); i++) {
+      cardContents.add(inventoryContent.get(i));
+    }
+
+    return new BusinessMessagesCarouselCard()
+        .setCardContents(cardContents)
+        .setCardWidth(CardWidth.MEDIUM.toString());
+  }
+
+  /**
+   * Creates a rich card carousel out of items in the user's inventory.
+   *
+   * @return A carousel rich card.
+   */
+  private BusinessMessagesCarouselCard getCartCarousel() {
+    List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
+
+    // Create individual cards for the carousel using the inventory
+    for (int i = 0; i < cartContent.size(); i++) {
+      cardContents.add(cartContent.get(i).setSuggestions(getCardSuggestions()));
+    }
+
+    return new BusinessMessagesCarouselCard()
+        .setCardContents(cardContents)
+        .setCardWidth(CardWidth.MEDIUM.toString());
+  }
+
+  /**
    * Suggestions to add to sample cards.
    *
    * @return List of suggestions.
    */
   private List<BusinessMessagesSuggestion> getCardSuggestions() {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText("\uD83D\uDC4D Like").setPostbackData("like-item")));
+
+    suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText("\uD83D\uDC4E Dislike").setPostbackData("dislike-item")));
+
+    return suggestions;
+  }
+
+  /**
+   * Suggestions to add to inventory cards.
+   *
+   * @return List of suggestions.
+   */
+  private List<BusinessMessagesSuggestion> getInventorySuggestions(int itemNum) {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText("\uD83D\uDED2 Add to Cart").setPostbackData("add-cart-" + String.valueOf(itemNum))));
 
     suggestions.add(
         new BusinessMessagesSuggestion()
@@ -533,13 +702,20 @@ public class KitchenSinkBot {
 
     suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
-            .setText("Rich card").setPostbackData("card")
+            .setText("Inquire About Hours").setPostbackData("hours")
         ));
 
     suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
-            .setText("Carousel").setPostbackData("carousel")
+            .setText("Shop Our Collection").setPostbackData("shop")
         ));
+    
+    if (cartContent.size() != 0) {
+      suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText("View Cart!").setPostbackData("cart")
+        ));
+    }
 
     if (representative.getRepresentativeType().equals(RepresentativeType.HUMAN.toString())) {
       suggestions.add(new BusinessMessagesSuggestion()
