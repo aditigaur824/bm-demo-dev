@@ -139,6 +139,10 @@ public interface BotConstants {
   String BOT_AGENT_NAME = "BM Welcome Bot";
 
   // List of recognized commands to produce certain responses
+  String CMD_ADD_ITEM_SUB = "add-cart";
+  String CMD_VIEW_CART = "cart";
+  String CMD_HOURS = "hours";
+  String CMD_SHOP = "shop";
   String CMD_LOREM_IPSUM = "lorem ipsum";
   String CMD_MEDIUM_TEXT = "medium text";
   String CMD_LONG_TEXT = "long text";
@@ -153,6 +157,10 @@ public interface BotConstants {
   String CMD_CSAT_TRIGGER = "csat.*";
 
   // List of pre-programmed responses
+  String RSP_DEFAULT = "Sorry, I didn't quite get that. Perhaps you were looking for one of these options?";
+
+  String RSP_HOURS_TEXT = "We are open Monday - Friday from 9 A.M. to 5 P.M.";
+
   String RSP_LOREM_IPSUM = "Lorem ipsum dolor sit amet, consectetur " +
       "adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut " +
       "enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea " +
@@ -240,5 +248,9 @@ public interface BotConstants {
       "https://storage.googleapis.com/kitchen-sink-sample-images/adventure-cliff.jpg",
       "https://storage.googleapis.com/kitchen-sink-sample-images/sheep.jpg",
       "https://storage.googleapis.com/kitchen-sink-sample-images/golden-gate-bridge.jpg"
+  };
+
+  String INVENTORY_IMAGES[] = new String[]{
+
   };
 }
