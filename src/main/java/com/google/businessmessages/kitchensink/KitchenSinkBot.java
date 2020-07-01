@@ -83,8 +83,6 @@ public class KitchenSinkBot {
   //List to track user's cart
   private HashMap<String, BusinessMessagesCardContent> cartContent;
 
-
-
   public KitchenSinkBot(BusinessMessagesRepresentative representative) {
     this.representative = representative;
     this.inventoryContent = new HashMap<>();
@@ -165,7 +163,7 @@ public class KitchenSinkBot {
     String itemTitle = "Item #" + itemNum;
     saveCart(conversationId, itemTitle);
     initializeCart(conversationId);
-    sendResponse("Item " + String.valueOf(itemNum) + " has been added to your cart.", conversationId);
+    sendResponse(String.format("Item %d has been added to your cart.", itemNum), conversationId);
   }
 
   /**
@@ -178,7 +176,7 @@ public class KitchenSinkBot {
     String itemTitle = "Item #" + itemNum;
     delItem(conversationId, itemTitle);
     initializeCart(conversationId);
-    sendResponse("Item " + String.valueOf(itemNum) + " has been deleted from your cart.", conversationId);
+    sendResponse(String.format("Item %d has been deleted from your cart.", itemNum), conversationId);
   }
 
   /**
@@ -195,9 +193,14 @@ public class KitchenSinkBot {
       int count = ((Long)ent.getProperty("count")).intValue();
       String itemTitle = (String)ent.getProperty("item_title");
       int itemNum = Integer.valueOf(itemTitle.substring(itemTitle.length()-1));
-      BusinessMessagesCardContent newCard = inventoryContent.get(itemTitle);
-      newCard.setDescription("Quantity: " + count);
-      newCard.setSuggestions(getCartSuggestions(itemNum));
+      BusinessMessagesCardContent newCard = new BusinessMessagesCardContent()
+      .setTitle("Item #" + itemNum)
+      .setDescription("Quantity: " + count)
+      .setSuggestions(getCartSuggestions(itemNum+1))
+      .setMedia(new BusinessMessagesMedia()
+          .setHeight(MediaHeight.MEDIUM.toString())
+          .setContentInfo(new BusinessMessagesContentInfo()
+              .setFileUrl(BotConstants.SAMPLE_IMAGES[itemNum-1])));
       cartContent.put(itemTitle, newCard);
     }
   }
@@ -640,7 +643,7 @@ public class KitchenSinkBot {
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\uD83D\uDED2 Add to Cart").setPostbackData("add-cart-" + String.valueOf(itemNum))));
+                .setText("\uD83D\uDED2 Add to Cart").setPostbackData("add-cart-" + itemNum)));
 
     suggestions.add(
         new BusinessMessagesSuggestion()
