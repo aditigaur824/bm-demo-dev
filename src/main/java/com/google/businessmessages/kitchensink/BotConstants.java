@@ -250,8 +250,5 @@ public interface BotConstants {
       "https://storage.googleapis.com/kitchen-sink-sample-images/sheep.jpg",
       "https://storage.googleapis.com/kitchen-sink-sample-images/golden-gate-bridge.jpg"
   };
-
-  String INVENTORY_IMAGES[] = new String[]{
-
-  };
+  
 }
