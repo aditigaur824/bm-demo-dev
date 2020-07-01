@@ -139,6 +139,7 @@ public interface BotConstants {
   String BOT_AGENT_NAME = "BM Welcome Bot";
 
   // List of recognized commands to produce certain responses
+  String CMD_DEL_ITEM_SUB = "del-cart";
   String CMD_ADD_ITEM_SUB = "add-cart";
   String CMD_VIEW_CART = "cart";
   String CMD_HOURS = "hours";
