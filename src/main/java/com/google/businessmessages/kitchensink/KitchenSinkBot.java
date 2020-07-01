@@ -19,6 +19,8 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
 import com.google.api.services.businessmessages.v1.Businessmessages;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCardContent;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCarouselCard;
@@ -46,6 +48,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -72,19 +76,19 @@ public class KitchenSinkBot {
   private BusinessMessagesRepresentative representative;
 
   //List to track store's inventory
-  private List<BusinessMessagesCardContent> inventoryContent;
+  private HashMap<String, BusinessMessagesCardContent> inventoryContent;
 
   //List to track user's cart
-  private List<BusinessMessagesCardContent> cartContent;
+  private HashMap<String, BusinessMessagesCardContent> cartContent;
 
 
 
   public KitchenSinkBot(BusinessMessagesRepresentative representative) {
     this.representative = representative;
-    this.inventoryContent = new ArrayList<>();
+    this.inventoryContent = new HashMap<>();
     //initializing inventory
     for (int i = 0; i < BotConstants.SAMPLE_IMAGES.length; i++) {
-      inventoryContent.add(new BusinessMessagesCardContent()
+      inventoryContent.put("Item #" + (i+1), new BusinessMessagesCardContent()
           .setTitle("Item #" + (i + 1))
           .setDescription("What do you think?")
           .setSuggestions(getInventorySuggestions(i+1))
@@ -93,9 +97,7 @@ public class KitchenSinkBot {
               .setContentInfo(new BusinessMessagesContentInfo()
                   .setFileUrl(BotConstants.SAMPLE_IMAGES[i]))));
     }
-    this.cartContent = new ArrayList<>();
-    //cartContent.add(inventoryContent.get(0));
-    //cartContent.add(inventoryContent.get(1));
+    this.cartContent = new HashMap<>();
     initBmApi();
   }
 
@@ -107,6 +109,10 @@ public class KitchenSinkBot {
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
    */
   public void routeMessage(String message, String conversationId) {
+    //initialize user's cart
+    initializeCart(conversationId);
+
+    //begin parsing message
     String normalizedMessage = message.toLowerCase().trim();
 
     if (normalizedMessage.equals(BotConstants.CMD_LOREM_IPSUM)) {
@@ -136,10 +142,12 @@ public class KitchenSinkBot {
     } else if (normalizedMessage.matches(BotConstants.CMD_SHOP)) {
       sendInventoryCarousel(conversationId);
     } else if (normalizedMessage.matches(BotConstants.CMD_VIEW_CART)) {
-      sendCartCarousel(conversationId);
+      if (cartContent.size() > 1) sendCartCarousel(conversationId);
+      else sendSingleCartItem(conversationId);
     } else if (normalizedMessage.startsWith(BotConstants.CMD_ADD_ITEM_SUB)) {
-      String resp = addItemToCart(normalizedMessage);
-      sendResponse(resp, conversationId);
+      addItemToCart(normalizedMessage, conversationId);
+    } else if (normalizedMessage.startsWith(BotConstants.CMD_DEL_ITEM_SUB)) {
+      delItemFromCart(normalizedMessage, conversationId);
     } else {  // Echo received message
       sendResponse(BotConstants.RSP_DEFAULT, conversationId);
     }
@@ -148,11 +156,48 @@ public class KitchenSinkBot {
   /**
    * Adds specified item to the user's cart.
    * @param message The message that contains which item to add to the cart.
+   * @param conversationId The unique id that maps from the agent to the user.
    */
-  public String addItemToCart(String message) {
+  public void addItemToCart(String message, String conversationId) {
     int itemNum = Integer.valueOf(message.substring(message.length() - 1));
-    cartContent.add(inventoryContent.get(itemNum - 1));
-    return "Item " + String.valueOf(itemNum) + " has been added to your cart.";
+    String itemTitle = "Item #" + itemNum;
+    saveCart(conversationId, itemTitle);
+    initializeCart(conversationId);
+    sendResponse("Item " + String.valueOf(itemNum) + " has been added to your cart.", conversationId);
+  }
+
+  /**
+   * Adds specified item to the user's cart.
+   * @param message The message that contains which item to add to the cart.
+   * @param conversationId The unique id that maps from the agent to the user.
+   */
+  public void delItemFromCart(String message, String conversationId) {
+    /*
+    int itemNum = Integer.valueOf(message.substring(message.length() - 1));
+    String itemTitle = "Item #" + itemNum;
+    saveCart(conversationId, itemTitle);
+    initializeCart(conversationId);
+    sendResponse("Item " + String.valueOf(itemNum) + " has been added to your cart.", conversationId);
+    */
+  }
+
+  /**
+   * Initializes the user's cart with persisted data.
+   * @param conversationId
+   */
+  public void initializeCart(String conversationId) {
+    List<Entity> cartItems = getExistingCart(conversationId);
+    if (cartItems == null) {
+      return;
+    }
+    for (Entity ent : cartItems) {
+      int count = ((Long)ent.getProperty("count")).intValue();
+      String itemTitle = (String)ent.getProperty("item_title");
+      BusinessMessagesCardContent newCard = inventoryContent.get(itemTitle);
+      newCard.setDescription("Quantity: " + count);
+      newCard.setSuggestions(getCardSuggestions());
+      cartContent.put(itemTitle, newCard);
+    }
   }
 
   /**
@@ -339,6 +384,34 @@ public class KitchenSinkBot {
   }
 
   /**
+   * Used when the user's cart contains only one item.
+   *
+   * @param conversationId The conversation ID that uniquely maps to the user and agent.
+   */
+  private void sendSingleCartItem(String conversationId) {
+    try {
+      List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+      suggestions.add(getHelpMenuItem());
+
+      BusinessMessagesStandaloneCard standaloneCard = getCartCard();
+      String fallbackText = standaloneCard.getCardContent().getTitle() + "\n\n"
+          + standaloneCard.getCardContent().getDescription() + "\n\n"
+          + standaloneCard.getCardContent().getMedia().getContentInfo().getFileUrl();
+
+      // Send the rich card message and suggestions to the user
+      sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setRichCard(new BusinessMessagesRichCard()
+              .setStandaloneCard(standaloneCard))
+          .setRepresentative(representative)
+          .setFallback(fallbackText)
+          .setSuggestions(suggestions), conversationId);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+    }
+  }
+
+  /**
    * Creates a sample standalone rich card.
    *
    * @return A standalone rich card.
@@ -357,6 +430,20 @@ public class KitchenSinkBot {
                             .setFileUrl(BotConstants.SAMPLE_IMAGES[0])
                     ))
         );
+  }
+
+  /**
+   * Creates a single cart card.
+   *
+   * @return A standalone cart item card.
+   */
+  private BusinessMessagesStandaloneCard getCartCard() {
+    BusinessMessagesCardContent card = null;
+    for (Map.Entry<String, BusinessMessagesCardContent> ent : cartContent.entrySet()) {
+      card = ent.getValue();
+    }
+
+    return new BusinessMessagesStandaloneCard().setCardContent(card);
   }
 
   /**
@@ -492,8 +579,8 @@ public class KitchenSinkBot {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
     // Create individual cards for the carousel using the inventory
-    for (int i = 0; i < inventoryContent.size(); i++) {
-      cardContents.add(inventoryContent.get(i));
+    for (Map.Entry<String, BusinessMessagesCardContent> ent : inventoryContent.entrySet()) {
+      cardContents.add(ent.getValue());
     }
 
     return new BusinessMessagesCarouselCard()
@@ -510,8 +597,8 @@ public class KitchenSinkBot {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
     // Create individual cards for the carousel using the inventory
-    for (int i = 0; i < cartContent.size(); i++) {
-      cardContents.add(cartContent.get(i).setSuggestions(getCardSuggestions()));
+    for (Map.Entry<String, BusinessMessagesCardContent> ent : cartContent.entrySet()) {
+      cardContents.add(ent.getValue());
     }
 
     return new BusinessMessagesCarouselCard()
@@ -761,6 +848,91 @@ public class KitchenSinkBot {
     } catch (Exception e) {
       logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
     }
+  }
+
+  /**
+     * Saves cart items that the user has already added.
+     * @param conversationId The unique id that maps between the user and the agent.
+     * @param itemTitle The title of the item that is being stored in the user's cart.
+     */
+    private void saveCart(String conversationId, String itemTitle) {
+      Entity currentItem = getExistingItem(conversationId, itemTitle);
+
+      try {
+          DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+          // create a new cart item for the datastore if we do not have one already
+          if (currentItem == null) {
+              currentItem = new Entity("CartItem");
+              currentItem.setProperty("conversationId", conversationId);
+              currentItem.setProperty("item_title", itemTitle);
+              currentItem.setProperty("count", 1);
+          } else {
+            int count = ((Long)currentItem.getProperty("count")).intValue();
+            currentItem.setProperty("count", count+1);
+          }
+
+          datastore.put(currentItem);
+      } catch (Exception e) {
+          logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+      }
+  }
+
+  /**
+   * Checks the datastore for a specific item in the user's cart.
+   * @param conversationId The unique id that maps between the user and the agent.
+   * @param itemTitle The title of the item we are looking for.
+   * @return The datastore entry if it exists.
+   */
+  private Entity getExistingItem(String conversationId, String itemTitle) {
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+    // retrieve all messages matching the msisdn
+    final Query q = new Query("CartItem")
+            .setFilter(
+                    new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
+                      new Query.FilterPredicate("conversationId", Query.FilterOperator.EQUAL, conversationId),
+                      new Query.FilterPredicate("item_title", Query.FilterOperator.EQUAL, itemTitle)))
+            );
+
+    PreparedQuery pq = datastore.prepare(q);
+
+    List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(1));
+
+    // return the current configuration settings
+    if (!currentCart.isEmpty()) {
+        return currentCart.get(0);
+    }
+
+    return null;
+}
+
+  /**
+   * Checks the datastore for the user's cart.
+   * @param conversationId The unique id that maps between the user and the agent.
+   * @return A list of datastore entries if they exist.
+   */
+  private List<Entity> getExistingCart(String conversationId) {
+      DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+      // retrieve all messages matching the msisdn
+      final Query q = new Query("CartItem")
+              .setFilter(
+                      new Query.FilterPredicate("conversationId",
+                              Query.FilterOperator.EQUAL,
+                              conversationId)
+              );
+
+      PreparedQuery pq = datastore.prepare(q);
+
+      List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(50));
+
+      // return the current configuration settings
+      if (!currentCart.isEmpty()) {
+          return currentCart;
+      }
+
+      return null;
   }
 
   /**
