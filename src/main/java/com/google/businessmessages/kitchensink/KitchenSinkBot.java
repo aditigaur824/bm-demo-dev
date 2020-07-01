@@ -66,6 +66,8 @@ public class KitchenSinkBot {
 
   private static final String EXCEPTION_WAS_THROWN = "exception";
 
+  private static final String DELETING_NULL_ITEM = "Attempted deletion on null item.";
+
   // Object to maintain OAuth2 credentials to call the BM API
   private GoogleCredential credential;
 
@@ -172,13 +174,11 @@ public class KitchenSinkBot {
    * @param conversationId The unique id that maps from the agent to the user.
    */
   public void delItemFromCart(String message, String conversationId) {
-    /*
     int itemNum = Integer.valueOf(message.substring(message.length() - 1));
     String itemTitle = "Item #" + itemNum;
-    saveCart(conversationId, itemTitle);
+    delItem(conversationId, itemTitle);
     initializeCart(conversationId);
-    sendResponse("Item " + String.valueOf(itemNum) + " has been added to your cart.", conversationId);
-    */
+    sendResponse("Item " + String.valueOf(itemNum) + " has been deleted from your cart.", conversationId);
   }
 
   /**
@@ -186,6 +186,7 @@ public class KitchenSinkBot {
    * @param conversationId
    */
   public void initializeCart(String conversationId) {
+    cartContent = new HashMap<>();
     List<Entity> cartItems = getExistingCart(conversationId);
     if (cartItems == null) {
       return;
@@ -193,9 +194,10 @@ public class KitchenSinkBot {
     for (Entity ent : cartItems) {
       int count = ((Long)ent.getProperty("count")).intValue();
       String itemTitle = (String)ent.getProperty("item_title");
+      int itemNum = Integer.valueOf(itemTitle.substring(itemTitle.length()-1));
       BusinessMessagesCardContent newCard = inventoryContent.get(itemTitle);
       newCard.setDescription("Quantity: " + count);
-      newCard.setSuggestions(getCardSuggestions());
+      newCard.setSuggestions(getCartSuggestions(itemNum));
       cartContent.put(itemTitle, newCard);
     }
   }
@@ -653,6 +655,32 @@ public class KitchenSinkBot {
     return suggestions;
   }
 
+   /**
+   * Suggestions to add to cart cards.
+   *
+   * @return List of suggestions.
+   */
+  private List<BusinessMessagesSuggestion> getCartSuggestions(int itemNum) {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText("\uD83D\uDDD1 Delete From Cart").setPostbackData("del-cart-" + String.valueOf(itemNum))));
+
+    suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText("\uD83D\uDC4D Like").setPostbackData("like-item")));
+
+    suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText("\uD83D\uDC4E Dislike").setPostbackData("dislike-item")));
+
+    return suggestions;
+  }
+
   /**
    * The normalizedMessage should be formatted as "speak french", "speak chinese", etc. the
    * specified langauge is parsed and mapped to a supported language. If no supported language is
@@ -873,6 +901,35 @@ public class KitchenSinkBot {
           }
 
           datastore.put(currentItem);
+      } catch (Exception e) {
+          logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+      }
+  }
+
+  /**
+     * Deletes an item from the cart.
+     * @param conversationId The unique id that maps between the user and the agent.
+     * @param itemTitle The title of the item that is being deleted from the user's cart.
+     */
+    private void delItem(String conversationId, String itemTitle) {
+      Entity currentItem = getExistingItem(conversationId, itemTitle);
+
+      try {
+          DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+          // check if we are deleting null item
+          if (currentItem == null) {
+              logger.log(Level.SEVERE, DELETING_NULL_ITEM);
+          } else {
+            int count = ((Long)currentItem.getProperty("count")).intValue();
+            if (count == 1) {
+              Key key = currentItem.getKey();
+              datastore.delete(key);
+            } else {
+              currentItem.setProperty("count", count-1);
+              datastore.put(currentItem);
+            }
+          }
       } catch (Exception e) {
           logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
       }
