@@ -252,11 +252,11 @@ public interface BotConstants {
   };
 
     String INVENTORY_IMAGES[] = new String[] {
-        "https://storage.cloud.google.com/rbm-boot-camp-15.appspot.com/bot_assets/blue_running_shoes.jpeg",
-        "https://storage.cloud.google.com/rbm-boot-camp-15.appspot.com/bot_assets/neon_running_shoes.jpg",
-        "https://storage.cloud.google.com/rbm-boot-camp-15.appspot.com/bot_assets/pink_running_shoes.jpeg",
-        "https://storage.cloud.google.com/rbm-boot-camp-15.appspot.com/bot_assets/teal_running_shoes.jpg",
-        "https://storage.cloud.google.com/rbm-boot-camp-15.appspot.com/bot_assets/white_running_shoes.jpg"
+        "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/blue_running_shoes.jpeg",
+        "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/neon_running_shoes.jpg",
+        "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pink_running_shoes.jpeg",
+        "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/teal_running_shoes.jpg",
+        "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/white_running_shoes.jpg"
   };
 
 }
