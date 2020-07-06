@@ -243,12 +243,20 @@ public interface BotConstants {
   String RSP_BOT_TRANSFER = "Hey there, you are now chatting with a bot.";
 
   // Images used in cards and carousel examples
-  String SAMPLE_IMAGES[] = new String[]{
-      "https://storage.googleapis.com/kitchen-sink-sample-images/cute-dog.jpg",
-      "https://storage.googleapis.com/kitchen-sink-sample-images/elephant.jpg",
-      "https://storage.googleapis.com/kitchen-sink-sample-images/adventure-cliff.jpg",
-      "https://storage.googleapis.com/kitchen-sink-sample-images/sheep.jpg",
-      "https://storage.googleapis.com/kitchen-sink-sample-images/golden-gate-bridge.jpg"
+    String SAMPLE_IMAGES[] = new String[]{
+        "https://storage.googleapis.com/kitchen-sink-sample-images/cute-dog.jpg",
+        "https://storage.googleapis.com/kitchen-sink-sample-images/elephant.jpg",
+        "https://storage.googleapis.com/kitchen-sink-sample-images/adventure-cliff.jpg",
+        "https://storage.googleapis.com/kitchen-sink-sample-images/sheep.jpg",
+        "https://storage.googleapis.com/kitchen-sink-sample-images/golden-gate-bridge.jpg"
   };
-  
+
+    String INVENTORY_IMAGES[] = new String[] {
+        "https://storage.cloud.google.com/rbm-boot-camp-15.appspot.com/bot_assets/blue_running_shoes.jpeg",
+        "https://storage.cloud.google.com/rbm-boot-camp-15.appspot.com/bot_assets/neon_running_shoes.jpg",
+        "https://storage.cloud.google.com/rbm-boot-camp-15.appspot.com/bot_assets/pink_running_shoes.jpeg",
+        "https://storage.cloud.google.com/rbm-boot-camp-15.appspot.com/bot_assets/teal_running_shoes.jpg",
+        "https://storage.cloud.google.com/rbm-boot-camp-15.appspot.com/bot_assets/white_running_shoes.jpg"
+  };
+
 }

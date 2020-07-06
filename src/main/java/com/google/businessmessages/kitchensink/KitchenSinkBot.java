@@ -87,7 +87,7 @@ public class KitchenSinkBot {
     this.representative = representative;
     this.inventoryContent = new HashMap<>();
     //initializing inventory
-    for (int i = 0; i < BotConstants.SAMPLE_IMAGES.length; i++) {
+    for (int i = 0; i < BotConstants.INVENTORY_IMAGES.length; i++) {
       inventoryContent.put("Item #" + (i+1), new BusinessMessagesCardContent()
           .setTitle("Item #" + (i + 1))
           .setDescription("What do you think?")
@@ -95,7 +95,8 @@ public class KitchenSinkBot {
           .setMedia(new BusinessMessagesMedia()
               .setHeight(MediaHeight.MEDIUM.toString())
               .setContentInfo(new BusinessMessagesContentInfo()
-                  .setFileUrl(BotConstants.SAMPLE_IMAGES[i]))));
+                  .setFileUrl(BotConstants.INVENTORY_IMAGES[i])
+                  .setForceRefresh(true))));
     }
     this.cartContent = new HashMap<>();
     initBmApi();
@@ -196,11 +197,12 @@ public class KitchenSinkBot {
       BusinessMessagesCardContent newCard = new BusinessMessagesCardContent()
       .setTitle("Item #" + itemNum)
       .setDescription("Quantity: " + count)
-      .setSuggestions(getCartSuggestions(itemNum+1))
+      .setSuggestions(getCartSuggestions(itemNum))
       .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())
           .setContentInfo(new BusinessMessagesContentInfo()
-              .setFileUrl(BotConstants.SAMPLE_IMAGES[itemNum-1])));
+              .setFileUrl(BotConstants.INVENTORY_IMAGES[itemNum-1])
+              .setForceRefresh(true)));
       cartContent.put(itemTitle, newCard);
     }
   }
@@ -645,16 +647,6 @@ public class KitchenSinkBot {
             .setReply(new BusinessMessagesSuggestedReply()
                 .setText("\uD83D\uDED2 Add to Cart").setPostbackData("add-cart-" + itemNum)));
 
-    suggestions.add(
-        new BusinessMessagesSuggestion()
-            .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\uD83D\uDC4D Like").setPostbackData("like-item")));
-
-    suggestions.add(
-        new BusinessMessagesSuggestion()
-            .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\uD83D\uDC4E Dislike").setPostbackData("dislike-item")));
-
     return suggestions;
   }
 
@@ -669,17 +661,12 @@ public class KitchenSinkBot {
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\uD83D\uDDD1 Delete From Cart").setPostbackData("del-cart-" + String.valueOf(itemNum))));
+                .setText("\u2795").setPostbackData("add-cart-" + itemNum)));
 
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\uD83D\uDC4D Like").setPostbackData("like-item")));
-
-    suggestions.add(
-        new BusinessMessagesSuggestion()
-            .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\uD83D\uDC4E Dislike").setPostbackData("dislike-item")));
+                .setText("\u2796").setPostbackData("del-cart-" + itemNum)));
 
     return suggestions;
   }
