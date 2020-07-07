@@ -163,7 +163,7 @@ public class KitchenSinkBot {
     String itemTitle = capitalizeItemTitle(message.substring("add-cart-".length()));
     saveCart(conversationId, itemTitle);
     initializeCart(conversationId);
-    sendResponse(itemTitle + " has been added to your cart.", conversationId);
+    sendResponse(itemTitle + " have been added to your cart.", conversationId);
   }
 
   /**
@@ -175,7 +175,7 @@ public class KitchenSinkBot {
     String itemTitle = capitalizeItemTitle(message.substring("del-cart-".length()));
     delItem(conversationId, itemTitle);
     initializeCart(conversationId);
-    sendResponse(itemTitle + " has been deleted from your cart.", conversationId);
+    sendResponse(itemTitle + " have been deleted from your cart.", conversationId);
   }
 
   /**
@@ -897,7 +897,7 @@ public class KitchenSinkBot {
           // create a new cart item for the datastore if we do not have one already
           if (currentItem == null) {
               currentItem = new Entity("CartItem");
-              currentItem.setProperty("conversationId", conversationId);
+              currentItem.setProperty("conversation_id", conversationId);
               currentItem.setProperty("item_title", itemTitle);
               currentItem.setProperty("count", 1);
           } else {
@@ -953,7 +953,7 @@ public class KitchenSinkBot {
     final Query q = new Query("CartItem")
             .setFilter(
                     new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
-                      new Query.FilterPredicate("conversationId", Query.FilterOperator.EQUAL, conversationId),
+                      new Query.FilterPredicate("conversation_id", Query.FilterOperator.EQUAL, conversationId),
                       new Query.FilterPredicate("item_title", Query.FilterOperator.EQUAL, itemTitle)))
             );
 
@@ -980,7 +980,7 @@ public class KitchenSinkBot {
       // retrieve all messages matching the msisdn
       final Query q = new Query("CartItem")
               .setFilter(
-                      new Query.FilterPredicate("conversationId",
+                      new Query.FilterPredicate("conversation_id",
                               Query.FilterOperator.EQUAL,
                               conversationId)
               );
