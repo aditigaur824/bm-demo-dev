@@ -412,8 +412,7 @@ public class KitchenSinkBot {
    */
   private void sendSingleCartItem(String conversationId) {
     try {
-      List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
-      suggestions.add(getHelpMenuItem());
+      List<BusinessMessagesSuggestion> suggestions = getDefaultMenu();
 
       BusinessMessagesStandaloneCard standaloneCard = getCartCard();
       String fallbackText = standaloneCard.getCardContent().getTitle() + "\n\n"
@@ -508,8 +507,7 @@ public class KitchenSinkBot {
    */
   private void sendInventoryCarousel(String conversationId) {
     try {
-      List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
-      suggestions.add(getHelpMenuItem());
+      List<BusinessMessagesSuggestion> suggestions = getDefaultMenu();
 
       BusinessMessagesCarouselCard carouselCard = getShopCarousel();
 
@@ -541,8 +539,7 @@ public class KitchenSinkBot {
    */
   private void sendCartCarousel(String conversationId) {
     try {
-      List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
-      suggestions.add(getHelpMenuItem());
+      List<BusinessMessagesSuggestion> suggestions = getDefaultMenu();
 
       BusinessMessagesCarouselCard carouselCard = getCartCarousel();
 
@@ -824,16 +821,21 @@ public class KitchenSinkBot {
         .setReply(new BusinessMessagesSuggestedReply()
             .setText("Inquire About Hours").setPostbackData("hours")
         ));
-
-    suggestions.add(new BusinessMessagesSuggestion()
-        .setReply(new BusinessMessagesSuggestedReply()
-            .setText("Shop Our Collection").setPostbackData("shop")
-        ));
     
     if (cartContent.size() != 0) {
       suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
-            .setText("View Cart!").setPostbackData("cart")
+            .setText("Continue Shopping").setPostbackData("shop")
+        ));
+
+      suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText("View Cart").setPostbackData("cart")
+        ));
+    } else {
+      suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText("Shop Our Collection").setPostbackData("shop")
         ));
     }
 
