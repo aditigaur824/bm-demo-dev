@@ -250,13 +250,13 @@ public interface BotConstants {
         "https://storage.googleapis.com/kitchen-sink-sample-images/sheep.jpg",
         "https://storage.googleapis.com/kitchen-sink-sample-images/golden-gate-bridge.jpg"
   };
-
-    String INVENTORY_IMAGES[] = new String[] {
-        "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/blue_running_shoes.jpeg",
-        "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/neon_running_shoes.jpg",
-        "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pink_running_shoes.jpeg",
-        "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/teal_running_shoes.jpg",
-        "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/white_running_shoes.jpg"
-  };
+    
+    HashMap<String, String> INVENTORY_IMAGES = new HashMap<String, String>() {{
+        put("Blue Running Shoes", "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/blue_running_shoes.jpeg");
+        put("Neon Running Shoes", "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/neon_running_shoes.jpg");
+        put("Pink Running Shoes", "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pink_running_shoes.jpeg");
+        put("Teal Running Shoes", "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/teal_running_shoes.jpg");
+        put("White Running Shoes", "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/white_running_shoes.jpg");
+    }};
 
 }

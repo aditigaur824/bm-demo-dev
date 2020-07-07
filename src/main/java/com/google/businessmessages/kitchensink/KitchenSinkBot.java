@@ -87,15 +87,15 @@ public class KitchenSinkBot {
     this.representative = representative;
     this.inventoryContent = new HashMap<>();
     //initializing inventory
-    for (int i = 0; i < BotConstants.INVENTORY_IMAGES.length; i++) {
-      inventoryContent.put("Item #" + (i+1), new BusinessMessagesCardContent()
-          .setTitle("Item #" + (i + 1))
+    for (Map.Entry<String, String> ent : BotConstants.INVENTORY_IMAGES.entrySet()) {
+      inventoryContent.put(ent.getKey(), new BusinessMessagesCardContent()
+          .setTitle(ent.getKey())
           .setDescription("What do you think?")
-          .setSuggestions(getInventorySuggestions(i+1))
+          .setSuggestions(getInventorySuggestions(ent.getKey()))
           .setMedia(new BusinessMessagesMedia()
               .setHeight(MediaHeight.MEDIUM.toString())
               .setContentInfo(new BusinessMessagesContentInfo()
-                  .setFileUrl(BotConstants.INVENTORY_IMAGES[i])
+                  .setFileUrl(ent.getValue())
                   .setForceRefresh(true))));
     }
     this.cartContent = new HashMap<>();
@@ -160,11 +160,10 @@ public class KitchenSinkBot {
    * @param conversationId The unique id that maps from the agent to the user.
    */
   public void addItemToCart(String message, String conversationId) {
-    int itemNum = Integer.valueOf(message.substring(message.length() - 1));
-    String itemTitle = "Item #" + itemNum;
+    String itemTitle = capitalizeItemTitle(message.substring("add-cart-".length()));
     saveCart(conversationId, itemTitle);
     initializeCart(conversationId);
-    sendResponse(String.format("Item %d has been added to your cart.", itemNum), conversationId);
+    sendResponse(itemTitle + " has been added to your cart.", conversationId);
   }
 
   /**
@@ -173,11 +172,28 @@ public class KitchenSinkBot {
    * @param conversationId The unique id that maps from the agent to the user.
    */
   public void delItemFromCart(String message, String conversationId) {
-    int itemNum = Integer.valueOf(message.substring(message.length() - 1));
-    String itemTitle = "Item #" + itemNum;
+    String itemTitle = capitalizeItemTitle(message.substring("del-cart-".length()));
     delItem(conversationId, itemTitle);
     initializeCart(conversationId);
-    sendResponse(String.format("Item %d has been deleted from your cart.", itemNum), conversationId);
+    sendResponse(itemTitle + " has been deleted from your cart.", conversationId);
+  }
+
+  /**
+   * Fixes item title capitalization since messages are lowercase when received.
+   * @param itemTitle The item title that must be properly capitalized.
+   * @return The properly capitalized title.
+   */
+  public static String capitalizeItemTitle(String itemTitle) {
+    char[] title = itemTitle.toCharArray();
+    boolean found = true;
+    for (int i = 0; i < title.length; i++) {
+      if (Character.isWhitespace(title[i])) found = true;
+      else if (found) {
+        title[i] = Character.toUpperCase(title[i]);
+        found = false;
+      }
+    }
+    return String.valueOf(title);
   }
 
   /**
@@ -193,15 +209,14 @@ public class KitchenSinkBot {
     for (Entity ent : cartItems) {
       int count = ((Long)ent.getProperty("count")).intValue();
       String itemTitle = (String)ent.getProperty("item_title");
-      int itemNum = Integer.valueOf(itemTitle.substring(itemTitle.length()-1));
       BusinessMessagesCardContent newCard = new BusinessMessagesCardContent()
-      .setTitle("Item #" + itemNum)
+      .setTitle(itemTitle)
       .setDescription("Quantity: " + count)
-      .setSuggestions(getCartSuggestions(itemNum))
+      .setSuggestions(getCartSuggestions(itemTitle))
       .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())
           .setContentInfo(new BusinessMessagesContentInfo()
-              .setFileUrl(BotConstants.INVENTORY_IMAGES[itemNum-1])
+              .setFileUrl(BotConstants.INVENTORY_IMAGES.get(itemTitle))
               .setForceRefresh(true)));
       cartContent.put(itemTitle, newCard);
     }
@@ -636,37 +651,37 @@ public class KitchenSinkBot {
 
   /**
    * Suggestions to add to inventory cards.
-   *
+   * @param itemTitle The title of the item that the suggestions will pertain to.
    * @return List of suggestions.
    */
-  private List<BusinessMessagesSuggestion> getInventorySuggestions(int itemNum) {
+  private List<BusinessMessagesSuggestion> getInventorySuggestions(String itemTitle) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
 
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\uD83D\uDED2 Add to Cart").setPostbackData("add-cart-" + itemNum)));
+                .setText("\uD83D\uDED2 Add to Cart").setPostbackData("add-cart-" + itemTitle)));
 
     return suggestions;
   }
 
    /**
    * Suggestions to add to cart cards.
-   *
+   * @param itemTitle The title of the item that the suggestions will pertain to.
    * @return List of suggestions.
    */
-  private List<BusinessMessagesSuggestion> getCartSuggestions(int itemNum) {
+  private List<BusinessMessagesSuggestion> getCartSuggestions(String itemTitle) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
 
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\u2795").setPostbackData("add-cart-" + itemNum)));
+                .setText("\u2795").setPostbackData("add-cart-" + itemTitle)));
 
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\u2796").setPostbackData("del-cart-" + itemNum)));
+                .setText("\u2796").setPostbackData("del-cart-" + itemTitle)));
 
     return suggestions;
   }
