@@ -161,14 +161,14 @@ public class KitchenSinkBot {
    */
   public void addItemToCart(String message, String conversationId) {
     String itemTitle = capitalizeItemTitle(message.substring("add-cart-".length()));
-    saveCart(conversationId, itemTitle);
+    addItem(conversationId, itemTitle);
     initializeCart(conversationId);
     sendResponse(itemTitle + " have been added to your cart.", conversationId);
   }
 
   /**
-   * Adds specified item to the user's cart.
-   * @param message The message that contains which item to add to the cart.
+   * Deletes specified item from the user's cart.
+   * @param message The message that contains which item to delete from the cart.
    * @param conversationId The unique id that maps from the agent to the user.
    */
   public void delItemFromCart(String message, String conversationId) {
@@ -608,7 +608,7 @@ public class KitchenSinkBot {
   }
 
   /**
-   * Creates a rich card carousel out of items in the user's inventory.
+   * Creates a rich card carousel out of items in the user's cart.
    *
    * @return A carousel rich card.
    */
@@ -886,11 +886,11 @@ public class KitchenSinkBot {
   }
 
   /**
-     * Saves cart items that the user has already added.
+     * Adds an item to the cart.
      * @param conversationId The unique id that maps between the user and the agent.
      * @param itemTitle The title of the item that is being stored in the user's cart.
      */
-    private void saveCart(String conversationId, String itemTitle) {
+    private void addItem(String conversationId, String itemTitle) {
       Entity currentItem = getExistingItem(conversationId, itemTitle);
 
       try {
@@ -972,7 +972,7 @@ public class KitchenSinkBot {
 }
 
   /**
-   * Checks the datastore for the user's cart.
+   * Queries the datastore for all items in the user's cart.
    * @param conversationId The unique id that maps between the user and the agent.
    * @return A list of datastore entries if they exist.
    */
