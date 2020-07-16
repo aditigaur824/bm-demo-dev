@@ -77,11 +77,11 @@ public class KitchenSinkBot {
   // The current representative
   private BusinessMessagesRepresentative representative;
 
-  //List to track store's inventory
-  private HashMap<String, BusinessMessagesCardContent> inventoryContent;
+  //Map to track store's inventory
+  private Map<String, BusinessMessagesCardContent> inventoryContent;
 
-  //List to track user's cart
-  private HashMap<String, BusinessMessagesCardContent> cartContent;
+  //Map to track user's cart
+  private Map<String, BusinessMessagesCardContent> cartContent;
 
   public KitchenSinkBot(BusinessMessagesRepresentative representative) {
     this.representative = representative;
@@ -136,19 +136,19 @@ public class KitchenSinkBot {
       sendResponse(BotConstants.RSP_WHO_TEXT, conversationId);
     } else if (normalizedMessage.matches(BotConstants.CMD_CSAT_TRIGGER)) {
       showCSAT(conversationId);
-    } else if (normalizedMessage.matches(BotConstants.CMD_HELP)) {
+    } else if (normalizedMessage.matches(BotConstants.HELP_COMMAND)) {
       sendResponse(BotConstants.RSP_HELP_TEXT, conversationId);
-    } else if (normalizedMessage.matches(BotConstants.CMD_HOURS)) {
+    } else if (normalizedMessage.matches(BotConstants.HOURS_COMMAND)) {
       sendResponse(BotConstants.RSP_HOURS_TEXT, conversationId);
-    } else if (normalizedMessage.matches(BotConstants.CMD_SHOP)) {
+    } else if (normalizedMessage.matches(BotConstants.SHOP_COMMAND)) {
       sendInventoryCarousel(conversationId);
-    } else if (normalizedMessage.matches(BotConstants.CMD_VIEW_CART)) {
+    } else if (normalizedMessage.matches(BotConstants.VIEW_CART_COMMAND)) {
       if (cartContent.size() > 1) sendCartCarousel(conversationId);
       else sendSingleCartItem(conversationId);
-    } else if (normalizedMessage.startsWith(BotConstants.CMD_ADD_ITEM_SUB)) {
+    } else if (normalizedMessage.startsWith(BotConstants.ADD_ITEM_COMMAND)) {
       addItemToCart(normalizedMessage, conversationId);
-    } else if (normalizedMessage.startsWith(BotConstants.CMD_DEL_ITEM_SUB)) {
-      delItemFromCart(normalizedMessage, conversationId);
+    } else if (normalizedMessage.startsWith(BotConstants.DELETE_ITEM_COMMAND)) {
+      deleteItemFromCart(normalizedMessage, conversationId);
     } else {  // Echo received message
       sendResponse(BotConstants.RSP_DEFAULT, conversationId);
     }
@@ -171,7 +171,7 @@ public class KitchenSinkBot {
    * @param message The message that contains which item to delete from the cart.
    * @param conversationId The unique id that maps from the agent to the user.
    */
-  public void delItemFromCart(String message, String conversationId) {
+  public void deleteItemFromCart(String message, String conversationId) {
     String itemTitle = capitalizeItemTitle(message.substring("del-cart-".length()));
     delItem(conversationId, itemTitle);
     initializeCart(conversationId);
@@ -198,7 +198,7 @@ public class KitchenSinkBot {
 
   /**
    * Initializes the user's cart with persisted data.
-   * @param conversationId
+   * @param conversationId The unique id that maps from the agent to the user.
    */
   public void initializeCart(String conversationId) {
     cartContent = new HashMap<>();
