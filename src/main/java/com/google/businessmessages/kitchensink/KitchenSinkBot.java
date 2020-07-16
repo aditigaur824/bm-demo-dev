@@ -76,13 +76,14 @@ public class KitchenSinkBot {
   private static final DataManager dataManager = new DataManager();
 
   //Store inventory object
-  private static final Inventory storeInventory = new MockInventory(BotConstants.INVENTORY_IMAGES);
+  private Inventory storeInventory;
 
   //Map to track user's cart
   private Map<String, BusinessMessagesCardContent> cartContent;
 
   public KitchenSinkBot(BusinessMessagesRepresentative representative) {
     this.representative = representative;
+    this.storeInventory = new MockInventory(BotConstants.INVENTORY_IMAGES);
     this.cartContent = new HashMap<>();
     initBmApi();
   }
