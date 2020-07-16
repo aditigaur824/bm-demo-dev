@@ -9,8 +9,8 @@ import java.util.Arrays;
 
 public class DataManager {
 
-    private static final String EXCEPTION_WAS_THROWN = "exception";
-    private static final String DELETING_NULL_ITEM = "Attempted deletion on null item.";
+    private static final int MAX_CART_LIMIT = 50;
+
     private DatastoreService datastore;
 
     public DataManager() {
@@ -18,7 +18,8 @@ public class DataManager {
     }
 
     /**
-     * Adds an item to the user's cart persisted in memory. 
+     * Adds an item to the user's cart persisted in memory. If the item already exists in
+     * the user's cart, the count of the item is incremented. 
      * @param conversationId The unique id that maps between the user and the agent.
      * @param itemTitle The title of the item that is being stored in the user's cart.
      * @param logger The logger passed in by the agent to record any potential errors.
@@ -42,12 +43,17 @@ public class DataManager {
             datastore.put(transaction, currentItem);
             transaction.commit();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+            logger.log(Level.SEVERE, "Exception thrown while trying to add item to cart.", e);
+        } finally {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
         }
     }
 
     /**
-     * Deletes an item from the user's cart persisted in memory.
+     * Deletes an item from the user's cart persisted in memory. If there is more than one of 
+     * the given item in the user's cart, the count of the item is decremented. 
      * @param conversationId The unique id that maps between the user and the agent.
      * @param itemTitle The title of the item that is being deleted from the user's cart.
      * @param logger The logged passed in by the agent to record any potential errors.
@@ -58,7 +64,7 @@ public class DataManager {
         try {
             // check if we are deleting null item
             if (currentItem == null) {
-                logger.log(Level.SEVERE, DELETING_NULL_ITEM);
+                logger.log(Level.SEVERE, "Attempted deletion on null item.");
             } else {
               int count = ((Long)currentItem.getProperty("count")).intValue();
               if (count == 1) {
@@ -71,7 +77,11 @@ public class DataManager {
             }
             transaction.commit();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+            logger.log(Level.SEVERE, "Exception thrown while trying to delete item from cart.", e);
+        } finally {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
         }
     }
 
@@ -115,17 +125,9 @@ public class DataManager {
                                 conversationId)
                 );
 
-        Transaction transaction = datastore.beginTransaction();
         PreparedQuery pq = datastore.prepare(q);
-        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(50));
-        transaction.commit();
-
-        // return the current configuration settings
-        if (!currentCart.isEmpty()) {
-            return currentCart;
-        }
-
-        return null;
+        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_CART_LIMIT));
+        return currentCart;
     }
 
 }

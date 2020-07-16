@@ -74,7 +74,7 @@ public class KitchenSinkBot {
   private BusinessMessagesRepresentative representative;
 
   // The datastore service used to persist user data
-  private static final DataManager datamanager = new DataManager();
+  private static final DataManager dataManager = new DataManager();
 
   //List to track store's inventory
   private HashMap<String, BusinessMessagesCardContent> inventoryContent;
@@ -160,7 +160,7 @@ public class KitchenSinkBot {
    */
   public void addItemToCart(String message, String conversationId) {
     String itemTitle = capitalizeItemTitle(message.substring("add-cart-".length()));
-    datamanager.addItemToCart(conversationId, itemTitle, logger);
+    dataManager.addItemToCart(conversationId, itemTitle, logger);
     initializeCart(conversationId);
     sendResponse(itemTitle + " have been added to your cart.", conversationId);
   }
@@ -172,7 +172,7 @@ public class KitchenSinkBot {
    */
   public void delItemFromCart(String message, String conversationId) {
     String itemTitle = capitalizeItemTitle(message.substring("del-cart-".length()));
-    datamanager.deleteItemFromCart(conversationId, itemTitle, logger);
+    dataManager.deleteItemFromCart(conversationId, itemTitle, logger);
     initializeCart(conversationId);
     sendResponse(itemTitle + " have been deleted from your cart.", conversationId);
   }
@@ -201,8 +201,8 @@ public class KitchenSinkBot {
    */
   public void initializeCart(String conversationId) {
     cartContent = new HashMap<>();
-    List<Entity> cartItems = datamanager.getCartFromData(conversationId);
-    if (cartItems == null) {
+    List<Entity> cartItems = dataManager.getCartFromData(conversationId);
+    if (cartItems.isEmpty()) {
       return;
     }
     for (Entity ent : cartItems) {
