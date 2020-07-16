@@ -4,6 +4,7 @@ target/
 google3ba4d81d268069c0.html
 
 .DS_Store
+src/main/resources/bm-agent-service-account-credentials.json
 
 # IntelliJ specific files
 .idea/
