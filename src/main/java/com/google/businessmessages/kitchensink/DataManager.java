@@ -27,7 +27,7 @@ public class DataManager {
     public void addItemToCart(String conversationId, String itemTitle, Logger logger) {
         Transaction transaction = datastore.beginTransaction();
         Entity currentItem = getExistingItem(conversationId, itemTitle);
-  
+        
         try {
             // create a new cart item for the datastore if we do not have one already
             if (currentItem == null) {

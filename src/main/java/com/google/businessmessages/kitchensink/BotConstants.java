@@ -139,11 +139,11 @@ public interface BotConstants {
   String BOT_AGENT_NAME = "BM Welcome Bot";
 
   // List of recognized commands to produce certain responses
-  String CMD_DEL_ITEM_SUB = "del-cart";
-  String CMD_ADD_ITEM_SUB = "add-cart";
-  String CMD_VIEW_CART = "cart";
-  String CMD_HOURS = "hours";
-  String CMD_SHOP = "shop";
+  String DELETE_ITEM_COMMAND = "del-cart";
+  String ADD_ITEM_COMMAND = "add-cart";
+  String VIEW_CART_COMMAND = "cart";
+  String HOURS_COMMAND = "hours";
+  String SHOP_COMMAND = "shop";
   String CMD_LOREM_IPSUM = "lorem ipsum";
   String CMD_MEDIUM_TEXT = "medium text";
   String CMD_LONG_TEXT = "long text";
@@ -153,7 +153,7 @@ public interface BotConstants {
   String CMD_CARD = "card";
   String CMD_CAROURSEL = "carousel";
   String CMD_WHO = "^who.*";
-  String CMD_HELP = "^help.*|^commands\\s.*|see the help menu";
+  String HELP_COMMAND = "^help.*|^commands\\s.*|see the help menu";
   String CMD_BACK_TO_BOT = "back_to_bot";
   String CMD_CSAT_TRIGGER = "csat.*";
 
