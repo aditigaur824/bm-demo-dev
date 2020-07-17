@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 
 public class DataManager {
 
@@ -42,8 +43,12 @@ public class DataManager {
             
             datastore.put(transaction, currentItem);
             transaction.commit();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Exception thrown while trying to add item to cart.", e);
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to add the item.", e);
         } finally {
             if (transaction.isActive()) {
                 transaction.rollback();
@@ -76,8 +81,12 @@ public class DataManager {
               }
             }
             transaction.commit();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Exception thrown while trying to delete item from cart.", e);
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to delete the item.", e);
         } finally {
             if (transaction.isActive()) {
                 transaction.rollback();
