@@ -26,7 +26,7 @@ public class DataManagerTest {
     }
     
     @Test
-    public void testGetItem() {
+    public void testGetExistingItem() {
         String testGetItemConversationId = "testGetItemConversationId";
         String testGetItemTitle = "testGetItemTitle";
         Entity testGetItem = new Entity("CartItem");
@@ -38,7 +38,10 @@ public class DataManagerTest {
 
         Entity testResult = datamanager.getExistingItem(testGetItemConversationId, testGetItemTitle);
 
-        assertThat(testResult != null);
+        assertThat(testResult).isNotNull();
+        assertThat((String) testResult.getProperty("conversation_id")).isEqualTo(testGetItemConversationId);
+        assertThat((String) testResult.getProperty("item_title")).isEqualTo(testGetItemTitle);
+        assertThat(((Long) testResult.getProperty("count")).intValue()).isEqualTo(1);
     }
     
     @Test
@@ -57,7 +60,10 @@ public class DataManagerTest {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> testCart = pq.asList(FetchOptions.Builder.withLimit(1));
-        assertThat(testCart.isEmpty() == false);
+        assertThat(testCart).isNotEmpty();
+        assertThat((String) testCart.get(0).getProperty("conversation_id")).isEqualTo(testAddItemConversationId);
+        assertThat((String) testCart.get(0).getProperty("item_title")).isEqualTo(testAddItemTitle);
+        assertThat(((Long) testCart.get(0).getProperty("count")).intValue()).isEqualTo(1);
     }
 
     @Test
@@ -81,7 +87,7 @@ public class DataManagerTest {
                 );
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> testCart = pq.asList(FetchOptions.Builder.withLimit(50));
-        assertThat(testCart.isEmpty() == true);
+        assertThat(testCart).isEmpty();
     }
 
     @Test
@@ -103,7 +109,7 @@ public class DataManagerTest {
 
         List<Entity> testCart = datamanager.getCartFromData(testGetCartConversationId);
         
-        assertThat(testCart.size() == 2);
+        assertThat(testCart.size()).isEqualTo(2);
     }
 
     @After
