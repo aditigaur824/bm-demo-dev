@@ -14,6 +14,11 @@ public class MockInventory implements Inventory {
         }
         inventoryItems = builder.build();
     }
+
+    /**
+     * Gets the collection of items in the inventory.
+     * @return inventoryItems The collection of items in the inventory.
+     */
     public ImmutableCollection<InventoryItem> getInventory() {
         return inventoryItems;
     }
