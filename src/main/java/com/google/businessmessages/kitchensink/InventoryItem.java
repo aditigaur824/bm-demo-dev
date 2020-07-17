@@ -21,7 +21,7 @@ public class InventoryItem {
 
     /**
      * Gets the item's unique identifier.
-     * @return itemId The unique id associated with this item.
+     * @return id The unique id associated with this item.
      */
     public String getId() {
         return this.id;
@@ -29,7 +29,7 @@ public class InventoryItem {
 
     /**
      * Gets the item's title.
-     * @return itemTitle The title of the item.
+     * @return title The title of the item.
      */
     public String getTitle() {
         return this.title;
@@ -37,7 +37,7 @@ public class InventoryItem {
 
     /**
      * Gets the item's price.
-     * @return itemPrice The price of the item.
+     * @return price The price of the item.
      */
     public double getPrice() {
         return this.price;
@@ -45,7 +45,7 @@ public class InventoryItem {
 
     /**
      * Gets the url at which the item's image is located.
-     * @return itemMediaURL The url that leads to the image of this item.
+     * @return mediaUrl The url that leads to the image of this item.
      */
     public String getMediaUrl() {
         return this.mediaUrl;
