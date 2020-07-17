@@ -17,9 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,7 +41,6 @@ import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggest
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestedReply;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestion;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSurvey;
-import com.google.appengine.api.datastore.Entity;
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.TranslateOptions;
 import com.google.cloud.translate.Translation;
@@ -76,7 +73,7 @@ public class KitchenSinkBot {
   protected static final DataManager dataManager = new DataManager();
 
   //Store inventory object
-  private Inventory storeInventory;
+  private final Inventory storeInventory;
 
   //Map to track user's cart
   private Cart userCart;
@@ -147,9 +144,9 @@ public class KitchenSinkBot {
   public void addItemToCart(String message, String conversationId) {
     String itemId = message.substring("add-cart-".length());
     InventoryItem itemToAdd = storeInventory.getItem(itemId);
-    dataManager.addItemToCart(this.userCart.getCartId(), itemToAdd.getInventoryItemId(), itemToAdd.getInventoryItemTitle());
+    dataManager.addItemToCart(this.userCart.getCartId(), itemToAdd.getId(), itemToAdd.getTitle());
     this.userCart.populateWithItems();
-    sendResponse(itemToAdd.getInventoryItemTitle() + " have been added to your cart.", conversationId);
+    sendResponse(itemToAdd.getTitle() + " have been added to your cart.", conversationId);
   }
 
   /**
@@ -160,9 +157,9 @@ public class KitchenSinkBot {
   public void deleteItemFromCart(String message, String conversationId) {
     String itemId = message.substring("del-cart-".length());
     InventoryItem itemToDelete = storeInventory.getItem(itemId);
-    dataManager.deleteItemFromCart(this.userCart.getCartId(), itemToDelete.getInventoryItemId());
+    dataManager.deleteItemFromCart(this.userCart.getCartId(), itemToDelete.getId());
     this.userCart.populateWithItems();
-    sendResponse(itemToDelete.getInventoryItemTitle() + " have been deleted from your cart.", conversationId);
+    sendResponse(itemToDelete.getTitle() + " have been deleted from your cart.", conversationId);
   }
 
   /**
@@ -412,7 +409,7 @@ public class KitchenSinkBot {
       .setMedia(new BusinessMessagesMedia()
         .setHeight(MediaHeight.MEDIUM.toString())
         .setContentInfo(new BusinessMessagesContentInfo()
-          .setFileUrl(itemInStore.getInventoryItemURL())
+          .setFileUrl(itemInStore.getMediaUrl())
           .setForceRefresh(true)));
 
     return new BusinessMessagesStandaloneCard().setCardContent(card);
@@ -552,12 +549,12 @@ public class KitchenSinkBot {
     while(iterator.hasNext()) {
       InventoryItem currentItem = iterator.next();
       cardContents.add(new BusinessMessagesCardContent()
-        .setTitle(currentItem.getInventoryItemTitle())
-        .setSuggestions(getInventorySuggestions(currentItem.getInventoryItemId()))
+        .setTitle(currentItem.getTitle())
+        .setSuggestions(getInventorySuggestions(currentItem.getId()))
         .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())
           .setContentInfo(new BusinessMessagesContentInfo()
-            .setFileUrl(currentItem.getInventoryItemURL())
+            .setFileUrl(currentItem.getMediaUrl())
             .setForceRefresh(true))));
     }
 
@@ -584,7 +581,7 @@ public class KitchenSinkBot {
         .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())
           .setContentInfo(new BusinessMessagesContentInfo()
-            .setFileUrl(itemInStore.getInventoryItemURL())
+            .setFileUrl(itemInStore.getMediaUrl())
             .setForceRefresh(true))));
     }
 
