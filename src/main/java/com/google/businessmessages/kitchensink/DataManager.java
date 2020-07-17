@@ -6,12 +6,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 
 public class DataManager {
 
     private static final int MAX_CART_LIMIT = 50;
+    //Properties of the cart entity in datastore
+    private static final String PROPERTY_CONVERSATION_ID = "conversation_id";
+    private static final String PROPERTY_ITEM_TITLE = "item_title";
+    private static final String PROPERTY_COUNT = "count";
 
-    private DatastoreService datastore;
+    private final DatastoreService datastore;
 
     public DataManager() {
         datastore = DatastoreServiceFactory.getDatastoreService();
@@ -32,18 +37,22 @@ public class DataManager {
             // create a new cart item for the datastore if we do not have one already
             if (currentItem == null) {
                 currentItem = new Entity("CartItem");
-                currentItem.setProperty("conversation_id", conversationId);
-                currentItem.setProperty("item_title", itemTitle);
-                currentItem.setProperty("count", 1);
+                currentItem.setProperty(PROPERTY_CONVERSATION_ID, conversationId);
+                currentItem.setProperty(PROPERTY_ITEM_TITLE, itemTitle);
+                currentItem.setProperty(PROPERTY_COUNT, 1);
             } else {
-              int count = ((Long)currentItem.getProperty("count")).intValue();
-              currentItem.setProperty("count", count+1);
+              int count = ((Long)currentItem.getProperty(PROPERTY_COUNT)).intValue();
+              currentItem.setProperty(PROPERTY_COUNT, count + 1);
             }
-            
+
             datastore.put(transaction, currentItem);
             transaction.commit();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Exception thrown while trying to add item to cart.", e);
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to add the item.", e);
         } finally {
             if (transaction.isActive()) {
                 transaction.rollback();
@@ -66,18 +75,22 @@ public class DataManager {
             if (currentItem == null) {
                 logger.log(Level.SEVERE, "Attempted deletion on null item.");
             } else {
-              int count = ((Long)currentItem.getProperty("count")).intValue();
+              int count = ((Long) currentItem.getProperty(PROPERTY_COUNT)).intValue();
               if (count == 1) {
                 Key key = currentItem.getKey();
                 datastore.delete(transaction, key);
               } else {
-                currentItem.setProperty("count", count-1);
+                currentItem.setProperty(PROPERTY_COUNT, count - 1);
                 datastore.put(transaction, currentItem);
               }
             }
             transaction.commit();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Exception thrown while trying to delete item from cart.", e);
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to delete the item.", e);
         } finally {
             if (transaction.isActive()) {
                 transaction.rollback();
@@ -96,8 +109,8 @@ public class DataManager {
         final Query q = new Query("CartItem")
                 .setFilter(
                         new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
-                        new Query.FilterPredicate("conversation_id", Query.FilterOperator.EQUAL, conversationId),
-                        new Query.FilterPredicate("item_title", Query.FilterOperator.EQUAL, itemTitle)))
+                            new Query.FilterPredicate(PROPERTY_CONVERSATION_ID, Query.FilterOperator.EQUAL, conversationId),
+                            new Query.FilterPredicate(PROPERTY_ITEM_TITLE, Query.FilterOperator.EQUAL, itemTitle)))
                 );
 
         PreparedQuery pq = datastore.prepare(q);
@@ -120,7 +133,7 @@ public class DataManager {
 
         final Query q = new Query("CartItem")
                 .setFilter(
-                        new Query.FilterPredicate("conversation_id",
+                        new Query.FilterPredicate(PROPERTY_CONVERSATION_ID,
                                 Query.FilterOperator.EQUAL,
                                 conversationId)
                 );

@@ -76,7 +76,7 @@ public class KitchenSinkBot {
   private static final DataManager dataManager = new DataManager();
 
   //Store inventory object
-  private Inventory storeInventory;
+  private final Inventory storeInventory;
 
   //Map to track user's cart
   private Map<String, BusinessMessagesCardContent> cartContent;

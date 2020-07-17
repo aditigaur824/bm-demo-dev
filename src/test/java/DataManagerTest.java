@@ -1,7 +1,6 @@
 import org.junit.Before;
 import org.junit.After;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import java.util.List;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -9,6 +8,7 @@ import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import static com.google.common.truth.Truth.assertThat;
 import com.google.businessmessages.kitchensink.DataManager;
 
 public class DataManagerTest {
@@ -26,7 +26,7 @@ public class DataManagerTest {
     }
     
     @Test
-    public void testGetItem() {
+    public void testGetExistingItem() {
         String testGetItemConversationId = "testGetItemConversationId";
         String testGetItemTitle = "testGetItemTitle";
         Entity testGetItem = new Entity("CartItem");
@@ -38,7 +38,10 @@ public class DataManagerTest {
 
         Entity testResult = datamanager.getExistingItem(testGetItemConversationId, testGetItemTitle);
 
-        assertTrue("Getting existing item has failed.", testResult != null);
+        assertThat(testResult).isNotNull();
+        assertThat((String) testResult.getProperty("conversation_id")).isEqualTo(testGetItemConversationId);
+        assertThat((String) testResult.getProperty("item_title")).isEqualTo(testGetItemTitle);
+        assertThat(((Long) testResult.getProperty("count")).intValue()).isEqualTo(1);
     }
     
     @Test
@@ -57,7 +60,10 @@ public class DataManagerTest {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> testCart = pq.asList(FetchOptions.Builder.withLimit(1));
-        assertTrue("Adding test item has failed.", testCart.isEmpty() == false);
+        assertThat(testCart).isNotEmpty();
+        assertThat((String) testCart.get(0).getProperty("conversation_id")).isEqualTo(testAddItemConversationId);
+        assertThat((String) testCart.get(0).getProperty("item_title")).isEqualTo(testAddItemTitle);
+        assertThat(((Long) testCart.get(0).getProperty("count")).intValue()).isEqualTo(1);
     }
 
     @Test
@@ -81,7 +87,7 @@ public class DataManagerTest {
                 );
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> testCart = pq.asList(FetchOptions.Builder.withLimit(50));
-        assertTrue("Deleting test item has failed.", testCart.isEmpty() == true);
+        assertThat(testCart).isEmpty();
     }
 
     @Test
@@ -103,7 +109,7 @@ public class DataManagerTest {
 
         List<Entity> testCart = datamanager.getCartFromData(testGetCartConversationId);
         
-        assertTrue("Getting cart from data has failed.", testCart.size() == 2);
+        assertThat(testCart.size()).isEqualTo(2);
     }
 
     @After
