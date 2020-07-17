@@ -33,7 +33,7 @@ public class MockInventory implements Inventory {
         UnmodifiableIterator<InventoryItem> iterator = inventoryItems.iterator();
         while(iterator.hasNext()) {
             InventoryItem currentItem = iterator.next();
-            if (currentItem.getInventoryItemId().equals(itemId)) {
+            if (currentItem.getId().equals(itemId)) {
                 return currentItem;
             }
         }

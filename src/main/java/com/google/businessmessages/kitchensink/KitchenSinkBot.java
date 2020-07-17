@@ -587,12 +587,12 @@ public class KitchenSinkBot {
     while(iterator.hasNext()) {
       InventoryItem currentItem = iterator.next();
       cardContents.add(new BusinessMessagesCardContent()
-        .setTitle(currentItem.getInventoryItemTitle())
-        .setSuggestions(getInventorySuggestions(currentItem.getInventoryItemTitle()))
+        .setTitle(currentItem.getTitle())
+        .setSuggestions(getInventorySuggestions(currentItem.getTitle()))
         .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())
           .setContentInfo(new BusinessMessagesContentInfo()
-            .setFileUrl(currentItem.getInventoryItemURL())
+            .setFileUrl(currentItem.getMediaUrl())
             .setForceRefresh(true))));
     }
 

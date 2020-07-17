@@ -3,51 +3,51 @@ package com.google.businessmessages.kitchensink;
 import java.util.UUID;
 
 public class InventoryItem {
-    private String itemId;
-    private String itemTitle;
-    private String itemMediaURL;
-    private double itemPrice = 0;
+    private String id;
+    private String title;
+    private String mediaUrl;
+    private double price = 0;
 
     public InventoryItem(String itemTitle, String itemMediaURL) {
-        this.itemId = UUID.randomUUID().toString();
-        this.itemTitle = itemTitle;
-        this.itemMediaURL = itemMediaURL;
+        this.id = UUID.randomUUID().toString();
+        this.title = itemTitle;
+        this.mediaUrl = itemMediaURL;
     }
 
     public InventoryItem(String itemTitle, String itemMediaURL, double itemPrice) {
         this(itemTitle, itemMediaURL);
-        this.itemPrice = itemPrice;
+        this.price = itemPrice;
     }
 
     /**
      * Gets the item's unique identifier.
      * @return itemId The unique id associated with this item.
      */
-    public String getInventoryItemId() {
-        return this.itemId;
+    public String getId() {
+        return this.id;
     }
 
     /**
      * Gets the item's title.
      * @return itemTitle The title of the item.
      */
-    public String getInventoryItemTitle() {
-        return this.itemTitle;
+    public String getTitle() {
+        return this.title;
     }
 
     /**
      * Gets the item's price.
      * @return itemPrice The price of the item.
      */
-    public double getInventoryItemPrice() {
-        return this.itemPrice;
+    public double getPrice() {
+        return this.price;
     }
 
     /**
      * Gets the url at which the item's image is located.
      * @return itemMediaURL The url that leads to the image of this item.
      */
-    public String getInventoryItemURL() {
-        return this.itemMediaURL;
+    public String getMediaUrl() {
+        return this.mediaUrl;
     }
 }

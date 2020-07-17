@@ -23,7 +23,7 @@ public class InventoryTest {
         assertThat(testItemCollection).hasLength(4);
         for (int i = 0; i < testItemCollection.length; i++) {
             InventoryItem currentItem = (InventoryItem) testItemCollection[i];
-            assertThat(testItemMap).containsEntry(currentItem.getInventoryItemTitle(), currentItem.getInventoryItemURL());
+            assertThat(testItemMap).containsEntry(currentItem.getTitle(), currentItem.getMediaUrl());
         }
     }
 
@@ -35,10 +35,10 @@ public class InventoryTest {
         UnmodifiableIterator<InventoryItem> iterator = testInventory.getInventory().iterator();
         InventoryItem testItem = iterator.next();
 
-        InventoryItem resultItem = testInventory.getItem(testItem.getInventoryItemId());
+        InventoryItem resultItem = testInventory.getItem(testItem.getId());
 
-        assertThat(resultItem.getInventoryItemId()).isEqualTo(testItem.getInventoryItemId());
-        assertThat(resultItem.getInventoryItemTitle()).isEqualTo(testItem.getInventoryItemTitle());
-        assertThat(resultItem.getInventoryItemURL()).isEqualTo(testItem.getInventoryItemURL());
+        assertThat(resultItem.getId()).isEqualTo(testItem.getId());
+        assertThat(resultItem.getTitle()).isEqualTo(testItem.getTitle());
+        assertThat(resultItem.getMediaUrl()).isEqualTo(testItem.getMediaUrl());
     }
 }
