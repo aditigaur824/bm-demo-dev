@@ -59,7 +59,7 @@ import com.google.communications.businessmessages.v1.RepresentativeType;
  */
 public class KitchenSinkBot {
 
-  private static final Logger logger = Logger.getLogger(KitchenSinkBot.class.getName());
+  protected static final Logger logger = Logger.getLogger(KitchenSinkBot.class.getName());
 
   private static final String EXCEPTION_WAS_THROWN = "exception";
 
@@ -73,18 +73,17 @@ public class KitchenSinkBot {
   private BusinessMessagesRepresentative representative;
 
   // The datastore service used to persist user data
-  private static final DataManager dataManager = new DataManager();
+  protected static final DataManager dataManager = new DataManager();
 
   //Store inventory object
   private Inventory storeInventory;
 
   //Map to track user's cart
-  private Map<String, BusinessMessagesCardContent> cartContent;
+  private Cart userCart;
 
   public KitchenSinkBot(BusinessMessagesRepresentative representative) {
     this.representative = representative;
     this.storeInventory = new MockInventory(BotConstants.INVENTORY_IMAGES);
-    this.cartContent = new HashMap<>();
     initBmApi();
   }
 
@@ -97,7 +96,7 @@ public class KitchenSinkBot {
    */
   public void routeMessage(String message, String conversationId) {
     //initialize user's cart
-    initializeCart(conversationId);
+    this.userCart = new Cart(conversationId);
 
     //begin parsing message
     String normalizedMessage = message.toLowerCase().trim();
@@ -129,7 +128,7 @@ public class KitchenSinkBot {
     } else if (normalizedMessage.matches(BotConstants.SHOP_COMMAND)) {
       sendInventoryCarousel(conversationId);
     } else if (normalizedMessage.matches(BotConstants.VIEW_CART_COMMAND)) {
-      if (cartContent.size() > 1) sendCartCarousel(conversationId);
+      if (userCart.size() > 1) sendCartCarousel(conversationId);
       else sendSingleCartItem(conversationId);
     } else if (normalizedMessage.startsWith(BotConstants.ADD_ITEM_COMMAND)) {
       addItemToCart(normalizedMessage, conversationId);
@@ -146,10 +145,11 @@ public class KitchenSinkBot {
    * @param conversationId The unique id that maps from the agent to the user.
    */
   public void addItemToCart(String message, String conversationId) {
-    String itemTitle = capitalizeItemTitle(message.substring("add-cart-".length()));
-    dataManager.addItemToCart(conversationId, itemTitle, logger);
-    initializeCart(conversationId);
-    sendResponse(itemTitle + " have been added to your cart.", conversationId);
+    String itemId = message.substring("add-cart-".length());
+    InventoryItem itemToAdd = storeInventory.getItem(itemId);
+    dataManager.addItemToCart(this.userCart.getCartId(), itemToAdd.getInventoryItemId(), itemToAdd.getInventoryItemTitle());
+    this.userCart.populateWithItems();
+    sendResponse(itemToAdd.getInventoryItemTitle() + " have been added to your cart.", conversationId);
   }
 
   /**
@@ -158,54 +158,11 @@ public class KitchenSinkBot {
    * @param conversationId The unique id that maps from the agent to the user.
    */
   public void deleteItemFromCart(String message, String conversationId) {
-    String itemTitle = capitalizeItemTitle(message.substring("del-cart-".length()));
-    dataManager.deleteItemFromCart(conversationId, itemTitle, logger);
-    initializeCart(conversationId);
-    sendResponse(itemTitle + " have been deleted from your cart.", conversationId);
-  }
-
-  /**
-   * Fixes item title capitalization since messages are lowercase when received.
-   * @param itemTitle The item title that must be properly capitalized.
-   * @return The properly capitalized title.
-   */
-  public static String capitalizeItemTitle(String itemTitle) {
-    char[] title = itemTitle.toCharArray();
-    boolean found = true;
-    for (int i = 0; i < title.length; i++) {
-      if (Character.isWhitespace(title[i])) found = true;
-      else if (found) {
-        title[i] = Character.toUpperCase(title[i]);
-        found = false;
-      }
-    }
-    return String.valueOf(title);
-  }
-
-  /**
-   * Initializes the user's cart with persisted data.
-   * @param conversationId The unique id that maps from the agent to the user.
-   */
-  public void initializeCart(String conversationId) {
-    cartContent = new HashMap<>();
-    List<Entity> cartItems = dataManager.getCartFromData(conversationId);
-    if (cartItems.isEmpty()) {
-      return;
-    }
-    for (Entity ent : cartItems) {
-      int count = ((Long)ent.getProperty("count")).intValue();
-      String itemTitle = (String)ent.getProperty("item_title");
-      BusinessMessagesCardContent newCard = new BusinessMessagesCardContent()
-      .setTitle(itemTitle)
-      .setDescription("Quantity: " + count)
-      .setSuggestions(getCartSuggestions(itemTitle))
-      .setMedia(new BusinessMessagesMedia()
-          .setHeight(MediaHeight.MEDIUM.toString())
-          .setContentInfo(new BusinessMessagesContentInfo()
-              .setFileUrl(BotConstants.INVENTORY_IMAGES.get(itemTitle))
-              .setForceRefresh(true)));
-      cartContent.put(itemTitle, newCard);
-    }
+    String itemId = message.substring("del-cart-".length());
+    InventoryItem itemToDelete = storeInventory.getItem(itemId);
+    dataManager.deleteItemFromCart(this.userCart.getCartId(), itemToDelete.getInventoryItemId());
+    this.userCart.populateWithItems();
+    sendResponse(itemToDelete.getInventoryItemTitle() + " have been deleted from your cart.", conversationId);
   }
 
   /**
@@ -446,9 +403,17 @@ public class KitchenSinkBot {
    */
   private BusinessMessagesStandaloneCard getCartCard() {
     BusinessMessagesCardContent card = null;
-    for (Map.Entry<String, BusinessMessagesCardContent> ent : cartContent.entrySet()) {
-      card = ent.getValue();
-    }
+    UnmodifiableIterator<CartItem> iterator = userCart.getCart().iterator();
+    CartItem currentItem = iterator.next();
+    InventoryItem itemInStore = storeInventory.getItem(currentItem.getItemId());
+    card = new BusinessMessagesCardContent()
+      .setTitle(currentItem.getItemTitle())
+      .setSuggestions(getCartSuggestions(currentItem.getItemId()))
+      .setMedia(new BusinessMessagesMedia()
+        .setHeight(MediaHeight.MEDIUM.toString())
+        .setContentInfo(new BusinessMessagesContentInfo()
+          .setFileUrl(itemInStore.getInventoryItemURL())
+          .setForceRefresh(true)));
 
     return new BusinessMessagesStandaloneCard().setCardContent(card);
   }
@@ -588,7 +553,7 @@ public class KitchenSinkBot {
       InventoryItem currentItem = iterator.next();
       cardContents.add(new BusinessMessagesCardContent()
         .setTitle(currentItem.getInventoryItemTitle())
-        .setSuggestions(getInventorySuggestions(currentItem.getInventoryItemTitle()))
+        .setSuggestions(getInventorySuggestions(currentItem.getInventoryItemId()))
         .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())
           .setContentInfo(new BusinessMessagesContentInfo()
@@ -609,9 +574,18 @@ public class KitchenSinkBot {
   private BusinessMessagesCarouselCard getCartCarousel() {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
-    // Create individual cards for the carousel using the inventory
-    for (Map.Entry<String, BusinessMessagesCardContent> ent : cartContent.entrySet()) {
-      cardContents.add(ent.getValue());
+    UnmodifiableIterator<CartItem> iterator = userCart.getCart().iterator();
+    while(iterator.hasNext()) {
+      CartItem currentItem = iterator.next();
+      InventoryItem itemInStore = storeInventory.getItem(currentItem.getItemId());
+      cardContents.add(new BusinessMessagesCardContent()
+        .setTitle(currentItem.getItemTitle())
+        .setSuggestions(getCartSuggestions(currentItem.getItemId()))
+        .setMedia(new BusinessMessagesMedia()
+          .setHeight(MediaHeight.MEDIUM.toString())
+          .setContentInfo(new BusinessMessagesContentInfo()
+            .setFileUrl(itemInStore.getInventoryItemURL())
+            .setForceRefresh(true))));
     }
 
     return new BusinessMessagesCarouselCard()
@@ -642,37 +616,37 @@ public class KitchenSinkBot {
 
   /**
    * Suggestions to add to inventory cards.
-   * @param itemTitle The title of the item that the suggestions will pertain to.
+   * @param itemId The id of the item that the suggestions will pertain to.
    * @return List of suggestions.
    */
-  private List<BusinessMessagesSuggestion> getInventorySuggestions(String itemTitle) {
+  private List<BusinessMessagesSuggestion> getInventorySuggestions(String itemId) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
 
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\uD83D\uDED2 Add to Cart").setPostbackData("add-cart-" + itemTitle)));
+                .setText("\uD83D\uDED2 Add to Cart").setPostbackData("add-cart-" + itemId)));
 
     return suggestions;
   }
 
    /**
    * Suggestions to add to cart cards.
-   * @param itemTitle The title of the item that the suggestions will pertain to.
+   * @param itemId The id of the item that the suggestions will pertain to.
    * @return List of suggestions.
    */
-  private List<BusinessMessagesSuggestion> getCartSuggestions(String itemTitle) {
+  private List<BusinessMessagesSuggestion> getCartSuggestions(String itemId) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
 
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\u2795").setPostbackData("add-cart-" + itemTitle)));
+                .setText("\u2795").setPostbackData("add-cart-" + itemId)));
 
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\u2796").setPostbackData("del-cart-" + itemTitle)));
+                .setText("\u2796").setPostbackData("del-cart-" + itemId)));
 
     return suggestions;
   }
@@ -816,7 +790,7 @@ public class KitchenSinkBot {
             .setText("Inquire About Hours").setPostbackData("hours")
         ));
     
-    if (cartContent.size() != 0) {
+    if (userCart.getCart() != null) {
       suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
             .setText("Continue Shopping").setPostbackData("shop")
