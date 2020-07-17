@@ -15,10 +15,10 @@ public class InventoryTest {
         testItemMap.put("testItem2", "testUrl2");
         testItemMap.put("testItem3", "testUrl3");
         testItemMap.put("testItem4", "testUrl4");
-
         Inventory testInventory = new MockInventory(testItemMap);
 
         Object[] testItemCollection = testInventory.getInventory().toArray();
+        
         assertTrue("The inventory contains the wrong number of items.", testItemCollection.length == 4);
         for (int i = 0; i < testItemCollection.length; i++) {
             InventoryItem currentItem = (InventoryItem) testItemCollection[i];
