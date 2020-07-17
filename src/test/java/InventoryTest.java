@@ -1,9 +1,10 @@
 import java.util.Map;
 import java.util.HashMap;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static com.google.common.truth.Truth.assertThat;
 import com.google.businessmessages.kitchensink.Inventory;
 import com.google.businessmessages.kitchensink.MockInventory;
+import com.google.common.collect.UnmodifiableIterator;
 import com.google.businessmessages.kitchensink.InventoryItem;
 
 public class InventoryTest {
@@ -19,11 +20,25 @@ public class InventoryTest {
 
         Object[] testItemCollection = testInventory.getInventory().toArray();
         
-        assertTrue("The inventory contains the wrong number of items.", testItemCollection.length == 4);
+        assertThat(testItemCollection).hasLength(4);
         for (int i = 0; i < testItemCollection.length; i++) {
             InventoryItem currentItem = (InventoryItem) testItemCollection[i];
-            assertTrue("An inventory item title is corrupted.", testItemMap.containsKey(currentItem.getInventoryItemTitle()));
-            assertTrue("An inventory item url is corrupted.", testItemMap.containsValue(currentItem.getInventoryItemURL()));
+            assertThat(testItemMap).containsEntry(currentItem.getInventoryItemTitle(), currentItem.getInventoryItemURL());
         }
+    }
+
+    @Test
+    public void testGetItem() {
+        Map<String, String> testItemMap = new HashMap<>();
+        testItemMap.put("testItem1", "testUrl1");
+        Inventory testInventory = new MockInventory(testItemMap);
+        UnmodifiableIterator<InventoryItem> iterator = testInventory.getInventory().iterator();
+        InventoryItem testItem = iterator.next();
+
+        InventoryItem resultItem = testInventory.getItem(testItem.getInventoryItemId());
+
+        assertThat(resultItem.getInventoryItemId()).isEqualTo(testItem.getInventoryItemId());
+        assertThat(resultItem.getInventoryItemTitle()).isEqualTo(testItem.getInventoryItemTitle());
+        assertThat(resultItem.getInventoryItemURL()).isEqualTo(testItem.getInventoryItemURL());
     }
 }
