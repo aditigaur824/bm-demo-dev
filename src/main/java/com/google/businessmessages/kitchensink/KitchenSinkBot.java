@@ -405,6 +405,7 @@ public class KitchenSinkBot {
     InventoryItem itemInStore = storeInventory.getItem(currentItem.getId());
     card = new BusinessMessagesCardContent()
       .setTitle(currentItem.getTitle())
+      .setDescription("Quantity: " + currentItem.getCount())
       .setSuggestions(getCartSuggestions(currentItem.getId()))
       .setMedia(new BusinessMessagesMedia()
         .setHeight(MediaHeight.MEDIUM.toString())
@@ -577,6 +578,7 @@ public class KitchenSinkBot {
       InventoryItem itemInStore = storeInventory.getItem(currentItem.getId());
       cardContents.add(new BusinessMessagesCardContent()
         .setTitle(currentItem.getTitle())
+        .setDescription("Quantity: " + currentItem.getCount())
         .setSuggestions(getCartSuggestions(currentItem.getId()))
         .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())
