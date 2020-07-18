@@ -75,7 +75,7 @@ public class KitchenSinkBot {
   //Store inventory object
   private final Inventory storeInventory;
 
-  //Map to track user's cart
+  //User's cart
   private Cart userCart;
 
   public KitchenSinkBot(BusinessMessagesRepresentative representative) {
@@ -402,10 +402,10 @@ public class KitchenSinkBot {
     BusinessMessagesCardContent card = null;
     UnmodifiableIterator<CartItem> iterator = userCart.getCart().iterator();
     CartItem currentItem = iterator.next();
-    InventoryItem itemInStore = storeInventory.getItem(currentItem.getItemId());
+    InventoryItem itemInStore = storeInventory.getItem(currentItem.getId());
     card = new BusinessMessagesCardContent()
-      .setTitle(currentItem.getItemTitle())
-      .setSuggestions(getCartSuggestions(currentItem.getItemId()))
+      .setTitle(currentItem.getTitle())
+      .setSuggestions(getCartSuggestions(currentItem.getId()))
       .setMedia(new BusinessMessagesMedia()
         .setHeight(MediaHeight.MEDIUM.toString())
         .setContentInfo(new BusinessMessagesContentInfo()
@@ -574,10 +574,10 @@ public class KitchenSinkBot {
     UnmodifiableIterator<CartItem> iterator = userCart.getCart().iterator();
     while(iterator.hasNext()) {
       CartItem currentItem = iterator.next();
-      InventoryItem itemInStore = storeInventory.getItem(currentItem.getItemId());
+      InventoryItem itemInStore = storeInventory.getItem(currentItem.getId());
       cardContents.add(new BusinessMessagesCardContent()
-        .setTitle(currentItem.getItemTitle())
-        .setSuggestions(getCartSuggestions(currentItem.getItemId()))
+        .setTitle(currentItem.getTitle())
+        .setSuggestions(getCartSuggestions(currentItem.getId()))
         .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())
           .setContentInfo(new BusinessMessagesContentInfo()

@@ -26,64 +26,107 @@ public class DataManagerTest {
     }
     
     @Test
+    public void testSaveCart() {
+        String testSaveCartConversationId = "testSaveCartConversationId";
+        String testSaveCartId = "testSaveCartId";
+
+        datamanager.saveCart(testSaveCartConversationId, testSaveCartId);
+
+        final Query q = new Query("Cart")
+                .setFilter(
+                        new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
+                            new Query.FilterPredicate("conversation_id", Query.FilterOperator.EQUAL, testSaveCartConversationId),
+                            new Query.FilterPredicate("cart_id", Query.FilterOperator.EQUAL, testSaveCartId)))
+                );
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> testCart = pq.asList(FetchOptions.Builder.withLimit(1));
+        assertThat(testCart).isNotEmpty();
+        assertThat((String) testCart.get(0).getProperty("conversation_id")).isEqualTo(testSaveCartConversationId);
+        assertThat((String) testCart.get(0).getProperty("cart_id")).isEqualTo(testSaveCartId);
+    }
+
+    @Test
+    public void testGetCart() {
+        String testGetCartConversationId = "testGetCartConversationId";
+        String testGetCartId = "testGetCartId";
+        Entity testCart = new Entity("Cart");
+        testCart.setProperty("conversation_id", testGetCartConversationId);
+        testCart.setProperty("cart_id", testGetCartId);
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        datastore.put(testCart);
+
+        Entity resultCart = datamanager.getCart(testGetCartConversationId);
+
+        assertThat(resultCart).isNotNull();
+        assertThat((String) resultCart.getProperty("conversation_id")).isEqualTo(testGetCartConversationId);
+        assertThat((String) resultCart.getProperty("cart_id")).isEqualTo(testGetCartId);
+    }
+
+    @Test
     public void testGetExistingItem() {
-        String testGetItemConversationId = "testGetItemConversationId";
+        String testGetItemCartId = "testGetItemCartId";
+        String testGetItemId = "testGetItemId";
         String testGetItemTitle = "testGetItemTitle";
         Entity testGetItem = new Entity("CartItem");
-        testGetItem.setProperty("conversation_id", testGetItemConversationId);
+        testGetItem.setProperty("cart_id", testGetItemCartId);
+        testGetItem.setProperty("item_id", testGetItemId);
         testGetItem.setProperty("item_title", testGetItemTitle);
         testGetItem.setProperty("count", 1);
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         datastore.put(testGetItem);
 
-        Entity testResult = datamanager.getExistingItem(testGetItemConversationId, testGetItemTitle);
+        Entity testResult = datamanager.getExistingItem(testGetItemCartId, testGetItemId);
 
         assertThat(testResult).isNotNull();
-        assertThat((String) testResult.getProperty("conversation_id")).isEqualTo(testGetItemConversationId);
+        assertThat((String) testResult.getProperty("cart_id")).isEqualTo(testGetItemCartId);
+        assertThat((String) testResult.getProperty("item_id")).isEqualTo(testGetItemId);
         assertThat((String) testResult.getProperty("item_title")).isEqualTo(testGetItemTitle);
         assertThat(((Long) testResult.getProperty("count")).intValue()).isEqualTo(1);
     }
     
     @Test
     public void testAddItemToCart() {
-        String testAddItemConversationId = "testAddItemConversationId";
+        String testAddItemCartId = "testAddItemCartId";
+        String testAddItemId = "testAddItemId";
         String testAddItemTitle = "testAddItemTitle";
 
-        datamanager.addItemToCart(testAddItemConversationId, testAddItemTitle, logger);
+        datamanager.addItemToCart(testAddItemCartId, testAddItemId, testAddItemTitle);
 
         final Query q = new Query("CartItem")
                 .setFilter(
                         new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
-                        new Query.FilterPredicate("conversation_id", Query.FilterOperator.EQUAL, testAddItemConversationId),
-                        new Query.FilterPredicate("item_title", Query.FilterOperator.EQUAL, testAddItemTitle)))
+                            new Query.FilterPredicate("cart_id", Query.FilterOperator.EQUAL, testAddItemCartId),
+                            new Query.FilterPredicate("item_id", Query.FilterOperator.EQUAL, testAddItemId)))
                 );
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> testCart = pq.asList(FetchOptions.Builder.withLimit(1));
         assertThat(testCart).isNotEmpty();
-        assertThat((String) testCart.get(0).getProperty("conversation_id")).isEqualTo(testAddItemConversationId);
+        assertThat((String) testCart.get(0).getProperty("cart_id")).isEqualTo(testAddItemCartId);
+        assertThat((String) testCart.get(0).getProperty("item_id")).isEqualTo(testAddItemId);
         assertThat((String) testCart.get(0).getProperty("item_title")).isEqualTo(testAddItemTitle);
         assertThat(((Long) testCart.get(0).getProperty("count")).intValue()).isEqualTo(1);
     }
 
     @Test
     public void testDeleteItemFromCart() {
-        String testDeleteItemConversationId = "testDeleteItemConversationId";
-        String testDeleteItemTitle = "testDeleteItemTitle";
+        String testDeleteItemCartId = "testDeleteItemCartId";
+        String testDeleteItemId = "testDeleteItemId";
         Entity testDeleteItem = new Entity("CartItem");
-        testDeleteItem.setProperty("conversation_id", testDeleteItemConversationId);
-        testDeleteItem.setProperty("item_title", testDeleteItemTitle);
+        testDeleteItem.setProperty("cart_id", testDeleteItemCartId);
+        testDeleteItem.setProperty("item_id", testDeleteItemId);
         testDeleteItem.setProperty("count", 1);
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         datastore.put(testDeleteItem);
 
-        datamanager.deleteItemFromCart(testDeleteItemConversationId, testDeleteItemTitle, logger);
+        datamanager.deleteItemFromCart(testDeleteItemCartId, testDeleteItemId);
 
         final Query q = new Query("CartItem")
                 .setFilter(
                         new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
-                        new Query.FilterPredicate("conversation_id", Query.FilterOperator.EQUAL, testDeleteItemConversationId),
-                        new Query.FilterPredicate("item_title", Query.FilterOperator.EQUAL, testDeleteItemTitle)))
+                            new Query.FilterPredicate("cart_id", Query.FilterOperator.EQUAL, testDeleteItemCartId),
+                            new Query.FilterPredicate("item_id", Query.FilterOperator.EQUAL, testDeleteItemId)))
                 );
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> testCart = pq.asList(FetchOptions.Builder.withLimit(50));
@@ -91,23 +134,23 @@ public class DataManagerTest {
     }
 
     @Test
-    public void testGetCart() {
-        String testGetCartConversationId = "testGetCartConversationId";
-        String testGetCartItemTitle1 = "testGetCartItemTitle1";
-        String testGetCartItemTitle2 = "testGetCartItemTitle2";
+    public void testGetCartFromData() {
+        String testGetCartId = "testGetCartId";
+        String testGetCartItemId1 = "testGetCartItemId1";
+        String testGetCartItemId2 = "testGetCartItemId2";
         Entity testGetCartItem1 = new Entity("CartItem");
-        testGetCartItem1.setProperty("conversation_id", testGetCartConversationId);
-        testGetCartItem1.setProperty("item_title", testGetCartItemTitle1);
+        testGetCartItem1.setProperty("cart_id", testGetCartId);
+        testGetCartItem1.setProperty("item_id", testGetCartItemId1);
         testGetCartItem1.setProperty("count", 1);
         Entity testGetCartItem2 = new Entity("CartItem");
-        testGetCartItem2.setProperty("conversation_id", testGetCartConversationId);
-        testGetCartItem2.setProperty("item_title", testGetCartItemTitle2);
+        testGetCartItem2.setProperty("cart_id", testGetCartId);
+        testGetCartItem2.setProperty("item_id", testGetCartItemId2);
         testGetCartItem2.setProperty("count", 1);
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         datastore.put(testGetCartItem1);
         datastore.put(testGetCartItem2);
 
-        List<Entity> testCart = datamanager.getCartFromData(testGetCartConversationId);
+        List<Entity> testCart = datamanager.getCartFromData(testGetCartId);
         
         assertThat(testCart.size()).isEqualTo(2);
     }

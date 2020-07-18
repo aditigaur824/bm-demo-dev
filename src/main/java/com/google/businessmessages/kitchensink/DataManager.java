@@ -11,14 +11,14 @@ public class DataManager {
 
     private static final int MAX_CART_LIMIT = 50;
     //Types of entities in datastore
-    private static final String CART_TYPE = "Cart";
-    private static final String CART_ITEM_TYPE = "CartItem";
+    protected static final String CART_TYPE = "Cart";
+    protected static final String CART_ITEM_TYPE = "CartItem";
     //Properties of the cart and cart item entities in datastore
-    private static final String PROPERTY_CONVERSATION_ID = "conversation_id";
-    private static final String PROPERTY_CART_ID = "cart_id";
-    private static final String PROPERTY_ITEM_ID = "item_id";
-    private static final String PROPERTY_ITEM_TITLE = "item_title";
-    private static final String PROPERTY_COUNT = "count";
+    protected static final String PROPERTY_CONVERSATION_ID = "conversation_id";
+    protected static final String PROPERTY_CART_ID = "cart_id";
+    protected static final String PROPERTY_ITEM_ID = "item_id";
+    protected static final String PROPERTY_ITEM_TITLE = "item_title";
+    protected static final String PROPERTY_COUNT = "count";
 
     private final DatastoreService datastore;
 
@@ -143,7 +143,7 @@ public class DataManager {
                 .setFilter(
                         new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
                             new Query.FilterPredicate(PROPERTY_CART_ID, Query.FilterOperator.EQUAL, cartId),
-                            new Query.FilterPredicate(PROPERTY_ITEM_TITLE, Query.FilterOperator.EQUAL, itemId)))
+                            new Query.FilterPredicate(PROPERTY_ITEM_ID, Query.FilterOperator.EQUAL, itemId)))
                 );
 
         PreparedQuery pq = datastore.prepare(q);

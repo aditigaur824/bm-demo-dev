@@ -17,7 +17,7 @@ public class Cart {
             this.cartId = UUID.randomUUID().toString();
             KitchenSinkBot.dataManager.saveCart(conversationId, this.cartId);
         } else {
-            this.cartId = (String) cartEntity.getProperty("cart_id");
+            this.cartId = (String) cartEntity.getProperty(DataManager.PROPERTY_CART_ID);
         }
         this.populateWithItems();
     }

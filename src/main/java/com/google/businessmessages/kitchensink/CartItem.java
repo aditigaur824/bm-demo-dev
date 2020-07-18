@@ -3,39 +3,39 @@ package com.google.businessmessages.kitchensink;
 import com.google.appengine.api.datastore.Entity;
 
 public class CartItem {
-    private String itemId;
-    private String itemTitle;
-    private int itemCount;
+    private String id;
+    private String title;
+    private int count;
 
     public CartItem(Entity itemEntity) {
         //Extracting relevant information from Datastore Entity
-        this.itemId = (String) itemEntity.getProperty("item_id");
-        this.itemTitle = (String) itemEntity.getProperty("item_title");
-        this.itemCount = ((Long)itemEntity.getProperty("count")).intValue();
+        this.id = (String) itemEntity.getProperty(DataManager.PROPERTY_ITEM_ID);
+        this.title = (String) itemEntity.getProperty(DataManager.PROPERTY_ITEM_TITLE);
+        this.count = ((Long)itemEntity.getProperty(DataManager.PROPERTY_COUNT)).intValue();
     }
 
     /**
      * Gets the unique item's unique identifier.
      * @return itemId The item's unique identifier.
      */
-    public String getItemId() {
-        return this.itemId;
+    public String getId() {
+        return this.id;
     }
 
     /**
      * Gets the title of the item.
      * @return itemTitle The title of the item.
      */
-    public String getItemTitle() {
-        return this.itemTitle;
+    public String getTitle() {
+        return this.title;
     }
 
     /**
      * Gets the count of this item in the cart it belongs to.
      * @return itemCount The count of the item.
      */
-    public int getItemCount() {
-        return this.itemCount;
+    public int getCount() {
+        return this.count;
     }
     
 }
