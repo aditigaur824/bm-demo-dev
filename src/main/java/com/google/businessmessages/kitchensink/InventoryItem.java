@@ -9,7 +9,7 @@ public class InventoryItem {
     private double price = 0;
 
     public InventoryItem(String itemTitle, String itemMediaURL) {
-        this.id = UUID.randomUUID().toString();
+        this.id = UUID.nameUUIDFromBytes(itemTitle.getBytes()).toString();
         this.title = itemTitle;
         this.mediaUrl = itemMediaURL;
     }
