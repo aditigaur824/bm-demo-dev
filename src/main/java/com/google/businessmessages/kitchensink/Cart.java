@@ -10,10 +10,9 @@ public class Cart {
     private String cartId;
     private int size;
     private ImmutableCollection<CartItem> cartItems = null;
-    private final DataManager dataManager;
 
-    public Cart(String conversationId, DataManager dataManager) {
-        this.dataManager = dataManager;
+    public Cart(String conversationId) {
+        DataManager dataManager = DataManager.getInstance();
         Entity cartEntity = dataManager.getCart(conversationId);
         if (cartEntity == null) {
             this.cartId = UUID.randomUUID().toString();
@@ -54,6 +53,7 @@ public class Cart {
      * @param itemTitle The title of the item being added.
      */
     public void addItem(String itemId, String itemTitle) {
+        DataManager dataManager = DataManager.getInstance();
         dataManager.addItemToCart(this.cartId, itemId, itemTitle);
         this.populate();
     }
@@ -63,6 +63,7 @@ public class Cart {
      * @param itemId The unique identifier of the item being deleted.
      */
     public void deleteItem(String itemId) {
+        DataManager dataManager = DataManager.getInstance();
         dataManager.deleteItemFromCart(this.cartId, itemId);
         this.populate();
     }
@@ -72,6 +73,7 @@ public class Cart {
      * the initialization of a user's cart, or when items are added or deleted from the cart.
      */
     public void populate() {
+        DataManager dataManager = DataManager.getInstance();
         List<Entity> itemList = dataManager.getCartFromData(this.cartId);
         this.size = itemList.size();
         if (itemList != null && !itemList.isEmpty()) {

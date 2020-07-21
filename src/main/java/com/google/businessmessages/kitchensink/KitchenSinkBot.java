@@ -69,9 +69,6 @@ public class KitchenSinkBot {
   // The current representative
   private BusinessMessagesRepresentative representative;
 
-  // The datastore service used to persist user data
-  private static final DataManager dataManager = new DataManager();
-
   //Store inventory object
   private final Inventory storeInventory;
 
@@ -93,7 +90,7 @@ public class KitchenSinkBot {
    */
   public void routeMessage(String message, String conversationId) {
     //initialize user's cart
-    this.userCart = new Cart(conversationId, dataManager);
+    this.userCart = new Cart(conversationId);
 
     //begin parsing message
     String normalizedMessage = message.toLowerCase().trim();

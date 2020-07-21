@@ -19,7 +19,7 @@ public class DataManagerTest {
     @Before
     public void initDataManager() {
         helper.setUp();
-        datamanager = new DataManager();
+        datamanager = DataManager.getInstance();
     }
     
     @Test

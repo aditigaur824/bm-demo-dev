@@ -8,7 +8,6 @@ import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestC
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.businessmessages.kitchensink.Cart;
 import com.google.businessmessages.kitchensink.CartItem;
-import com.google.businessmessages.kitchensink.DataManager;
 import com.google.common.collect.UnmodifiableIterator;
 import org.junit.After;
 import org.junit.Before;
@@ -25,7 +24,7 @@ public class CartTest {
     
     @Test
     public void testPopulate() {
-        Cart cart = new Cart("testPopulateConversationId", new DataManager());
+        Cart cart = new Cart("testPopulateConversationId");
         String testPopulateItemTitle1 = "testPopulateItemTitle1";
         Entity testPopulateItem1 = new Entity("CartItem");
         testPopulateItem1.setProperty("cart_id", cart.getId());
@@ -55,7 +54,7 @@ public class CartTest {
 
     @Test
     public void testAddItem() {
-        Cart cart = new Cart("testAddConversationId", new DataManager());
+        Cart cart = new Cart("testAddConversationId");
         String testAddItemTitle = "testAddItemTitle";
         String testAddItemId = "testAddItemId";
 
@@ -70,7 +69,7 @@ public class CartTest {
 
     @Test
     public void testDeleteItem() {
-        Cart cart = new Cart("testDeleteConversationId", new DataManager());
+        Cart cart = new Cart("testDeleteConversationId");
         String testDeleteItemId = "testDeleteItemId";
         String testDeleteItemTitle = "testDeleteItemTitle";
         Entity testDeleteItem = new Entity("CartItem");

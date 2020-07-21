@@ -22,11 +22,15 @@ public class DataManager {
     protected static final String PROPERTY_COUNT = "count";
 
     private static final Logger logger = Logger.getLogger(KitchenSinkBot.class.getName());
-
     private final DatastoreService datastore;
+    private static DataManager dataManager = new DataManager();
 
-    public DataManager() {
+    private DataManager() {
         datastore = DatastoreServiceFactory.getDatastoreService();
+    }
+
+    public static DataManager getInstance() {
+        return dataManager;
     }
 
     public void saveCart(String conversationId, String cartId) {
