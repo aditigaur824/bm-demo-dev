@@ -10,23 +10,25 @@ public class Cart {
     private String cartId;
     private int size;
     private ImmutableCollection<CartItem> cartItems = null;
+    private final DataManager dataManager;
 
-    public Cart(String conversationId) {
-        Entity cartEntity = KitchenSinkBot.dataManager.getCart(conversationId);
+    public Cart(String conversationId, DataManager dataManager) {
+        this.dataManager = dataManager;
+        Entity cartEntity = dataManager.getCart(conversationId);
         if (cartEntity == null) {
             this.cartId = UUID.randomUUID().toString();
-            KitchenSinkBot.dataManager.saveCart(conversationId, this.cartId);
+            dataManager.saveCart(conversationId, this.cartId);
         } else {
             this.cartId = (String) cartEntity.getProperty(DataManager.PROPERTY_CART_ID);
         }
-        this.populateWithItems();
+        this.populate();
     }
     
     /**
      * Gets the unique id that belongs to this cart.
      * @return cartId The unique id belonging to the cart instance.
      */
-    public String getCartId() {
+    public String getId() {
         return this.cartId;
     }
 
@@ -47,13 +49,32 @@ public class Cart {
     }
 
     /**
+     * Adds the specified item to the cart.
+     * @param itemId The unique identifier of the item being added.
+     * @param itemTitle The title of the item being added.
+     */
+    public void addItem(String itemId, String itemTitle) {
+        dataManager.addItemToCart(this.cartId, itemId, itemTitle);
+        this.populate();
+    }
+
+    /**
+     * Deletes the specified item from the cart.
+     * @param itemId The unique identifier of the item being deleted.
+     */
+    public void deleteItem(String itemId) {
+        dataManager.deleteItemFromCart(this.cartId, itemId);
+        this.populate();
+    }
+
+    /**
      * Populates the cart instance with all the items associated with it. Can be invoked upon
      * the initialization of a user's cart, or when items are added or deleted from the cart.
      */
-    public void populateWithItems() {
-        List<Entity> itemList = KitchenSinkBot.dataManager.getCartFromData(this.cartId);
+    public void populate() {
+        List<Entity> itemList = dataManager.getCartFromData(this.cartId);
         this.size = itemList.size();
-        if (!itemList.isEmpty()) {
+        if (itemList != null && !itemList.isEmpty()) {
             ImmutableCollection.Builder<CartItem> builder = new ImmutableList.Builder<>();
             for (Entity ent : itemList) {
                 builder.add(new CartItem(ent));

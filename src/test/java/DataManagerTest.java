@@ -3,7 +3,6 @@ import org.junit.After;
 import org.junit.Test;
 import java.util.List;
 import java.util.Arrays;
-import java.util.logging.Logger;
 import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
@@ -16,13 +15,11 @@ public class DataManagerTest {
     private final LocalServiceTestHelper helper = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
 
     DataManager datamanager;
-    Logger logger;
 
     @Before
     public void initDataManager() {
         helper.setUp();
         datamanager = new DataManager();
-        logger = Logger.getLogger("DataManagerTest");
     }
     
     @Test

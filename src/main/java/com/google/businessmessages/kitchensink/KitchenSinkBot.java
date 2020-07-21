@@ -56,7 +56,7 @@ import com.google.communications.businessmessages.v1.RepresentativeType;
  */
 public class KitchenSinkBot {
 
-  protected static final Logger logger = Logger.getLogger(KitchenSinkBot.class.getName());
+  private static final Logger logger = Logger.getLogger(KitchenSinkBot.class.getName());
 
   private static final String EXCEPTION_WAS_THROWN = "exception";
 
@@ -70,7 +70,7 @@ public class KitchenSinkBot {
   private BusinessMessagesRepresentative representative;
 
   // The datastore service used to persist user data
-  protected static final DataManager dataManager = new DataManager();
+  private static final DataManager dataManager = new DataManager();
 
   //Store inventory object
   private final Inventory storeInventory;
@@ -93,7 +93,7 @@ public class KitchenSinkBot {
    */
   public void routeMessage(String message, String conversationId) {
     //initialize user's cart
-    this.userCart = new Cart(conversationId);
+    this.userCart = new Cart(conversationId, dataManager);
 
     //begin parsing message
     String normalizedMessage = message.toLowerCase().trim();
@@ -144,8 +144,7 @@ public class KitchenSinkBot {
   public void addItemToCart(String message, String conversationId) {
     String itemId = message.substring("add-cart-".length());
     InventoryItem itemToAdd = storeInventory.getItem(itemId);
-    dataManager.addItemToCart(this.userCart.getCartId(), itemToAdd.getId(), itemToAdd.getTitle());
-    this.userCart.populateWithItems();
+    this.userCart.addItem(itemToAdd.getId(), itemToAdd.getTitle());
     sendResponse(itemToAdd.getTitle() + " have been added to your cart.", conversationId);
   }
 
@@ -157,8 +156,7 @@ public class KitchenSinkBot {
   public void deleteItemFromCart(String message, String conversationId) {
     String itemId = message.substring("del-cart-".length());
     InventoryItem itemToDelete = storeInventory.getItem(itemId);
-    dataManager.deleteItemFromCart(this.userCart.getCartId(), itemToDelete.getId());
-    this.userCart.populateWithItems();
+    this.userCart.deleteItem(itemToDelete.getId());
     sendResponse(itemToDelete.getTitle() + " have been deleted from your cart.", conversationId);
   }
 

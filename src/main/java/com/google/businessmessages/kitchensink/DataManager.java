@@ -3,6 +3,7 @@ package com.google.businessmessages.kitchensink;
 import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
@@ -20,6 +21,8 @@ public class DataManager {
     protected static final String PROPERTY_ITEM_TITLE = "item_title";
     protected static final String PROPERTY_COUNT = "count";
 
+    private static final Logger logger = Logger.getLogger(KitchenSinkBot.class.getName());
+
     private final DatastoreService datastore;
 
     public DataManager() {
@@ -33,7 +36,7 @@ public class DataManager {
             cart.setProperty(PROPERTY_CART_ID, cartId);
             datastore.put(cart);
         } catch (Exception e) {
-            KitchenSinkBot.logger.log(Level.SEVERE, "Exception thrown while trying to add item to cart.", e);
+            logger.log(Level.SEVERE, "Exception thrown while trying to add item to cart.", e);
         }
     }
 
@@ -82,11 +85,11 @@ public class DataManager {
             datastore.put(transaction, currentItem);
             transaction.commit();
         } catch (IllegalStateException e) {
-            KitchenSinkBot.logger.log(Level.SEVERE, "The transaction is not active.", e);
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
         } catch (ConcurrentModificationException e) {
-            KitchenSinkBot.logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
         } catch (DatastoreFailureException e) {
-            KitchenSinkBot.logger.log(Level.SEVERE, "Datastore was not able to add the item.", e);
+            logger.log(Level.SEVERE, "Datastore was not able to add the item.", e);
         } finally {
             if (transaction.isActive()) {
                 transaction.rollback();
@@ -106,7 +109,7 @@ public class DataManager {
         try {
             // check if we are deleting null item
             if (currentItem == null) {
-                KitchenSinkBot.logger.log(Level.SEVERE, "Attempted deletion on null item.");
+                logger.log(Level.SEVERE, "Attempted deletion on null item.");
             } else {
               int count = ((Long) currentItem.getProperty(PROPERTY_COUNT)).intValue();
               if (count == 1) {
@@ -119,11 +122,11 @@ public class DataManager {
             }
             transaction.commit();
         } catch (IllegalStateException e) {
-            KitchenSinkBot.logger.log(Level.SEVERE, "The transaction is not active.", e);
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
         } catch (ConcurrentModificationException e) {
-            KitchenSinkBot.logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
         } catch (DatastoreFailureException e) {
-            KitchenSinkBot.logger.log(Level.SEVERE, "Datastore was not able to delete the item.", e);
+            logger.log(Level.SEVERE, "Datastore was not able to delete the item.", e);
         } finally {
             if (transaction.isActive()) {
                 transaction.rollback();
