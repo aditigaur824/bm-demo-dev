@@ -1,4 +1,4 @@
-package com.google.businessmessages.kitchensink;
+package com.google.businessmessages.Cart;
 
 import java.util.Map;
 import com.google.common.collect.ImmutableCollection;

@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.businessmessages.kitchensink;
+package com.google.businessmessages.Cart;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -144,9 +144,6 @@ public interface BotConstants {
   String VIEW_CART_COMMAND = "cart";
   String HOURS_COMMAND = "hours";
   String SHOP_COMMAND = "shop";
-  String CMD_LOREM_IPSUM = "lorem ipsum";
-  String CMD_MEDIUM_TEXT = "medium text";
-  String CMD_LONG_TEXT = "long text";
   String CMD_SPEAK = "^speak.*";
   String CMD_LINK = "link";
   String CMD_DIAL = "dial";

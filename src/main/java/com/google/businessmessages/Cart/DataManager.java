@@ -1,4 +1,4 @@
-package com.google.businessmessages.kitchensink;
+package com.google.businessmessages.Cart;
 
 import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
@@ -21,7 +21,7 @@ public class DataManager {
     protected static final String PROPERTY_ITEM_TITLE = "item_title";
     protected static final String PROPERTY_COUNT = "count";
 
-    private static final Logger logger = Logger.getLogger(KitchenSinkBot.class.getName());
+    private static final Logger logger = Logger.getLogger(CartBot.class.getName());
     private final DatastoreService datastore;
     private static DataManager dataManager = new DataManager();
 

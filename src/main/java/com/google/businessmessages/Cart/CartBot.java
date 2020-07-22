@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.businessmessages.kitchensink;
+package com.google.businessmessages.Cart;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,35 +28,29 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.businessmessages.v1.Businessmessages;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCardContent;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCarouselCard;
-import com.google.api.services.businessmessages.v1.model.BusinessMessagesContentInfo;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesDialAction;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesEvent;
-import com.google.api.services.businessmessages.v1.model.BusinessMessagesMedia;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesMessage;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesOpenUrlAction;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesRepresentative;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesRichCard;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesStandaloneCard;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestedAction;
-import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestedReply;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestion;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSurvey;
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.TranslateOptions;
 import com.google.cloud.translate.Translation;
-import com.google.common.collect.UnmodifiableIterator;
-import com.google.communications.businessmessages.v1.CardWidth;
 import com.google.communications.businessmessages.v1.EventType;
-import com.google.communications.businessmessages.v1.MediaHeight;
 import com.google.communications.businessmessages.v1.RepresentativeType;
 
 /**
  * Main bot logic. Most messages are passed through the routing function to map the user's response
  * to business logic to generate a message in return.
  */
-public class KitchenSinkBot {
+public class CartBot {
 
-  private static final Logger logger = Logger.getLogger(KitchenSinkBot.class.getName());
+  private static final Logger logger = Logger.getLogger(CartBot.class.getName());
 
   private static final String EXCEPTION_WAS_THROWN = "exception";
 
@@ -75,7 +69,7 @@ public class KitchenSinkBot {
   //User's cart
   private Cart userCart;
 
-  public KitchenSinkBot(BusinessMessagesRepresentative representative) {
+  public CartBot(BusinessMessagesRepresentative representative) {
     this.representative = representative;
     this.storeInventory = new MockInventory(BotConstants.INVENTORY_IMAGES);
     initBmApi();
@@ -95,22 +89,12 @@ public class KitchenSinkBot {
     //begin parsing message
     String normalizedMessage = message.toLowerCase().trim();
 
-    if (normalizedMessage.equals(BotConstants.CMD_LOREM_IPSUM)) {
-      sendResponse(BotConstants.RSP_LOREM_IPSUM, conversationId);
-    } else if (normalizedMessage.equals(BotConstants.CMD_MEDIUM_TEXT)) {
-      sendResponse(BotConstants.RSP_MEDIUM_TEXT, conversationId);
-    } else if (normalizedMessage.equals(BotConstants.CMD_LONG_TEXT)) {
-      sendResponse(BotConstants.RSP_LONG_TEXT, conversationId);
-    } else if (normalizedMessage.matches(BotConstants.CMD_SPEAK)) {
+    if (normalizedMessage.matches(BotConstants.CMD_SPEAK)) {
       attemptTranslation(normalizedMessage, conversationId);
     } else if (normalizedMessage.matches(BotConstants.CMD_LINK)) {
       sendLinkAction(conversationId);
     } else if (normalizedMessage.matches(BotConstants.CMD_DIAL)) {
       sendDialAction(conversationId);
-    } else if (normalizedMessage.matches(BotConstants.CMD_CARD)) {
-      sendRichCard(conversationId);
-    } else if (normalizedMessage.matches(BotConstants.CMD_CAROURSEL)) {
-      sendCarouselRichCard(conversationId);
     } else if (normalizedMessage.matches(BotConstants.CMD_WHO)) {
       sendResponse(BotConstants.RSP_WHO_TEXT, conversationId);
     } else if (normalizedMessage.matches(BotConstants.CMD_CSAT_TRIGGER)) {
@@ -128,7 +112,7 @@ public class KitchenSinkBot {
       addItemToCart(normalizedMessage, conversationId);
     } else if (normalizedMessage.startsWith(BotConstants.DELETE_ITEM_COMMAND)) {
       deleteItemFromCart(normalizedMessage, conversationId);
-    } else {  // Echo received message
+    } else {
       sendResponse(BotConstants.RSP_DEFAULT, conversationId);
     }
   }
@@ -267,7 +251,7 @@ public class KitchenSinkBot {
                       .setUrl("https://www.google.com"))
               .setText("Open Google").setPostbackData("open_url")));
 
-      suggestions.addAll(getDefaultMenu());
+      suggestions.addAll(UIManager.getDefaultMenu(this.representative, this.userCart));
 
       // Send the text message and suggestions to the user
       // Use a fallback text of the actual URL
@@ -299,7 +283,7 @@ public class KitchenSinkBot {
                       .setPhoneNumber("+12223334444"))
               .setText("Call example").setPostbackData("call_example")));
 
-      suggestions.add(getHelpMenuItem());
+      suggestions.add(UIManager.getHelpMenuItem());
 
       // Send the text message and suggestions to the user
       sendResponse(new BusinessMessagesMessage()
@@ -313,43 +297,15 @@ public class KitchenSinkBot {
   }
 
   /**
-   * Sends a sample rich card to the user.
-   *
-   * @param conversationId The conversation ID that uniquely maps to the user and agent.
-   */
-  private void sendRichCard(String conversationId) {
-    try {
-      List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
-      suggestions.add(getHelpMenuItem());
-
-      BusinessMessagesStandaloneCard standaloneCard = getSampleCard();
-      String fallbackText = standaloneCard.getCardContent().getTitle() + "\n\n"
-          + standaloneCard.getCardContent().getDescription() + "\n\n"
-          + standaloneCard.getCardContent().getMedia().getContentInfo().getFileUrl();
-
-      // Send the rich card message and suggestions to the user
-      sendResponse(new BusinessMessagesMessage()
-          .setMessageId(UUID.randomUUID().toString())
-          .setRichCard(new BusinessMessagesRichCard()
-              .setStandaloneCard(standaloneCard))
-          .setRepresentative(representative)
-          .setFallback(fallbackText)
-          .setSuggestions(suggestions), conversationId);
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
-    }
-  }
-
-  /**
    * Used when the user's cart contains only one item.
    *
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
    */
   private void sendSingleCartItem(String conversationId) {
     try {
-      List<BusinessMessagesSuggestion> suggestions = getDefaultMenu();
+      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(this.representative, this.userCart);
 
-      BusinessMessagesStandaloneCard standaloneCard = getCartCard();
+      BusinessMessagesStandaloneCard standaloneCard = UIManager.getCartCard(this.storeInventory, this.userCart);
       String fallbackText = standaloneCard.getCardContent().getTitle() + "\n\n"
           + standaloneCard.getCardContent().getDescription() + "\n\n"
           + standaloneCard.getCardContent().getMedia().getContentInfo().getFileUrl();
@@ -361,83 +317,6 @@ public class KitchenSinkBot {
               .setStandaloneCard(standaloneCard))
           .setRepresentative(representative)
           .setFallback(fallbackText)
-          .setSuggestions(suggestions), conversationId);
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
-    }
-  }
-
-  /**
-   * Creates a sample standalone rich card.
-   *
-   * @return A standalone rich card.
-   */
-  private BusinessMessagesStandaloneCard getSampleCard() {
-    return new BusinessMessagesStandaloneCard()
-        .setCardContent(
-            new BusinessMessagesCardContent()
-                .setTitle("Business Messages!!!")
-                .setDescription("The future of business communication")
-                .setSuggestions(getCardSuggestions())
-                .setMedia(new BusinessMessagesMedia()
-                    .setHeight(MediaHeight.MEDIUM.toString())
-                    .setContentInfo(
-                        new BusinessMessagesContentInfo()
-                            .setFileUrl(BotConstants.SAMPLE_IMAGES[0])
-                    ))
-        );
-  }
-
-  /**
-   * Creates a single cart card.
-   *
-   * @return A standalone cart item card.
-   */
-  private BusinessMessagesStandaloneCard getCartCard() {
-    BusinessMessagesCardContent card = null;
-    UnmodifiableIterator<CartItem> iterator = userCart.getCart().iterator();
-    CartItem currentItem = iterator.next();
-    InventoryItem itemInStore = storeInventory.getItem(currentItem.getId());
-    card = new BusinessMessagesCardContent()
-      .setTitle(currentItem.getTitle())
-      .setDescription("Quantity: " + currentItem.getCount())
-      .setSuggestions(getCartSuggestions(currentItem.getId()))
-      .setMedia(new BusinessMessagesMedia()
-        .setHeight(MediaHeight.MEDIUM.toString())
-        .setContentInfo(new BusinessMessagesContentInfo()
-          .setFileUrl(itemInStore.getMediaUrl())
-          .setForceRefresh(true)));
-
-    return new BusinessMessagesStandaloneCard().setCardContent(card);
-  }
-
-  /**
-   * Sends a sample carousel rich card to the user.
-   *
-   * @param conversationId The conversation ID that uniquely maps to the user and agent.
-   */
-  private void sendCarouselRichCard(String conversationId) {
-    try {
-      List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
-      suggestions.add(getHelpMenuItem());
-
-      BusinessMessagesCarouselCard carouselCard = getSampleCarousel();
-
-      StringBuilder fallbackTextBuilder = new StringBuilder();
-      for (BusinessMessagesCardContent cardContent : carouselCard.getCardContents()) {
-        fallbackTextBuilder.append(cardContent.getTitle() + "\n\n");
-        fallbackTextBuilder.append(cardContent.getDescription() + "\n\n");
-        fallbackTextBuilder.append(cardContent.getMedia().getContentInfo().getFileUrl() + "\n");
-        fallbackTextBuilder.append(("---------------------------------------------\n\n"));
-      }
-
-      // Send the carousel card message and suggestions to the user
-      sendResponse(new BusinessMessagesMessage()
-          .setMessageId(UUID.randomUUID().toString())
-          .setRichCard(new BusinessMessagesRichCard()
-              .setCarouselCard(carouselCard))
-          .setRepresentative(representative)
-          .setFallback(fallbackTextBuilder.toString())
           .setSuggestions(suggestions), conversationId);
     } catch (Exception e) {
       logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
@@ -451,9 +330,9 @@ public class KitchenSinkBot {
    */
   private void sendInventoryCarousel(String conversationId) {
     try {
-      List<BusinessMessagesSuggestion> suggestions = getDefaultMenu();
+      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(this.representative, this.userCart);
 
-      BusinessMessagesCarouselCard carouselCard = getShopCarousel();
+      BusinessMessagesCarouselCard carouselCard = UIManager.getShopCarousel(this.storeInventory);
 
       StringBuilder fallbackTextBuilder = new StringBuilder();
       for (BusinessMessagesCardContent cardContent : carouselCard.getCardContents()) {
@@ -483,9 +362,9 @@ public class KitchenSinkBot {
    */
   private void sendCartCarousel(String conversationId) {
     try {
-      List<BusinessMessagesSuggestion> suggestions = getDefaultMenu();
+      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(this.representative, this.userCart);
 
-      BusinessMessagesCarouselCard carouselCard = getCartCarousel();
+      BusinessMessagesCarouselCard carouselCard = UIManager.getCartCarousel(this.storeInventory, this.userCart);
 
       StringBuilder fallbackTextBuilder = new StringBuilder();
       for (BusinessMessagesCardContent cardContent : carouselCard.getCardContents()) {
@@ -506,143 +385,6 @@ public class KitchenSinkBot {
     } catch (Exception e) {
       logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
     }
-  }
-
-  /**
-   * Creates a sample carousel rich card.
-   *
-   * @return A carousel rich card.
-   */
-  private BusinessMessagesCarouselCard getSampleCarousel() {
-    List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
-
-    // Create individual cards for the carousel
-    for (int i = 0; i < BotConstants.SAMPLE_IMAGES.length; i++) {
-      cardContents.add(new BusinessMessagesCardContent()
-          .setTitle("Card #" + (i + 1))
-          .setDescription("What do you think?")
-          .setSuggestions(getCardSuggestions())
-          .setMedia(new BusinessMessagesMedia()
-              .setHeight(MediaHeight.MEDIUM.toString())
-              .setContentInfo(new BusinessMessagesContentInfo()
-                  .setFileUrl(BotConstants.SAMPLE_IMAGES[i]))));
-    }
-
-    return new BusinessMessagesCarouselCard()
-        .setCardContents(cardContents)
-        .setCardWidth(CardWidth.MEDIUM.toString());
-  }
-
-  /**
-   * Creates a rich card carousel out of items in business inventory.
-   *
-   * @return A carousel rich card.
-   */
-  private BusinessMessagesCarouselCard getShopCarousel() {
-    List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
-
-    UnmodifiableIterator<InventoryItem> iterator = storeInventory.getInventory().iterator();
-    while(iterator.hasNext()) {
-      InventoryItem currentItem = iterator.next();
-      cardContents.add(new BusinessMessagesCardContent()
-        .setTitle(currentItem.getTitle())
-        .setSuggestions(getInventorySuggestions(currentItem.getId()))
-        .setMedia(new BusinessMessagesMedia()
-          .setHeight(MediaHeight.MEDIUM.toString())
-          .setContentInfo(new BusinessMessagesContentInfo()
-            .setFileUrl(currentItem.getMediaUrl())
-            .setForceRefresh(true))));
-    }
-
-    return new BusinessMessagesCarouselCard()
-        .setCardContents(cardContents)
-        .setCardWidth(CardWidth.MEDIUM.toString());
-  }
-
-  /**
-   * Creates a rich card carousel out of items in the user's cart.
-   *
-   * @return A carousel rich card.
-   */
-  private BusinessMessagesCarouselCard getCartCarousel() {
-    List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
-
-    UnmodifiableIterator<CartItem> iterator = userCart.getCart().iterator();
-    while(iterator.hasNext()) {
-      CartItem currentItem = iterator.next();
-      InventoryItem itemInStore = storeInventory.getItem(currentItem.getId());
-      cardContents.add(new BusinessMessagesCardContent()
-        .setTitle(currentItem.getTitle())
-        .setDescription("Quantity: " + currentItem.getCount())
-        .setSuggestions(getCartSuggestions(currentItem.getId()))
-        .setMedia(new BusinessMessagesMedia()
-          .setHeight(MediaHeight.MEDIUM.toString())
-          .setContentInfo(new BusinessMessagesContentInfo()
-            .setFileUrl(itemInStore.getMediaUrl())
-            .setForceRefresh(true))));
-    }
-
-    return new BusinessMessagesCarouselCard()
-        .setCardContents(cardContents)
-        .setCardWidth(CardWidth.MEDIUM.toString());
-  }
-
-  /**
-   * Suggestions to add to sample cards.
-   *
-   * @return List of suggestions.
-   */
-  private List<BusinessMessagesSuggestion> getCardSuggestions() {
-    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
-
-    suggestions.add(
-        new BusinessMessagesSuggestion()
-            .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\uD83D\uDC4D Like").setPostbackData("like-item")));
-
-    suggestions.add(
-        new BusinessMessagesSuggestion()
-            .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\uD83D\uDC4E Dislike").setPostbackData("dislike-item")));
-
-    return suggestions;
-  }
-
-  /**
-   * Suggestions to add to inventory cards.
-   * @param itemId The id of the item that the suggestions will pertain to.
-   * @return List of suggestions.
-   */
-  private List<BusinessMessagesSuggestion> getInventorySuggestions(String itemId) {
-    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
-
-    suggestions.add(
-        new BusinessMessagesSuggestion()
-            .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\uD83D\uDED2 Add to Cart").setPostbackData("add-cart-" + itemId)));
-
-    return suggestions;
-  }
-
-   /**
-   * Suggestions to add to cart cards.
-   * @param itemId The id of the item that the suggestions will pertain to.
-   * @return List of suggestions.
-   */
-  private List<BusinessMessagesSuggestion> getCartSuggestions(String itemId) {
-    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
-
-    suggestions.add(
-        new BusinessMessagesSuggestion()
-            .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\u2795").setPostbackData("add-cart-" + itemId)));
-
-    suggestions.add(
-        new BusinessMessagesSuggestion()
-            .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\u2796").setPostbackData("del-cart-" + itemId)));
-
-    return suggestions;
   }
 
   /**
@@ -711,7 +453,7 @@ public class KitchenSinkBot {
           .setText(message)
           .setRepresentative(representative)
           .setFallback(message)
-          .setSuggestions(getDefaultMenu()), conversationId);
+          .setSuggestions(UIManager.getDefaultMenu(this.representative, this.userCart)), conversationId);
     } catch (Exception e) {
       logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
     }
@@ -768,59 +510,6 @@ public class KitchenSinkBot {
   private String getAgentDisplayName(RepresentativeType representativeType) {
     return representativeType == RepresentativeType.BOT
         ? BotConstants.BOT_AGENT_NAME : BotConstants.LIVE_AGENT_NAME;
-  }
-
-  /**
-   * Creates the default menu items for responses.
-   *
-   * @return List of suggestions to form a menu.
-   */
-  private List<BusinessMessagesSuggestion> getDefaultMenu() {
-    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
-    suggestions.add(getHelpMenuItem());
-
-    suggestions.add(new BusinessMessagesSuggestion()
-        .setReply(new BusinessMessagesSuggestedReply()
-            .setText("Inquire About Hours").setPostbackData("hours")
-        ));
-    
-    if (userCart.getCart() != null) {
-      suggestions.add(new BusinessMessagesSuggestion()
-        .setReply(new BusinessMessagesSuggestedReply()
-            .setText("Continue Shopping").setPostbackData("shop")
-        ));
-
-      suggestions.add(new BusinessMessagesSuggestion()
-        .setReply(new BusinessMessagesSuggestedReply()
-            .setText("View Cart").setPostbackData("cart")
-        ));
-    } else {
-      suggestions.add(new BusinessMessagesSuggestion()
-        .setReply(new BusinessMessagesSuggestedReply()
-            .setText("Shop Our Collection").setPostbackData("shop")
-        ));
-    }
-
-    if (representative.getRepresentativeType().equals(RepresentativeType.HUMAN.toString())) {
-      suggestions.add(new BusinessMessagesSuggestion()
-          .setReply(new BusinessMessagesSuggestedReply()
-              .setText("Back to bot").setPostbackData("back_to_bot")
-          ));
-    }
-
-    return suggestions;
-  }
-
-  /**
-   * Get the help menu suggested reply.
-   *
-   * @return A help suggested reply.
-   */
-  private BusinessMessagesSuggestion getHelpMenuItem() {
-    return new BusinessMessagesSuggestion()
-        .setReply(new BusinessMessagesSuggestedReply()
-            .setText("Help").setPostbackData("help")
-        );
   }
 
   /**

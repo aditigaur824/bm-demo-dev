@@ -2,10 +2,10 @@ import java.util.Map;
 import java.util.HashMap;
 import org.junit.Test;
 import static com.google.common.truth.Truth.assertThat;
-import com.google.businessmessages.kitchensink.Inventory;
-import com.google.businessmessages.kitchensink.MockInventory;
+import com.google.businessmessages.Cart.Inventory;
+import com.google.businessmessages.Cart.MockInventory;
 import com.google.common.collect.UnmodifiableIterator;
-import com.google.businessmessages.kitchensink.InventoryItem;
+import com.google.businessmessages.Cart.InventoryItem;
 
 public class InventoryTest {
     

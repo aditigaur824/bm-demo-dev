@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.businessmessages.kitchensink.servlets;
+package com.google.businessmessages.Cart.servlets;
 
 // [START callback for receiving consumer messages]
 
@@ -20,8 +20,8 @@ package com.google.businessmessages.kitchensink.servlets;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesRepresentative;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.businessmessages.kitchensink.BotConstants;
-import com.google.businessmessages.kitchensink.KitchenSinkBot;
+import com.google.businessmessages.Cart.BotConstants;
+import com.google.businessmessages.Cart.CartBot;
 import com.google.communications.businessmessages.v1.RepresentativeType;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -141,7 +141,7 @@ public class AgentCallback extends HttpServlet {
         logger.info("User requested transfer to live agent");
 
         if (obj.get("requestedLiveAgent").getAsBoolean()) {
-          new KitchenSinkBot(switchAndGetRepresentative(RepresentativeType.HUMAN))
+          new CartBot(switchAndGetRepresentative(RepresentativeType.HUMAN))
               .transferToLiveAgent(conversationId);
         }
       }
@@ -159,7 +159,7 @@ public class AgentCallback extends HttpServlet {
       String rating
           = obj.get("surveyResponse").getAsJsonObject().get("rating").getAsString();
 
-      new KitchenSinkBot(getRepresentative()).routeMessage(rating, conversationId);
+      new CartBot(getRepresentative()).routeMessage(rating, conversationId);
     }
   }
 
@@ -171,9 +171,9 @@ public class AgentCallback extends HttpServlet {
       BusinessMessagesRepresentative representative = switchAndGetRepresentative(
           RepresentativeType.BOT);
 
-      new KitchenSinkBot(representative).transferToBot(conversationId);
+      new CartBot(representative).transferToBot(conversationId);
     } else {
-      new KitchenSinkBot(getRepresentative()).routeMessage(message, conversationId);
+      new CartBot(getRepresentative()).routeMessage(message, conversationId);
     }
   }
 }
