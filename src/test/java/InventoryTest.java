@@ -1,4 +1,5 @@
 import java.util.Map;
+import java.util.Optional;
 import java.util.HashMap;
 import org.junit.Test;
 import static com.google.common.truth.Truth.assertThat;
@@ -35,10 +36,11 @@ public class InventoryTest {
         UnmodifiableIterator<InventoryItem> iterator = testInventory.getInventory().iterator();
         InventoryItem testItem = iterator.next();
 
-        InventoryItem resultItem = testInventory.getItem(testItem.getId());
+        Optional<InventoryItem> resultItem = testInventory.getItem(testItem.getId());
 
-        assertThat(resultItem.getId()).isEqualTo(testItem.getId());
-        assertThat(resultItem.getTitle()).isEqualTo(testItem.getTitle());
-        assertThat(resultItem.getMediaUrl()).isEqualTo(testItem.getMediaUrl());
+        assertThat(resultItem.isPresent()).isTrue();
+        assertThat(resultItem.get().getId()).isEqualTo(testItem.getId());
+        assertThat(resultItem.get().getTitle()).isEqualTo(testItem.getTitle());
+        assertThat(resultItem.get().getMediaUrl()).isEqualTo(testItem.getMediaUrl());
     }
 }

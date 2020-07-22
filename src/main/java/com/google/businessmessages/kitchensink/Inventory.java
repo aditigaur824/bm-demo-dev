@@ -1,8 +1,9 @@
 package com.google.businessmessages.kitchensink;
 
+import java.util.Optional;
 import com.google.common.collect.ImmutableCollection;
 
 public interface Inventory {
-    public ImmutableCollection<InventoryItem> getInventory();
-    public InventoryItem getItem(String itemId);
+    ImmutableCollection<InventoryItem> getInventory();
+    Optional<InventoryItem> getItem(String itemId);
 }

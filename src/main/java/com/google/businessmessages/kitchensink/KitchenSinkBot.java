@@ -583,9 +583,7 @@ public class KitchenSinkBot {
   private BusinessMessagesCarouselCard getShopCarousel() {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
-    UnmodifiableIterator<InventoryItem> iterator = storeInventory.getInventory().iterator();
-    while(iterator.hasNext()) {
-      InventoryItem currentItem = iterator.next();
+    for (InventoryItem currentItem : storeInventory.getInventory()) {
       cardContents.add(new BusinessMessagesCardContent()
         .setTitle(currentItem.getTitle())
         .setSuggestions(getInventorySuggestions(currentItem.getTitle()))
