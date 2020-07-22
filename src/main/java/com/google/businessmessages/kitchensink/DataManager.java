@@ -39,9 +39,13 @@ public class DataManager {
             cart.setProperty(PROPERTY_CONVERSATION_ID, conversationId);
             cart.setProperty(PROPERTY_CART_ID, cartId);
             datastore.put(cart);
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Exception thrown while trying to add item to cart.", e);
-        }
+        } catch (IllegalArgumentException e) {
+            logger.log(Level.SEVERE, "The cart entity is incomplete.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to add the item.", e);
+        } 
     }
 
     public Entity getCart(String conversationId) {
