@@ -8,7 +8,7 @@ import com.google.businessmessages.kitchensink.MockInventory;
 import com.google.common.collect.UnmodifiableIterator;
 import com.google.businessmessages.kitchensink.InventoryItem;
 
-public class InventoryTest {
+public class MockInventoryTest {
     
     @Test
     public void testGetInventory() {

@@ -47,7 +47,6 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.TranslateOptions;
 import com.google.cloud.translate.Translation;
-import com.google.common.collect.UnmodifiableIterator;
 import com.google.communications.businessmessages.v1.CardWidth;
 import com.google.communications.businessmessages.v1.EventType;
 import com.google.communications.businessmessages.v1.MediaHeight;
