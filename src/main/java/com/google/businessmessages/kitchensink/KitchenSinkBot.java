@@ -795,7 +795,7 @@ public class KitchenSinkBot {
             .setText("Inquire About Hours").setPostbackData("hours")
         ));
     
-    if (userCart.getCart() != null) {
+    if (userCart.size() != 0) {
       suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
             .setText("Continue Shopping").setPostbackData("shop")

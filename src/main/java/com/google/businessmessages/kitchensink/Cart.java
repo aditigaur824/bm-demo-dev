@@ -13,7 +13,7 @@ import com.google.appengine.api.datastore.Entity;
 public class Cart {
     private String cartId;
     private int size;
-    private ImmutableCollection<CartItem> cartItems = null;
+    private ImmutableCollection<CartItem> cartItems;
 
     public Cart(String conversationId) {
         DataManager dataManager = DataManager.getInstance();

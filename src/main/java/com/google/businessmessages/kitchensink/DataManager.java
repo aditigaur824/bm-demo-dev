@@ -32,6 +32,10 @@ public class DataManager {
         datastore = DatastoreServiceFactory.getDatastoreService();
     }
 
+    /**
+     * Returns the existing instance of the DataManager.
+     * @return dataManager The single instance of DataManager.
+     */
     public static DataManager getInstance() {
         return dataManager;
     }
