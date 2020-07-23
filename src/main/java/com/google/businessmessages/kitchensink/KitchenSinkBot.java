@@ -90,7 +90,7 @@ public class KitchenSinkBot {
    */
   public void routeMessage(String message, String conversationId) {
     //initialize user's cart
-    this.userCart = new Cart(conversationId);
+    this.userCart = CartManager.getCart(conversationId);
 
     //begin parsing message
     String normalizedMessage = message.toLowerCase().trim();
@@ -122,7 +122,7 @@ public class KitchenSinkBot {
     } else if (normalizedMessage.matches(BotConstants.SHOP_COMMAND)) {
       sendInventoryCarousel(conversationId);
     } else if (normalizedMessage.matches(BotConstants.VIEW_CART_COMMAND)) {
-      if (userCart.size() > 1) sendCartCarousel(conversationId);
+      if (userCart.getItems().size() > 1) sendCartCarousel(conversationId);
       else sendSingleCartItem(conversationId);
     } else if (normalizedMessage.startsWith(BotConstants.ADD_ITEM_COMMAND)) {
       addItemToCart(normalizedMessage, conversationId);
@@ -142,7 +142,7 @@ public class KitchenSinkBot {
     String itemId = message.substring("add-cart-".length());
     try {
       InventoryItem itemToAdd = storeInventory.getItem(itemId).get();
-      this.userCart.addItem(itemToAdd.getId(), itemToAdd.getTitle());
+      this.userCart = CartManager.addItem(this.userCart.getId(), itemToAdd.getId(), itemToAdd.getTitle());
       sendResponse(itemToAdd.getTitle() + " have been added to your cart.", conversationId);
     } catch (NoSuchElementException e) {
       logger.log(Level.SEVERE, "Attempted to add item not in inventory.", e);
@@ -158,7 +158,7 @@ public class KitchenSinkBot {
     String itemId = message.substring("del-cart-".length());
     try {
       InventoryItem itemToDelete = storeInventory.getItem(itemId).get();
-      this.userCart.deleteItem(itemToDelete.getId());
+      this.userCart = CartManager.deleteItem(this.userCart.getId(), itemToDelete.getId());
       sendResponse(itemToDelete.getTitle() + " have been deleted from your cart.", conversationId);
     } catch (NoSuchElementException e) {
       logger.log(Level.SEVERE, "Attempted to delete item not in inventory.", e);
@@ -403,7 +403,7 @@ public class KitchenSinkBot {
    */
   private BusinessMessagesStandaloneCard getCartCard() {
     BusinessMessagesCardContent card = null;
-    for (CartItem currentItem : this.userCart.getCart()) {
+    for (CartItem currentItem : this.userCart.getItems()) {
       try {
         InventoryItem itemInStore = storeInventory.getItem(currentItem.getId()).get();
         card = new BusinessMessagesCardContent()
@@ -576,7 +576,7 @@ public class KitchenSinkBot {
   private BusinessMessagesCarouselCard getCartCarousel() {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
-    for (CartItem currentItem : this.userCart.getCart()) {
+    for (CartItem currentItem : this.userCart.getItems()) {
       try {
         InventoryItem itemInStore = storeInventory.getItem(currentItem.getId()).get();
         cardContents.add(new BusinessMessagesCardContent()
@@ -795,7 +795,7 @@ public class KitchenSinkBot {
             .setText("Inquire About Hours").setPostbackData("hours")
         ));
     
-    if (userCart.size() != 0) {
+    if (userCart.getItems().size() != 0) {
       suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
             .setText("Continue Shopping").setPostbackData("shop")

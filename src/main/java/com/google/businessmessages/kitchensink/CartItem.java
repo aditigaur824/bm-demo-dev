@@ -1,7 +1,5 @@
 package com.google.businessmessages.kitchensink;
 
-import com.google.appengine.api.datastore.Entity;
-
 /**
  * The CartItem instance encapsulates relevant metadata about an item the user has 
  * added to their shopping cart. Each CartItem's itemId corresponds to an InventoryItem's
@@ -12,11 +10,10 @@ public class CartItem {
     private String title;
     private int count;
 
-    public CartItem(Entity itemEntity) {
-        //Extracting relevant information from Datastore Entity
-        this.id = (String) itemEntity.getProperty(DataManager.PROPERTY_ITEM_ID);
-        this.title = (String) itemEntity.getProperty(DataManager.PROPERTY_ITEM_TITLE);
-        this.count = ((Long)itemEntity.getProperty(DataManager.PROPERTY_COUNT)).intValue();
+    public CartItem(String id, String title, int count) {
+        this.id = id;
+        this.title = title;
+        this.count = count;
     }
 
     /**
