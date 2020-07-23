@@ -44,7 +44,6 @@ import com.google.api.services.businessmessages.v1.model.BusinessMessagesSurvey;
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.TranslateOptions;
 import com.google.cloud.translate.Translation;
-import com.google.common.collect.UnmodifiableIterator;
 import com.google.communications.businessmessages.v1.CardWidth;
 import com.google.communications.businessmessages.v1.EventType;
 import com.google.communications.businessmessages.v1.MediaHeight;
@@ -541,9 +540,7 @@ public class KitchenSinkBot {
   private BusinessMessagesCarouselCard getShopCarousel() {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
-    UnmodifiableIterator<InventoryItem> iterator = storeInventory.getInventory().iterator();
-    while(iterator.hasNext()) {
-      InventoryItem currentItem = iterator.next();
+    for (InventoryItem currentItem : storeInventory.getInventory()) {
       cardContents.add(new BusinessMessagesCardContent()
         .setTitle(currentItem.getTitle())
         .setSuggestions(getInventorySuggestions(currentItem.getId()))

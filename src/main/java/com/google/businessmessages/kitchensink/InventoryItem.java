@@ -2,11 +2,16 @@ package com.google.businessmessages.kitchensink;
 
 import java.util.UUID;
 
+/**
+ * The item stored inside Inventory. Each item sold by a business can be encapsulated 
+ * in an instance of this class. InventoryItem contains vital metadata about the item being
+ * sold by the business.
+ */
 public class InventoryItem {
     private String id;
     private String title;
     private String mediaUrl;
-    private double price = 0;
+    private double price;
 
     public InventoryItem(String itemTitle, String itemMediaURL) {
         this.id = UUID.nameUUIDFromBytes(itemTitle.getBytes()).toString();
