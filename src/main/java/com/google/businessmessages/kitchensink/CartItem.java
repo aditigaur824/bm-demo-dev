@@ -2,6 +2,11 @@ package com.google.businessmessages.kitchensink;
 
 import com.google.appengine.api.datastore.Entity;
 
+/**
+ * The CartItem instance encapsulates relevant metadata about an item the user has 
+ * added to their shopping cart. Each CartItem's itemId corresponds to an InventoryItem's
+ * itemId.
+ */
 public class CartItem {
     private String id;
     private String title;

@@ -36,6 +36,12 @@ public class DataManager {
         return dataManager;
     }
 
+    /**
+     * Saves the user's cart to the datastore if the user has never created one 
+     * in the past.
+     * @param conversationId The unique id that maps between the user and the agent.
+     * @param cartId The unique id that maps between the user and their cart.
+     */
     public void saveCart(String conversationId, String cartId) {
         try {
             Entity cart = new Entity(CART_TYPE);
@@ -51,6 +57,11 @@ public class DataManager {
         } 
     }
 
+    /**
+     * Gets the user's cart from the datastore, if there is one. Returns null 
+     * otherwise. 
+     * @param conversationId The unique id that maps between the user and the agent.
+     */
     public Entity getCart(String conversationId) {
 
         final Query q = new Query(CART_TYPE)

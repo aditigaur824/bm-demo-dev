@@ -6,6 +6,10 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.appengine.api.datastore.Entity;
 
+/**
+ * The cart class is responsible for keeping track of all items, CartItems, the user
+ * adds to their shopping cart.
+ */
 public class Cart {
     private String cartId;
     private int size;
