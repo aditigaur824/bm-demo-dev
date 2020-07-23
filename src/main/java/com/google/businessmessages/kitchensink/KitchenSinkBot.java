@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -139,9 +140,13 @@ public class KitchenSinkBot {
    */
   public void addItemToCart(String message, String conversationId) {
     String itemId = message.substring("add-cart-".length());
-    InventoryItem itemToAdd = storeInventory.getItem(itemId);
-    this.userCart.addItem(itemToAdd.getId(), itemToAdd.getTitle());
-    sendResponse(itemToAdd.getTitle() + " have been added to your cart.", conversationId);
+    try {
+      InventoryItem itemToAdd = storeInventory.getItem(itemId).get();
+      this.userCart.addItem(itemToAdd.getId(), itemToAdd.getTitle());
+      sendResponse(itemToAdd.getTitle() + " have been added to your cart.", conversationId);
+    } catch (NoSuchElementException e) {
+      logger.log(Level.SEVERE, "Attempted to add item not in inventory.", e);
+    }
   }
 
   /**
@@ -151,9 +156,13 @@ public class KitchenSinkBot {
    */
   public void deleteItemFromCart(String message, String conversationId) {
     String itemId = message.substring("del-cart-".length());
-    InventoryItem itemToDelete = storeInventory.getItem(itemId);
-    this.userCart.deleteItem(itemToDelete.getId());
-    sendResponse(itemToDelete.getTitle() + " have been deleted from your cart.", conversationId);
+    try {
+      InventoryItem itemToDelete = storeInventory.getItem(itemId).get();
+      this.userCart.deleteItem(itemToDelete.getId());
+      sendResponse(itemToDelete.getTitle() + " have been deleted from your cart.", conversationId);
+    } catch (NoSuchElementException e) {
+      logger.log(Level.SEVERE, "Attempted to delete item not in inventory.", e);
+    }
   }
 
   /**
@@ -394,19 +403,22 @@ public class KitchenSinkBot {
    */
   private BusinessMessagesStandaloneCard getCartCard() {
     BusinessMessagesCardContent card = null;
-    UnmodifiableIterator<CartItem> iterator = userCart.getCart().iterator();
-    CartItem currentItem = iterator.next();
-    InventoryItem itemInStore = storeInventory.getItem(currentItem.getId());
-    card = new BusinessMessagesCardContent()
-      .setTitle(currentItem.getTitle())
-      .setDescription("Quantity: " + currentItem.getCount())
-      .setSuggestions(getCartSuggestions(currentItem.getId()))
-      .setMedia(new BusinessMessagesMedia()
-        .setHeight(MediaHeight.MEDIUM.toString())
-        .setContentInfo(new BusinessMessagesContentInfo()
-          .setFileUrl(itemInStore.getMediaUrl())
-          .setForceRefresh(true)));
-
+    for (CartItem currentItem : this.userCart.getCart()) {
+      try {
+        InventoryItem itemInStore = storeInventory.getItem(currentItem.getId()).get();
+        card = new BusinessMessagesCardContent()
+        .setTitle(currentItem.getTitle())
+        .setDescription("Quantity: " + currentItem.getCount())
+        .setSuggestions(getCartSuggestions(currentItem.getId()))
+        .setMedia(new BusinessMessagesMedia()
+          .setHeight(MediaHeight.MEDIUM.toString())
+          .setContentInfo(new BusinessMessagesContentInfo()
+            .setFileUrl(itemInStore.getMediaUrl())
+            .setForceRefresh(true)));
+      } catch (NoSuchElementException e) {
+        logger.log(Level.SEVERE, "Item in cart that is no longer in inventory.", e);
+      }
+    }
     return new BusinessMessagesStandaloneCard().setCardContent(card);
   }
 
@@ -564,11 +576,10 @@ public class KitchenSinkBot {
   private BusinessMessagesCarouselCard getCartCarousel() {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
-    UnmodifiableIterator<CartItem> iterator = userCart.getCart().iterator();
-    while(iterator.hasNext()) {
-      CartItem currentItem = iterator.next();
-      InventoryItem itemInStore = storeInventory.getItem(currentItem.getId());
-      cardContents.add(new BusinessMessagesCardContent()
+    for (CartItem currentItem : this.userCart.getCart()) {
+      try {
+        InventoryItem itemInStore = storeInventory.getItem(currentItem.getId()).get();
+        cardContents.add(new BusinessMessagesCardContent()
         .setTitle(currentItem.getTitle())
         .setDescription("Quantity: " + currentItem.getCount())
         .setSuggestions(getCartSuggestions(currentItem.getId()))
@@ -577,6 +588,9 @@ public class KitchenSinkBot {
           .setContentInfo(new BusinessMessagesContentInfo()
             .setFileUrl(itemInStore.getMediaUrl())
             .setForceRefresh(true))));
+      } catch (NoSuchElementException e) {
+        logger.log(Level.SEVERE, "Item in cart not in inventory.", e);
+      }
     }
 
     return new BusinessMessagesCarouselCard()
