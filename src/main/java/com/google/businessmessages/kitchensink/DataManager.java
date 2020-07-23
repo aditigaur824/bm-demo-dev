@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 
+/**
+ * Wrapper layer to manage all Datastore queries and storage requests.
+ */
 public class DataManager {
 
     private static final int MAX_CART_LIMIT = 50;
@@ -32,7 +35,7 @@ public class DataManager {
     public void addItemToCart(String conversationId, String itemTitle, Logger logger) {
         Transaction transaction = datastore.beginTransaction();
         Entity currentItem = getExistingItem(conversationId, itemTitle);
-  
+        
         try {
             // create a new cart item for the datastore if we do not have one already
             if (currentItem == null) {

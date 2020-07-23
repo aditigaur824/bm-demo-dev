@@ -13,12 +13,20 @@
  */
 package com.google.businessmessages.kitchensink;
 
-// [START import_libraries]
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.appengine.api.datastore.Entity;
 import com.google.api.services.businessmessages.v1.Businessmessages;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCardContent;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCarouselCard;
@@ -35,6 +43,7 @@ import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggest
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestedReply;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestion;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSurvey;
+import com.google.appengine.api.datastore.Entity;
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.TranslateOptions;
 import com.google.cloud.translate.Translation;
@@ -42,17 +51,6 @@ import com.google.communications.businessmessages.v1.CardWidth;
 import com.google.communications.businessmessages.v1.EventType;
 import com.google.communications.businessmessages.v1.MediaHeight;
 import com.google.communications.businessmessages.v1.RepresentativeType;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-// [END import_libraries]
 
 /**
  * Main bot logic. Most messages are passed through the routing function to map the user's response
@@ -76,27 +74,15 @@ public class KitchenSinkBot {
   // The datastore service used to persist user data
   private static final DataManager dataManager = new DataManager();
 
-  //Map to track store's inventory
-  private Map<String, BusinessMessagesCardContent> inventoryContent;
+  //Store inventory object
+  private final Inventory storeInventory;
 
   //Map to track user's cart
   private Map<String, BusinessMessagesCardContent> cartContent;
 
   public KitchenSinkBot(BusinessMessagesRepresentative representative) {
     this.representative = representative;
-    this.inventoryContent = new HashMap<>();
-    //initializing inventory
-    for (Map.Entry<String, String> ent : BotConstants.INVENTORY_IMAGES.entrySet()) {
-      inventoryContent.put(ent.getKey(), new BusinessMessagesCardContent()
-          .setTitle(ent.getKey())
-          .setDescription("What do you think?")
-          .setSuggestions(getInventorySuggestions(ent.getKey()))
-          .setMedia(new BusinessMessagesMedia()
-              .setHeight(MediaHeight.MEDIUM.toString())
-              .setContentInfo(new BusinessMessagesContentInfo()
-                  .setFileUrl(ent.getValue())
-                  .setForceRefresh(true))));
-    }
+    this.storeInventory = new MockInventory(BotConstants.INVENTORY_IMAGES);
     this.cartContent = new HashMap<>();
     initBmApi();
   }
@@ -596,9 +582,15 @@ public class KitchenSinkBot {
   private BusinessMessagesCarouselCard getShopCarousel() {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
-    // Create individual cards for the carousel using the inventory
-    for (Map.Entry<String, BusinessMessagesCardContent> ent : inventoryContent.entrySet()) {
-      cardContents.add(ent.getValue());
+    for (InventoryItem currentItem : storeInventory.getInventory()) {
+      cardContents.add(new BusinessMessagesCardContent()
+        .setTitle(currentItem.getTitle())
+        .setSuggestions(getInventorySuggestions(currentItem.getTitle()))
+        .setMedia(new BusinessMessagesMedia()
+          .setHeight(MediaHeight.MEDIUM.toString())
+          .setContentInfo(new BusinessMessagesContentInfo()
+            .setFileUrl(currentItem.getMediaUrl())
+            .setForceRefresh(true))));
     }
 
     return new BusinessMessagesCarouselCard()
