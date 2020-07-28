@@ -1,10 +1,14 @@
 package com.google.businessmessages.Cart;
 
 import java.util.Map;
+import java.util.Optional;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.UnmodifiableIterator;
 
+/**
+ * Mock implementation of Inventory. This class pulls items from a pre-defined map of items 
+ * to demonstrate the "Shop" feature in the bot.
+ */
 public class MockInventory implements Inventory {
     private ImmutableCollection<InventoryItem> inventoryItems;
     
@@ -16,27 +20,13 @@ public class MockInventory implements Inventory {
         inventoryItems = builder.build();
     }
 
-    /**
-     * Gets the collection of items in the inventory.
-     * @return inventoryItems The collection of items in the inventory.
-     */
-    public ImmutableCollection<InventoryItem> getInventory() {
-        return inventoryItems;
+    @Override
+    public ImmutableList<InventoryItem> getInventory() {
+        return (ImmutableList<InventoryItem>) inventoryItems;
     }
 
-    /**
-     * Gets the inventory item instance specified by the item id.
-     * @param itemId The item's unique identifier.
-     * @return item The InventoryItem instance.
-     */
-    public InventoryItem getItem(String itemId) {
-        UnmodifiableIterator<InventoryItem> iterator = inventoryItems.iterator();
-        while(iterator.hasNext()) {
-            InventoryItem currentItem = iterator.next();
-            if (currentItem.getId().equals(itemId)) {
-                return currentItem;
-            }
-        }
-        return null;
+    @Override
+    public Optional<InventoryItem> getItem(String itemId) {
+        return inventoryItems.stream().filter(x -> x.getId().equals(itemId)).findFirst();
     }
 }

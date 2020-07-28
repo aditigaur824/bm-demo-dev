@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,7 +85,7 @@ public class CartBot {
    */
   public void routeMessage(String message, String conversationId) {
     //initialize user's cart
-    this.userCart = new Cart(conversationId);
+    this.userCart = CartManager.getOrCreateCart(conversationId);
 
     //begin parsing message
     String normalizedMessage = message.toLowerCase().trim();
@@ -106,7 +107,7 @@ public class CartBot {
     } else if (normalizedMessage.matches(BotConstants.SHOP_COMMAND)) {
       sendInventoryCarousel(conversationId);
     } else if (normalizedMessage.matches(BotConstants.VIEW_CART_COMMAND)) {
-      if (userCart.size() > 1) sendCartCarousel(conversationId);
+      if (userCart.getItems().size() > 1) sendCartCarousel(conversationId);
       else sendSingleCartItem(conversationId);
     } else if (normalizedMessage.startsWith(BotConstants.ADD_ITEM_COMMAND)) {
       addItemToCart(normalizedMessage, conversationId);
@@ -124,9 +125,13 @@ public class CartBot {
    */
   public void addItemToCart(String message, String conversationId) {
     String itemId = message.substring("add-cart-".length());
-    InventoryItem itemToAdd = storeInventory.getItem(itemId);
-    this.userCart.addItem(itemToAdd.getId(), itemToAdd.getTitle());
-    sendResponse(itemToAdd.getTitle() + " have been added to your cart.", conversationId);
+    try {
+      InventoryItem itemToAdd = storeInventory.getItem(itemId).get();
+      this.userCart = CartManager.addItem(this.userCart.getId(), itemToAdd.getId(), itemToAdd.getTitle());
+      sendResponse(itemToAdd.getTitle() + " have been added to your cart.", conversationId);
+    } catch (NoSuchElementException e) {
+      logger.log(Level.SEVERE, "Attempted to add item not in inventory.", e);
+    }
   }
 
   /**
@@ -136,9 +141,13 @@ public class CartBot {
    */
   public void deleteItemFromCart(String message, String conversationId) {
     String itemId = message.substring("del-cart-".length());
-    InventoryItem itemToDelete = storeInventory.getItem(itemId);
-    this.userCart.deleteItem(itemToDelete.getId());
-    sendResponse(itemToDelete.getTitle() + " have been deleted from your cart.", conversationId);
+    try {
+      InventoryItem itemToDelete = storeInventory.getItem(itemId).get();
+      this.userCart = CartManager.deleteItem(this.userCart.getId(), itemToDelete.getId());
+      sendResponse(itemToDelete.getTitle() + " have been deleted from your cart.", conversationId);
+    } catch (NoSuchElementException e) {
+      logger.log(Level.SEVERE, "Attempted to delete item not in inventory.", e);
+    }
   }
 
   /**

@@ -2,6 +2,9 @@ package com.google.businessmessages.Cart;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCardContent;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCarouselCard;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesContentInfo;
@@ -16,13 +19,14 @@ import com.google.communications.businessmessages.v1.MediaHeight;
 import com.google.communications.businessmessages.v1.RepresentativeType;
 
 public class UIManager {
+  private static final Logger logger = Logger.getLogger(Cart.class.getName());
 
     /**
     * Creates the default menu items for responses.
     *
     * @return List of suggestions to form a menu.
     */
-   public static List<BusinessMessagesSuggestion> getDefaultMenu(BusinessMessagesRepresentative representative, Cart userCart) {
+  public static List<BusinessMessagesSuggestion> getDefaultMenu(BusinessMessagesRepresentative representative, Cart userCart) {
      List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
      suggestions.add(getHelpMenuItem());
  
@@ -31,7 +35,7 @@ public class UIManager {
              .setText("Inquire About Hours").setPostbackData("hours")
          ));
      
-     if (userCart.getCart() != null) {
+     if (!userCart.getItems().isEmpty()) {
        suggestions.add(new BusinessMessagesSuggestion()
          .setReply(new BusinessMessagesSuggestedReply()
              .setText("Continue Shopping").setPostbackData("shop")
@@ -114,19 +118,22 @@ public class UIManager {
    */
   public static BusinessMessagesStandaloneCard getCartCard(Inventory storeInventory, Cart userCart) {
     BusinessMessagesCardContent card = null;
-    UnmodifiableIterator<CartItem> iterator = userCart.getCart().iterator();
-    CartItem currentItem = iterator.next();
-    InventoryItem itemInStore = storeInventory.getItem(currentItem.getId());
-    card = new BusinessMessagesCardContent()
-      .setTitle(currentItem.getTitle())
-      .setDescription("Quantity: " + currentItem.getCount())
-      .setSuggestions(getCartSuggestions(currentItem.getId()))
-      .setMedia(new BusinessMessagesMedia()
-        .setHeight(MediaHeight.MEDIUM.toString())
-        .setContentInfo(new BusinessMessagesContentInfo()
-          .setFileUrl(itemInStore.getMediaUrl())
-          .setForceRefresh(true)));
-
+    for (CartItem currentItem : userCart.getItems()) {
+      try {
+        InventoryItem itemInStore = storeInventory.getItem(currentItem.getId()).get();
+        card = new BusinessMessagesCardContent()
+        .setTitle(currentItem.getTitle())
+        .setDescription("Quantity: " + currentItem.getCount())
+        .setSuggestions(getCartSuggestions(currentItem.getId()))
+        .setMedia(new BusinessMessagesMedia()
+          .setHeight(MediaHeight.MEDIUM.toString())
+          .setContentInfo(new BusinessMessagesContentInfo()
+            .setFileUrl(itemInStore.getMediaUrl())
+            .setForceRefresh(true)));
+      } catch (NoSuchElementException e) {
+        logger.log(Level.SEVERE, "Item in cart that is no longer in inventory.", e);
+      }
+    }
     return new BusinessMessagesStandaloneCard().setCardContent(card);
   }
 
@@ -164,11 +171,10 @@ public class UIManager {
   public static BusinessMessagesCarouselCard getCartCarousel(Inventory storeInventory, Cart userCart) {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
-    UnmodifiableIterator<CartItem> iterator = userCart.getCart().iterator();
-    while(iterator.hasNext()) {
-      CartItem currentItem = iterator.next();
-      InventoryItem itemInStore = storeInventory.getItem(currentItem.getId());
-      cardContents.add(new BusinessMessagesCardContent()
+    for (CartItem currentItem : userCart.getItems()) {
+      try {
+        InventoryItem itemInStore = storeInventory.getItem(currentItem.getId()).get();
+        cardContents.add(new BusinessMessagesCardContent()
         .setTitle(currentItem.getTitle())
         .setDescription("Quantity: " + currentItem.getCount())
         .setSuggestions(getCartSuggestions(currentItem.getId()))
@@ -177,6 +183,9 @@ public class UIManager {
           .setContentInfo(new BusinessMessagesContentInfo()
             .setFileUrl(itemInStore.getMediaUrl())
             .setForceRefresh(true))));
+      } catch (NoSuchElementException e) {
+        logger.log(Level.SEVERE, "Item in cart not in inventory.", e);
+      }
     }
 
     return new BusinessMessagesCarouselCard()

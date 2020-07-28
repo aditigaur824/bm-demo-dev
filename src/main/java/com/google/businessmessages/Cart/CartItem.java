@@ -1,17 +1,19 @@
 package com.google.businessmessages.Cart;
 
-import com.google.appengine.api.datastore.Entity;
-
+/**
+ * The CartItem instance encapsulates relevant metadata about an item the user has 
+ * added to their shopping cart. Each CartItem's itemId corresponds to an InventoryItem's
+ * itemId.
+ */
 public class CartItem {
-    private String id;
-    private String title;
-    private int count;
+    private final String id;
+    private final String title;
+    private final int count;
 
-    public CartItem(Entity itemEntity) {
-        //Extracting relevant information from Datastore Entity
-        this.id = (String) itemEntity.getProperty(DataManager.PROPERTY_ITEM_ID);
-        this.title = (String) itemEntity.getProperty(DataManager.PROPERTY_ITEM_TITLE);
-        this.count = ((Long)itemEntity.getProperty(DataManager.PROPERTY_COUNT)).intValue();
+    public CartItem(String id, String title, int count) {
+        this.id = id;
+        this.title = title;
+        this.count = count;
     }
 
     /**

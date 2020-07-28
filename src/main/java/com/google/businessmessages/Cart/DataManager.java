@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 
+/**
+ * Wrapper layer to manage all Datastore queries and storage requests.
+ */
 public class DataManager {
 
     private static final int MAX_CART_LIMIT = 50;
@@ -29,21 +32,40 @@ public class DataManager {
         datastore = DatastoreServiceFactory.getDatastoreService();
     }
 
+    /**
+     * Returns the existing instance of the DataManager.
+     * @return dataManager The single instance of DataManager.
+     */
     public static DataManager getInstance() {
         return dataManager;
     }
 
+    /**
+     * Saves the user's cart to the datastore if the user has never created one 
+     * in the past.
+     * @param conversationId The unique id that maps between the user and the agent.
+     * @param cartId The unique id that maps between the user and their cart.
+     */
     public void saveCart(String conversationId, String cartId) {
         try {
             Entity cart = new Entity(CART_TYPE);
             cart.setProperty(PROPERTY_CONVERSATION_ID, conversationId);
             cart.setProperty(PROPERTY_CART_ID, cartId);
             datastore.put(cart);
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Exception thrown while trying to add item to cart.", e);
-        }
+        } catch (IllegalArgumentException e) {
+            logger.log(Level.SEVERE, "The cart entity is incomplete.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to add the item.", e);
+        } 
     }
 
+    /**
+     * Gets the user's cart from the datastore, if there is one. Returns null 
+     * otherwise. 
+     * @param conversationId The unique id that maps between the user and the agent.
+     */
     public Entity getCart(String conversationId) {
 
         final Query q = new Query(CART_TYPE)

@@ -1,19 +1,23 @@
 import static com.google.common.truth.Truth.assertThat;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.businessmessages.Cart.Cart;
 import com.google.businessmessages.Cart.CartItem;
+import com.google.businessmessages.Cart.CartManager;
 import com.google.common.collect.UnmodifiableIterator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class CartTest {
+public class CartManagerTest {
 
     private final LocalServiceTestHelper helper = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
 
@@ -23,8 +27,28 @@ public class CartTest {
     }
     
     @Test
-    public void testPopulate() {
-        Cart cart = new Cart("testPopulateConversationId");
+    public void testGetCart_isCreatedIfMissing() {
+        String testGetCartConversationId = "testGetCartConversationId";
+
+        Cart testCart = CartManager.getOrCreateCart(testGetCartConversationId);
+
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        final Query q = new Query("Cart")
+                .setFilter(
+                        new Query.FilterPredicate("conversation_id",
+                                Query.FilterOperator.EQUAL,
+                                testGetCartConversationId)
+                );
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> resultCart = pq.asList(FetchOptions.Builder.withLimit(1));
+        assertThat(resultCart).isNotEmpty();
+        assertThat(resultCart.get(0).getProperty("cart_id")).isEqualTo(testCart.getId());
+    }
+
+    @Test
+    public void testGetCart_getsIfExists() {
+        String testGetSavedCartConversationId = "testGetSavedCartConversationId";
+        Cart cart = CartManager.getOrCreateCart(testGetSavedCartConversationId);
         String testPopulateItemTitle1 = "testPopulateItemTitle1";
         Entity testPopulateItem1 = new Entity("CartItem");
         testPopulateItem1.setProperty("cart_id", cart.getId());
@@ -35,33 +59,31 @@ public class CartTest {
         testPopulateItem2.setProperty("cart_id", cart.getId());
         testPopulateItem2.setProperty("item_title", testPopulateItemTitle2);
         testPopulateItem2.setProperty("count", 1);
-        Set<String> testItemTitles = new HashSet<>();
+        HashSet<String> testItemTitles = new HashSet<>();
         testItemTitles.add(testPopulateItemTitle1);
         testItemTitles.add(testPopulateItemTitle2);
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         datastore.put(testPopulateItem1);
         datastore.put(testPopulateItem2);
 
-        cart.populate();
+        cart = CartManager.getOrCreateCart(testGetSavedCartConversationId);
 
-        assertThat(cart.size()).isEqualTo(2);
-        UnmodifiableIterator<CartItem> iterator = cart.getCart().iterator();
-        while (iterator.hasNext()) {
-            CartItem currentItem = iterator.next();
+        assertThat(cart.getItems().size()).isEqualTo(2);
+        for (CartItem currentItem : cart.getItems()) {
             assertThat(currentItem.getTitle()).isIn(testItemTitles);
         }
     }
 
     @Test
     public void testAddItem() {
-        Cart cart = new Cart("testAddConversationId");
+        Cart cart = CartManager.getOrCreateCart("testAddConversationId");
         String testAddItemTitle = "testAddItemTitle";
         String testAddItemId = "testAddItemId";
 
-        cart.addItem(testAddItemId, testAddItemTitle);
+        cart = CartManager.addItem(cart.getId(), testAddItemId, testAddItemTitle);
 
-        assertThat(cart.size()).isEqualTo(1);
-        UnmodifiableIterator<CartItem> iterator = cart.getCart().iterator();
+        assertThat(cart.getItems().size()).isEqualTo(1);
+        UnmodifiableIterator<CartItem> iterator = cart.getItems().iterator();
         CartItem currentItem = iterator.next();
         assertThat(currentItem.getTitle()).isEqualTo(testAddItemTitle);
         assertThat(currentItem.getId()).isEqualTo(testAddItemId);
@@ -69,7 +91,7 @@ public class CartTest {
 
     @Test
     public void testDeleteItem() {
-        Cart cart = new Cart("testDeleteConversationId");
+        Cart cart = CartManager.getOrCreateCart("testDeleteConversationId");
         String testDeleteItemId = "testDeleteItemId";
         String testDeleteItemTitle = "testDeleteItemTitle";
         Entity testDeleteItem = new Entity("CartItem");
@@ -80,9 +102,9 @@ public class CartTest {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         datastore.put(testDeleteItem);
 
-        cart.deleteItem(testDeleteItemId);
+        cart = CartManager.deleteItem(cart.getId(), testDeleteItemId);
 
-        assertThat(cart.size()).isEqualTo(0);
+        assertThat(cart.getItems()).isEmpty();
     }
 
     @After
