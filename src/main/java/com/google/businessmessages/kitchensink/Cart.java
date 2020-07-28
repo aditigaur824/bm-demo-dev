@@ -7,8 +7,8 @@ import com.google.common.collect.ImmutableList;
  * adds to their shopping cart.
  */
 public class Cart {
-    private String cartId;
-    private ImmutableList<CartItem> cartItems;
+    private final String cartId;
+    private final ImmutableList<CartItem> cartItems;
 
     public Cart(String cartId, ImmutableList<CartItem> cartItems) {
         this.cartId = cartId;

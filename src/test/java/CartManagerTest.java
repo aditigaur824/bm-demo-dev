@@ -27,10 +27,10 @@ public class CartManagerTest {
     }
     
     @Test
-    public void testGetCart() {
+    public void testGetCart_isCreatedIfMissing() {
         String testGetCartConversationId = "testGetCartConversationId";
 
-        Cart testCart = CartManager.getCart(testGetCartConversationId);
+        Cart testCart = CartManager.getOrCreateCart(testGetCartConversationId);
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         final Query q = new Query("Cart")
@@ -46,9 +46,9 @@ public class CartManagerTest {
     }
 
     @Test
-    public void testGetCartSaved() {
+    public void testGetCart_getsIfExists() {
         String testGetSavedCartConversationId = "testGetSavedCartConversationId";
-        Cart cart = CartManager.getCart(testGetSavedCartConversationId);
+        Cart cart = CartManager.getOrCreateCart(testGetSavedCartConversationId);
         String testPopulateItemTitle1 = "testPopulateItemTitle1";
         Entity testPopulateItem1 = new Entity("CartItem");
         testPopulateItem1.setProperty("cart_id", cart.getId());
@@ -66,19 +66,17 @@ public class CartManagerTest {
         datastore.put(testPopulateItem1);
         datastore.put(testPopulateItem2);
 
-        cart = CartManager.getCart(testGetSavedCartConversationId);
+        cart = CartManager.getOrCreateCart(testGetSavedCartConversationId);
 
         assertThat(cart.getItems().size()).isEqualTo(2);
-        UnmodifiableIterator<CartItem> iterator = cart.getItems().iterator();
-        while (iterator.hasNext()) {
-            CartItem currentItem = iterator.next();
+        for (CartItem currentItem : cart.getItems()) {
             assertThat(currentItem.getTitle()).isIn(testItemTitles);
         }
     }
 
     @Test
     public void testAddItem() {
-        Cart cart = CartManager.getCart("testAddConversationId");
+        Cart cart = CartManager.getOrCreateCart("testAddConversationId");
         String testAddItemTitle = "testAddItemTitle";
         String testAddItemId = "testAddItemId";
 
@@ -93,7 +91,7 @@ public class CartManagerTest {
 
     @Test
     public void testDeleteItem() {
-        Cart cart = CartManager.getCart("testDeleteConversationId");
+        Cart cart = CartManager.getOrCreateCart("testDeleteConversationId");
         String testDeleteItemId = "testDeleteItemId";
         String testDeleteItemTitle = "testDeleteItemTitle";
         Entity testDeleteItem = new Entity("CartItem");
@@ -106,7 +104,7 @@ public class CartManagerTest {
 
         cart = CartManager.deleteItem(cart.getId(), testDeleteItemId);
 
-        assertThat(cart.getItems()).isNull();
+        assertThat(cart.getItems()).isEmpty();
     }
 
     @After

@@ -17,7 +17,7 @@ public class CartManager {
      * @param conversationId The unique id that maps between the agent and the user.
      * @return The new Cart instance constructed with persisted data, if any.
      */
-    public static Cart getCart(String conversationId) {
+    public static Cart getOrCreateCart(String conversationId) {
         DataManager dataManager = DataManager.getInstance();
         Entity cartEntity = dataManager.getCart(conversationId);
         String cartId;
@@ -37,19 +37,18 @@ public class CartManager {
      * @return The immutable collection of items associated with the given cartId.
      */
     private static ImmutableList<CartItem> getCartItems(String cartId) {
+        ImmutableList.Builder<CartItem> builder = new ImmutableList.Builder<>();
         DataManager dataManager = DataManager.getInstance();
         List<Entity> itemList = dataManager.getCartFromData(cartId);
-        if (itemList != null && !itemList.isEmpty()) {
-            ImmutableList.Builder<CartItem> builder = new ImmutableList.Builder<>();
+        if (itemList != null) {
             for (Entity ent : itemList) {
                 String id = (String) ent.getProperty(DataManager.PROPERTY_ITEM_ID);
                 String title = (String) ent.getProperty(DataManager.PROPERTY_ITEM_TITLE);
                 int count = ((Long) ent.getProperty(DataManager.PROPERTY_COUNT)).intValue();
                 builder.add(new CartItem(id, title, count));
             }
-            return builder.build();
         }
-        return null;
+        return builder.build();
     }
 
     /**

@@ -6,9 +6,9 @@ package com.google.businessmessages.kitchensink;
  * itemId.
  */
 public class CartItem {
-    private String id;
-    private String title;
-    private int count;
+    private final String id;
+    private final String title;
+    private final int count;
 
     public CartItem(String id, String title, int count) {
         this.id = id;

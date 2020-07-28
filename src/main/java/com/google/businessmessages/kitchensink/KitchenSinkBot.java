@@ -90,7 +90,7 @@ public class KitchenSinkBot {
    */
   public void routeMessage(String message, String conversationId) {
     //initialize user's cart
-    this.userCart = CartManager.getCart(conversationId);
+    this.userCart = CartManager.getOrCreateCart(conversationId);
 
     //begin parsing message
     String normalizedMessage = message.toLowerCase().trim();
