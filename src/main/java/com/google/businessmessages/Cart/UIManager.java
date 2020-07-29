@@ -18,6 +18,10 @@ import com.google.communications.businessmessages.v1.CardWidth;
 import com.google.communications.businessmessages.v1.MediaHeight;
 import com.google.communications.businessmessages.v1.RepresentativeType;
 
+/**
+ * Defines methods to create UI elements such as suggestion chips, rich cards, and 
+ * rich card carousels to send back to CartBot. 
+ */
 public class UIManager {
   private static final Logger logger = Logger.getLogger(Cart.class.getName());
 

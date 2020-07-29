@@ -16,6 +16,9 @@ package com.google.businessmessages.Cart;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Defines constants used by CartBot.
+ */
 public interface BotConstants {
 
     String CREDENTIALS_FILE_NAME = "bm-agent-service-account-credentials.json";
