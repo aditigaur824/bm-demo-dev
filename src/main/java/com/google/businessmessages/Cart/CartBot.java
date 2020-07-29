@@ -323,8 +323,7 @@ public class CartBot {
    * @param message The message object to send the user.
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
    */
-  private void sendResponse(BusinessMessagesMessage message,
-      String conversationId) {
+  private void sendResponse(BusinessMessagesMessage message, String conversationId) {
     try {
       // Send typing indicator
       BusinessMessagesEvent event =
