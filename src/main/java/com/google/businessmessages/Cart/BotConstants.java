@@ -30,7 +30,6 @@ public interface BotConstants {
     String BOT_AGENT_NAME = "BM Cart Bot";
 
     // List of recognized commands to produce certain responses
-    String BACK_TO_BOT_COMMAND = "back_to_bot";
     String DELETE_ITEM_COMMAND = "del-cart";
     String ADD_ITEM_COMMAND = "add-cart";
     String VIEW_CART_COMMAND = "cart";
@@ -50,11 +49,6 @@ public interface BotConstants {
         "Inquire About Hours - Will respond with the times that our store is open.\n\n" +
         "Shop Our Collection/Continue Shopping - Will respond with a collection of mock inventory items.\n\n" +
         "View Cart - Will respond with all of the items in your cart.\n\n";
-
-    String RSP_LIVE_AGENT_TRANSFER = "Hey there, you are now chatting with a live agent " +
-        "(not really, but let's pretend).";
-
-    String RSP_BOT_TRANSFER = "Hey there, you are now chatting with a bot.";
     
     Map<String, String> INVENTORY_IMAGES = new HashMap<String, String>() {{
         put("Blue Running Shoes", "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/blue_running_shoes.jpeg");

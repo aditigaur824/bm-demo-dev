@@ -16,7 +16,6 @@ package com.google.businessmessages.Cart.servlets;
 // [START callback for receiving consumer messages]
 
 // [START import_libraries]
-
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesRepresentative;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
@@ -137,14 +136,7 @@ public class AgentCallback extends HttpServlet {
 
       if (obj.has("isTyping")) {
         logger.info("User is typing");
-      } else if (obj.has("requestedLiveAgent")) {
-        logger.info("User requested transfer to live agent");
-
-        if (obj.get("requestedLiveAgent").getAsBoolean()) {
-          new CartBot(switchAndGetRepresentative(RepresentativeType.HUMAN))
-              .transferToLiveAgent(conversationId);
-        }
-      }
+      } 
     } else if (obj.has("receipts")) {
       JsonArray receipts
           = obj.get("receipts").getAsJsonObject().getAsJsonArray("receipts");
@@ -155,26 +147,11 @@ public class AgentCallback extends HttpServlet {
 
         logger.info("Receipt: (" + receiptType + ", " + messageId + ")");
       }
-    } else if (obj.has("surveyResponse")) {
-      String rating
-          = obj.get("surveyResponse").getAsJsonObject().get("rating").getAsString();
-
-      new CartBot(getRepresentative()).routeMessage(rating, conversationId);
     }
   }
 
   private void routeTextResponse(String conversationId, String message) {
-    String normalizedMessage = message.toLowerCase().trim();
-
-    // Check if this is a transfer request to go back to a bot conversation
-    if (normalizedMessage.equals(BotConstants.BACK_TO_BOT_COMMAND)) {
-      BusinessMessagesRepresentative representative = switchAndGetRepresentative(
-          RepresentativeType.BOT);
-
-      new CartBot(representative).transferToBot(conversationId);
-    } else {
       new CartBot(getRepresentative()).routeMessage(message, conversationId);
-    }
   }
 }
 // [END callback for receiving consumer messages]
