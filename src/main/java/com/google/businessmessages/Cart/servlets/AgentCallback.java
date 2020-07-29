@@ -167,7 +167,7 @@ public class AgentCallback extends HttpServlet {
     String normalizedMessage = message.toLowerCase().trim();
 
     // Check if this is a transfer request to go back to a bot conversation
-    if (normalizedMessage.equals(BotConstants.CMD_BACK_TO_BOT)) {
+    if (normalizedMessage.equals(BotConstants.BACK_TO_BOT_COMMAND)) {
       BusinessMessagesRepresentative representative = switchAndGetRepresentative(
           RepresentativeType.BOT);
 

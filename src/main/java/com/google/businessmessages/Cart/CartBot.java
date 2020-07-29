@@ -15,7 +15,6 @@ package com.google.businessmessages.Cart;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -29,19 +28,12 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.businessmessages.v1.Businessmessages;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCardContent;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCarouselCard;
-import com.google.api.services.businessmessages.v1.model.BusinessMessagesDialAction;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesEvent;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesMessage;
-import com.google.api.services.businessmessages.v1.model.BusinessMessagesOpenUrlAction;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesRepresentative;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesRichCard;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesStandaloneCard;
-import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestedAction;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestion;
-import com.google.api.services.businessmessages.v1.model.BusinessMessagesSurvey;
-import com.google.cloud.translate.Translate;
-import com.google.cloud.translate.TranslateOptions;
-import com.google.cloud.translate.Translation;
 import com.google.communications.businessmessages.v1.EventType;
 import com.google.communications.businessmessages.v1.RepresentativeType;
 
@@ -90,17 +82,7 @@ public class CartBot {
     //begin parsing message
     String normalizedMessage = message.toLowerCase().trim();
 
-    if (normalizedMessage.matches(BotConstants.CMD_SPEAK)) {
-      attemptTranslation(normalizedMessage, conversationId);
-    } else if (normalizedMessage.matches(BotConstants.CMD_LINK)) {
-      sendLinkAction(conversationId);
-    } else if (normalizedMessage.matches(BotConstants.CMD_DIAL)) {
-      sendDialAction(conversationId);
-    } else if (normalizedMessage.matches(BotConstants.CMD_WHO)) {
-      sendResponse(BotConstants.RSP_WHO_TEXT, conversationId);
-    } else if (normalizedMessage.matches(BotConstants.CMD_CSAT_TRIGGER)) {
-      showCSAT(conversationId);
-    } else if (normalizedMessage.matches(BotConstants.HELP_COMMAND)) {
+   if (normalizedMessage.matches(BotConstants.HELP_COMMAND)) {
       sendResponse(BotConstants.RSP_HELP_TEXT, conversationId);
     } else if (normalizedMessage.matches(BotConstants.HOURS_COMMAND)) {
       sendResponse(BotConstants.RSP_HOURS_TEXT, conversationId);
@@ -224,88 +206,6 @@ public class CartBot {
   }
 
   /**
-   * Sends the user a CSAT survey.
-   *
-   * @param conversationId The conversation ID that uniquely maps to the user and agent.
-   */
-  private void showCSAT(String conversationId) {
-    try {
-      Businessmessages.Conversations.Surveys.Create request
-          = builder.build().conversations().surveys()
-          .create("conversations/" + conversationId,
-              new BusinessMessagesSurvey());
-
-      request.setSurveyId(UUID.randomUUID().toString());
-
-      request.execute();
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
-    }
-  }
-
-  /**
-   * Sends a text message along with an open url action to the user.
-   *
-   * @param conversationId The conversation ID that uniquely maps to the user and agent.
-   */
-  private void sendLinkAction(String conversationId) {
-    try {
-      List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
-
-      // Add the open url action
-      suggestions.add(new BusinessMessagesSuggestion()
-          .setAction(new BusinessMessagesSuggestedAction()
-              .setOpenUrlAction(
-                  new BusinessMessagesOpenUrlAction()
-                      .setUrl("https://www.google.com"))
-              .setText("Open Google").setPostbackData("open_url")));
-
-      suggestions.addAll(UIManager.getDefaultMenu(this.representative, this.userCart));
-
-      // Send the text message and suggestions to the user
-      // Use a fallback text of the actual URL
-      sendResponse(new BusinessMessagesMessage()
-          .setMessageId(UUID.randomUUID().toString())
-          .setText(BotConstants.RSP_LINK_TEXT)
-          .setRepresentative(representative)
-          .setFallback(BotConstants.RSP_LINK_TEXT + " https://www.google.com")
-          .setSuggestions(suggestions), conversationId);
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
-    }
-  }
-
-  /**
-   * Sends a text message along with a dial action to the user.
-   *
-   * @param conversationId The conversation ID that uniquely maps to the user and agent.
-   */
-  private void sendDialAction(String conversationId) {
-    try {
-      List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
-
-      // Add the dial action
-      suggestions.add(new BusinessMessagesSuggestion()
-          .setAction(new BusinessMessagesSuggestedAction()
-              .setDialAction(
-                  new BusinessMessagesDialAction()
-                      .setPhoneNumber("+12223334444"))
-              .setText("Call example").setPostbackData("call_example")));
-
-      suggestions.add(UIManager.getHelpMenuItem());
-
-      // Send the text message and suggestions to the user
-      sendResponse(new BusinessMessagesMessage()
-          .setMessageId(UUID.randomUUID().toString())
-          .setText(BotConstants.RSP_LINK_TEXT)
-          .setRepresentative(representative)
-          .setSuggestions(suggestions), conversationId);
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
-    }
-  }
-
-  /**
    * Used when the user's cart contains only one item.
    *
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
@@ -393,58 +293,6 @@ public class CartBot {
           .setSuggestions(suggestions), conversationId);
     } catch (Exception e) {
       logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
-    }
-  }
-
-  /**
-   * The normalizedMessage should be formatted as "speak french", "speak chinese", etc. the
-   * specified langauge is parsed and mapped to a supported language. If no supported language is
-   * found, an error response is shown.
-   *
-   * @param normalizedMessage The inbound request from the user.
-   * @param conversationId The conversation ID that uniquely maps to the user and agent.
-   */
-  private void attemptTranslation(String normalizedMessage, String conversationId) {
-    String language = normalizedMessage.replace("speak ", "").trim();
-
-    // Trim any extra text
-    if (language.indexOf(" ") > 0) {
-      language = language.substring(0, language.indexOf(" "));
-    }
-
-    logger.info("Trying to translate to language: " + language);
-
-    // Attempt to match input language to language map
-    if (BotConstants.LANGUAGE_MAP.containsKey(language)) {
-      String languageCode = BotConstants.LANGUAGE_MAP.get(language);
-
-      Translate translate = TranslateOptions.getDefaultInstance().getService();
-      Translation translation =
-          translate.translate(
-              BotConstants.RSP_TO_TRANSLATION,
-              Translate.TranslateOption.sourceLanguage("en"),
-              Translate.TranslateOption.targetLanguage(languageCode),
-              Translate.TranslateOption.format("text"),
-              Translate.TranslateOption.model("base"));
-
-      sendResponse(translation.getTranslatedText(), conversationId);
-    } else { // No matching language found, show default response
-      String noLanguageMatch = "Sorry, but " + language + " is not a supported language.\n\n" +
-          "Here is the list of supported languages: ";
-
-      StringBuilder sb = new StringBuilder();
-      for (String languageName : BotConstants.LANGUAGE_MAP.keySet()) {
-        if (sb.length() != 0) {
-          sb.append(", ");
-        }
-        // Upper case the first letter of the language
-        sb.append(languageName.substring(0, 1).toUpperCase());
-        sb.append(languageName.substring(1));
-      }
-
-      noLanguageMatch += sb.toString();
-
-      sendResponse(noLanguageMatch, conversationId);
     }
   }
 
