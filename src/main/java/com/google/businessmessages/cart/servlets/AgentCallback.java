@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.businessmessages.Cart.servlets;
+package com.google.businessmessages.cart.servlets;
 
 // [START callback for receiving consumer messages]
 
@@ -19,8 +19,8 @@ package com.google.businessmessages.Cart.servlets;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesRepresentative;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.businessmessages.Cart.BotConstants;
-import com.google.businessmessages.Cart.CartBot;
+import com.google.businessmessages.cart.BotConstants;
+import com.google.businessmessages.cart.CartBot;
 import com.google.communications.businessmessages.v1.RepresentativeType;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

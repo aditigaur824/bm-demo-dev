@@ -1,4 +1,4 @@
-package com.google.businessmessages.Cart;
+package com.google.businessmessages.cart;
 
 import java.util.List;
 import java.util.UUID;

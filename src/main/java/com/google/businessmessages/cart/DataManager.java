@@ -1,4 +1,4 @@
-package com.google.businessmessages.Cart;
+package com.google.businessmessages.cart;
 
 import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.datastore.Query.CompositeFilterOperator;

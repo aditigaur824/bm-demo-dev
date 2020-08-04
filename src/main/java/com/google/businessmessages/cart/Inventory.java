@@ -1,4 +1,4 @@
-package com.google.businessmessages.Cart;
+package com.google.businessmessages.cart;
 
 import java.util.Optional;
 import com.google.common.collect.ImmutableCollection;

@@ -7,8 +7,8 @@ import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.businessmessages.cart.DataManager;
 import static com.google.common.truth.Truth.assertThat;
-import com.google.businessmessages.Cart.DataManager;
 
 public class DataManagerTest {
 

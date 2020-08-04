@@ -1,4 +1,4 @@
-package com.google.businessmessages.Cart;
+package com.google.businessmessages.cart;
 
 /**
  * The CartItem instance encapsulates relevant metadata about an item the user has 
