@@ -45,8 +45,6 @@ public class CartBot {
 
   private static final Logger logger = Logger.getLogger(CartBot.class.getName());
 
-  private static final String EXCEPTION_WAS_THROWN = "exception";
-
   // Object to maintain OAuth2 credentials to call the BM API
   private GoogleCredential credential;
 
@@ -155,7 +153,7 @@ public class CartBot {
           .setFallback(fallbackText)
           .setSuggestions(suggestions), conversationId);
     } catch (Exception e) {
-      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+      logger.log(Level.SEVERE, "Exception thrown while sending single cart card.", e);
     }
   }
 
@@ -187,7 +185,7 @@ public class CartBot {
           .setFallback(fallbackTextBuilder.toString())
           .setSuggestions(suggestions), conversationId);
     } catch (Exception e) {
-      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+      logger.log(Level.SEVERE, "Exception thrown while sending inventory carousel.", e);
     }
   }
 
@@ -219,7 +217,7 @@ public class CartBot {
           .setFallback(fallbackTextBuilder.toString())
           .setSuggestions(suggestions), conversationId);
     } catch (Exception e) {
-      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+      logger.log(Level.SEVERE, "Exception thrown while sending cart carousel.", e);
     }
   }
 
@@ -239,7 +237,7 @@ public class CartBot {
           .setFallback(message)
           .setSuggestions(UIManager.getDefaultMenu(this.representative, this.userCart)), conversationId);
     } catch (Exception e) {
-      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+      logger.log(Level.SEVERE, "Exception thrown while sending response.", e);
     }
   }
 
@@ -286,7 +284,7 @@ public class CartBot {
       request.setEventId(UUID.randomUUID().toString());
       request.execute();
     } catch (Exception e) {
-      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+      logger.log(Level.SEVERE, "Exception thrown while sending response.", e);
     }
   }
 
@@ -315,7 +313,7 @@ public class CartBot {
 
       this.credential.refreshToken();
     } catch (Exception e) {
-      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+      logger.log(Level.SEVERE, "Exception thrown while initializing credentials.", e);
     }
   }
 
@@ -340,7 +338,7 @@ public class CartBot {
       builder.setHttpRequestInitializer(credential);
       builder.setRootUrl(BotConstants.BM_API_URL);
     } catch (Exception e) {
-      logger.log(Level.SEVERE, EXCEPTION_WAS_THROWN, e);
+      logger.log(Level.SEVERE, "Exception thrown while initializing BM API.", e);
     }
   }
 }

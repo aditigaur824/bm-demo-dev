@@ -16,7 +16,6 @@ import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggest
 import com.google.common.collect.UnmodifiableIterator;
 import com.google.communications.businessmessages.v1.CardWidth;
 import com.google.communications.businessmessages.v1.MediaHeight;
-import com.google.communications.businessmessages.v1.RepresentativeType;
 
 /**
  * Defines methods to create UI elements such as suggestion chips, rich cards, and 
@@ -27,47 +26,40 @@ public class UIManager {
 
     /**
     * Creates the default menu items for responses.
-    *
     * @return List of suggestions to form a menu.
     */
   public static List<BusinessMessagesSuggestion> getDefaultMenu(BusinessMessagesRepresentative representative, Cart userCart) {
-     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
-     suggestions.add(getHelpMenuItem());
- 
-     suggestions.add(new BusinessMessagesSuggestion()
-         .setReply(new BusinessMessagesSuggestedReply()
-             .setText("Inquire About Hours").setPostbackData("hours")
-         ));
-     
-     if (!userCart.getItems().isEmpty()) {
-       suggestions.add(new BusinessMessagesSuggestion()
-         .setReply(new BusinessMessagesSuggestedReply()
-             .setText("Continue Shopping").setPostbackData("shop")
-         ));
- 
-       suggestions.add(new BusinessMessagesSuggestion()
-         .setReply(new BusinessMessagesSuggestedReply()
-             .setText("View Cart").setPostbackData("cart")
-         ));
-     } else {
-       suggestions.add(new BusinessMessagesSuggestion()
-         .setReply(new BusinessMessagesSuggestedReply()
-             .setText("Shop Our Collection").setPostbackData("shop")
-         ));
-     }
- 
-     if (representative.getRepresentativeType().equals(RepresentativeType.HUMAN.toString())) {
-       suggestions.add(new BusinessMessagesSuggestion()
-           .setReply(new BusinessMessagesSuggestedReply()
-               .setText("Back to bot").setPostbackData("back_to_bot")
-           ));
-     }
- 
-     return suggestions;
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    if (!userCart.getItems().isEmpty()) {
+      suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText(BotConstants.VIEW_CART_TEXT).setPostbackData(BotConstants.VIEW_CART_COMMAND)
+        ));
+
+      suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText(BotConstants.CONTINUE_SHOPPING_TEXT).setPostbackData(BotConstants.SHOP_COMMAND)
+        ));
+    } else {
+      suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText(BotConstants.SHOP_TEXT).setPostbackData(BotConstants.SHOP_COMMAND)
+        ));
+    }
+
+    suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText(BotConstants.HOURS_TEXT).setPostbackData(BotConstants.HOURS_COMMAND)
+        ));
+
+    suggestions.add(getHelpMenuItem());
+
+    return suggestions;
    }
 
    /**
-   * Suggestions to add to inventory cards.
+   * Creates suggestions to add to inventory item cards. 
    * @param itemId The id of the item that the suggestions will pertain to.
    * @return List of suggestions.
    */
@@ -77,13 +69,13 @@ public class UIManager {
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\uD83D\uDED2 Add to Cart").setPostbackData("add-cart-" + itemId)));
+                .setText(BotConstants.ADD_ITEM_TEXT).setPostbackData(BotConstants.ADD_ITEM_COMMAND + itemId)));
 
     return suggestions;
   }
 
     /**
-   * Suggestions to add to cart cards.
+   * Creates suggestions to add to cart item cards.
    * @param itemId The id of the item that the suggestions will pertain to.
    * @return List of suggestions.
    */
@@ -93,31 +85,29 @@ public class UIManager {
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\u2795").setPostbackData("add-cart-" + itemId)));
+                .setText(BotConstants.INCREMENT_COUNT_TEXT).setPostbackData(BotConstants.ADD_ITEM_COMMAND + itemId)));
 
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText("\u2796").setPostbackData("del-cart-" + itemId)));
+                .setText(BotConstants.DECREMENT_COUNT_TEXT).setPostbackData(BotConstants.DELETE_ITEM_COMMAND + itemId)));
 
     return suggestions;
   }
 
    /**
-   * Get the help menu suggested reply.
-   *
+   * Creates the help suggestion chip. 
    * @return A help suggested reply.
    */
   public static BusinessMessagesSuggestion getHelpMenuItem() {
     return new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
-            .setText("Help").setPostbackData("help")
+            .setText(BotConstants.HELP_TEXT).setPostbackData(BotConstants.HELP_TEXT)
         );
   }
 
   /**
    * Creates a single cart card.
-   *
    * @return A standalone cart item card.
    */
   public static BusinessMessagesStandaloneCard getCartCard(Inventory storeInventory, Cart userCart) {
@@ -143,7 +133,6 @@ public class UIManager {
 
   /**
    * Creates a rich card carousel out of items in business inventory.
-   *
    * @return A carousel rich card.
    */
   public static BusinessMessagesCarouselCard getShopCarousel(Inventory storeInventory) {
@@ -169,7 +158,6 @@ public class UIManager {
 
   /**
    * Creates a rich card carousel out of items in the user's cart.
-   *
    * @return A carousel rich card.
    */
   public static BusinessMessagesCarouselCard getCartCarousel(Inventory storeInventory, Cart userCart) {

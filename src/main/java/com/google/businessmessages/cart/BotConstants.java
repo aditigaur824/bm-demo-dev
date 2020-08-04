@@ -29,9 +29,19 @@ public interface BotConstants {
     String LIVE_AGENT_NAME = "Sally";
     String BOT_AGENT_NAME = "BM Cart Bot";
 
+    //List of suggestion strings
+    String VIEW_CART_TEXT = "View Cart";
+    String CONTINUE_SHOPPING_TEXT = "Continue Shopping";
+    String SHOP_TEXT = "Shop Our Collection";
+    String HOURS_TEXT = "Inquire About Hours";
+    String HELP_TEXT = "Help";
+    String ADD_ITEM_TEXT = "\uD83D\uDED2 Add to Cart";
+    String INCREMENT_COUNT_TEXT = "\u2795";
+    String DECREMENT_COUNT_TEXT = "\u2796";
+
     // List of recognized commands to produce certain responses
-    String DELETE_ITEM_COMMAND = "del-cart";
-    String ADD_ITEM_COMMAND = "add-cart";
+    String DELETE_ITEM_COMMAND = "del-cart-";
+    String ADD_ITEM_COMMAND = "add-cart-";
     String VIEW_CART_COMMAND = "cart";
     String HOURS_COMMAND = "hours";
     String SHOP_COMMAND = "shop";
