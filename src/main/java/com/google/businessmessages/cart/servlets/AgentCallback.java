@@ -11,17 +11,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.businessmessages.kitchensink.servlets;
+package com.google.businessmessages.cart.servlets;
 
 // [START callback for receiving consumer messages]
 
 // [START import_libraries]
-
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesRepresentative;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.businessmessages.kitchensink.BotConstants;
-import com.google.businessmessages.kitchensink.KitchenSinkBot;
+import com.google.businessmessages.cart.BotConstants;
+import com.google.businessmessages.cart.CartBot;
 import com.google.communications.businessmessages.v1.RepresentativeType;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -137,14 +136,7 @@ public class AgentCallback extends HttpServlet {
 
       if (obj.has("isTyping")) {
         logger.info("User is typing");
-      } else if (obj.has("requestedLiveAgent")) {
-        logger.info("User requested transfer to live agent");
-
-        if (obj.get("requestedLiveAgent").getAsBoolean()) {
-          new KitchenSinkBot(switchAndGetRepresentative(RepresentativeType.HUMAN))
-              .transferToLiveAgent(conversationId);
-        }
-      }
+      } 
     } else if (obj.has("receipts")) {
       JsonArray receipts
           = obj.get("receipts").getAsJsonObject().getAsJsonArray("receipts");
@@ -155,26 +147,11 @@ public class AgentCallback extends HttpServlet {
 
         logger.info("Receipt: (" + receiptType + ", " + messageId + ")");
       }
-    } else if (obj.has("surveyResponse")) {
-      String rating
-          = obj.get("surveyResponse").getAsJsonObject().get("rating").getAsString();
-
-      new KitchenSinkBot(getRepresentative()).routeMessage(rating, conversationId);
     }
   }
 
   private void routeTextResponse(String conversationId, String message) {
-    String normalizedMessage = message.toLowerCase().trim();
-
-    // Check if this is a transfer request to go back to a bot conversation
-    if (normalizedMessage.equals(BotConstants.CMD_BACK_TO_BOT)) {
-      BusinessMessagesRepresentative representative = switchAndGetRepresentative(
-          RepresentativeType.BOT);
-
-      new KitchenSinkBot(representative).transferToBot(conversationId);
-    } else {
-      new KitchenSinkBot(getRepresentative()).routeMessage(message, conversationId);
-    }
+      new CartBot(getRepresentative()).routeMessage(message, conversationId);
   }
 }
 // [END callback for receiving consumer messages]

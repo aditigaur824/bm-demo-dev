@@ -20,7 +20,7 @@
 
     <servlet>
         <servlet-name>AgentCallback</servlet-name>
-        <servlet-class>com.google.businessmessages.kitchensink.servlets.AgentCallback</servlet-class>
+        <servlet-class>com.google.businessmessages.cart.servlets.AgentCallback</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AgentCallback</servlet-name>

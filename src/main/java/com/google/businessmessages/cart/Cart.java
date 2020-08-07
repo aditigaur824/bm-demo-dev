@@ -1,4 +1,4 @@
-package com.google.businessmessages.kitchensink;
+package com.google.businessmessages.cart;
 
 import com.google.common.collect.ImmutableList;
 
