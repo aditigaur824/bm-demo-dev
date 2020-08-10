@@ -13,16 +13,19 @@ import java.util.ConcurrentModificationException;
  */
 public class DataManager {
 
-    private static final int MAX_CART_LIMIT = 50;
+    private static final int MAX_QUERY_LIMIT = 50;
     //Types of entities in datastore
     protected static final String CART_TYPE = "Cart";
     protected static final String CART_ITEM_TYPE = "CartItem";
+    protected static final String FILTER_TYPE = "Filter";
     //Properties of the cart and cart item entities in datastore
     protected static final String PROPERTY_CONVERSATION_ID = "conversation_id";
     protected static final String PROPERTY_CART_ID = "cart_id";
     protected static final String PROPERTY_ITEM_ID = "item_id";
     protected static final String PROPERTY_ITEM_TITLE = "item_title";
     protected static final String PROPERTY_COUNT = "count";
+    protected static final String PROPERTY_FILTER_NAME = "filter_name";
+    protected static final String PROPERTY_FILTER_VALUE = "filter_value";
 
     private static final Logger logger = Logger.getLogger(CartBot.class.getName());
     private final DatastoreService datastore;
@@ -124,6 +127,45 @@ public class DataManager {
     }
 
     /**
+     * Adds a user's filter to be persisted in memory. If the filter already exists in the 
+     * data, then the value of the filter is updated to the most recent value the user
+     * has chosen. 
+     * @param conversationId The unique id mapping between a user and the agent.
+     * @param filterName The name of the filter (i.e. size, color)
+     * @param filterValue The value the filter is set for (i.e. blue, medium)
+     */
+    public void addFilter(String conversationId, String filterName, String filterValue) {
+        Transaction transaction = datastore.beginTransaction();
+        Entity currentFilter = getExistingFilter(conversationId, filterName);
+
+        try {
+            // create a new cart item for the datastore if we do not have one already
+            if (currentFilter == null) {
+                currentFilter = new Entity(FILTER_TYPE);
+                currentFilter.setProperty(PROPERTY_CONVERSATION_ID, conversationId);
+                currentFilter.setProperty(PROPERTY_FILTER_NAME, filterName);
+                currentFilter.setProperty(PROPERTY_FILTER_VALUE, filterValue);
+            } else {
+              currentFilter.setProperty(PROPERTY_FILTER_VALUE, filterValue);
+            }
+
+            datastore.put(transaction, currentFilter);
+            transaction.commit();
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to add the item.", e);
+        } finally {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+        }
+
+    }
+
+    /**
      * Deletes an item from the user's cart persisted in memory. If there is more than one of 
      * the given item in the user's cart, the count of the item is decremented. 
      * @param cartId The unique id that maps between the user and the agent.
@@ -145,6 +187,36 @@ public class DataManager {
                 currentItem.setProperty(PROPERTY_COUNT, count - 1);
                 datastore.put(transaction, currentItem);
               }
+            }
+            transaction.commit();
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to delete the item.", e);
+        } finally {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+        }
+    }
+
+    /**
+     * Deletes the filter from the user's data. 
+     * @param conversationId The unique id mapping between the user and the agent.
+     * @param filterName The name of the filter being deleted (i.e. color, size)
+     */
+    public void removeFilter(String conversationId, String filterName) {
+        Transaction transaction = datastore.beginTransaction();
+        Entity currentItem = getExistingFilter(conversationId, filterName);
+        try {
+            // check if we are deleting null item
+            if (currentItem == null) {
+                logger.log(Level.SEVERE, "Attempted deletion on null item.");
+            } else {
+                Key key = currentItem.getKey();
+                datastore.delete(transaction, key);
             }
             transaction.commit();
         } catch (IllegalStateException e) {
@@ -187,6 +259,32 @@ public class DataManager {
     }
 
     /**
+     * Checks the datastore for a specific filter associated with the user.
+     * @param conversationId The unique id mapping between the user and the agent.
+     * @param filterName The name of the filter being searched for.
+     * @return The datastore entity if it exists. 
+     */
+    public Entity getExistingFilter(String conversationId, String filterName) {
+
+        final Query q = new Query(FILTER_TYPE)
+                .setFilter(
+                        new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
+                            new Query.FilterPredicate(PROPERTY_CONVERSATION_ID, Query.FilterOperator.EQUAL, conversationId),
+                            new Query.FilterPredicate(PROPERTY_FILTER_NAME, Query.FilterOperator.EQUAL, filterName)))
+                );
+
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(1));
+
+        // return the current configuration settings
+        if (!currentCart.isEmpty()) {
+            return currentCart.get(0);
+        }
+
+        return null;
+    }
+
+    /**
      * Queries the datastore for all items in the user's cart.
      * @param cartId The unique id that maps between the user's cart and its 
      * associated items.
@@ -194,7 +292,7 @@ public class DataManager {
      */
     public List<Entity> getCartFromData(String cartId) {
 
-        final Query q = new Query("CartItem")
+        final Query q = new Query(CART_ITEM_TYPE)
                 .setFilter(
                         new Query.FilterPredicate(PROPERTY_CART_ID,
                                 Query.FilterOperator.EQUAL,
@@ -202,8 +300,27 @@ public class DataManager {
                 );
 
         PreparedQuery pq = datastore.prepare(q);
-        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_CART_LIMIT));
+        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
         return currentCart;
     }
+
+    /**
+     * Queries the datastore for all of the filters the user has set.
+     * @param conversationId The unique id mapping between the user and the agent.
+     * @return A list of datastore entries if they exist.
+     */
+    public List<Entity> getFiltersFromData(String conversationId) {
+
+        final Query q = new Query(FILTER_TYPE)
+                .setFilter(
+                        new Query.FilterPredicate(PROPERTY_CONVERSATION_ID,
+                                Query.FilterOperator.EQUAL,
+                                conversationId)
+                );
+
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
+        return currentCart;
+	}
 
 }

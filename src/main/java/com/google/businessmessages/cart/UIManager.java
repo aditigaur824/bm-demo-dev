@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCardContent;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCarouselCard;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesContentInfo;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesMedia;
-import com.google.api.services.businessmessages.v1.model.BusinessMessagesRepresentative;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesStandaloneCard;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestedReply;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestion;
@@ -22,13 +22,15 @@ import com.google.communications.businessmessages.v1.MediaHeight;
  * rich card carousels to send back to CartBot. 
  */
 public class UIManager {
+  private static final String COLOR_FILTER_CARD_TITLE = "Color";
+  private static final String BRAND_FILTER_CARD_TITLE = "Brand";
   private static final Logger logger = Logger.getLogger(Cart.class.getName());
 
     /**
     * Creates the default menu items for responses.
     * @return List of suggestions to form a menu.
     */
-  public static List<BusinessMessagesSuggestion> getDefaultMenu(BusinessMessagesRepresentative representative, Cart userCart) {
+  public static List<BusinessMessagesSuggestion> getDefaultMenu(Cart userCart) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
 
     if (!userCart.getItems().isEmpty()) {
@@ -57,6 +59,36 @@ public class UIManager {
 
     return suggestions;
    }
+
+   /**
+   * Creates suggestions to add to filter cards. 
+   * @param itemId The id of the item that the suggestions will pertain to.
+   * @return List of suggestions.
+   */
+  public static List<BusinessMessagesSuggestion> getFilterSuggestions(String filterName) {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    List<String> filterOptions;
+    if (filterName.equals(BotConstants.COLOR_FILTER_NAME)) {
+      filterOptions = BotConstants.colorList;
+    } else if (filterName.equals(BotConstants.BRAND_FILTER_NAME)) {
+      filterOptions = BotConstants.brandList;
+    } else {
+      filterOptions = new ArrayList<>();
+    }
+
+    suggestions.add(
+          new BusinessMessagesSuggestion()
+              .setReply(new BusinessMessagesSuggestedReply()
+                  .setText("Remove").setPostbackData(BotConstants.REMOVE_FILTER_COMMAND + filterName)));
+    for (String option : filterOptions) {
+      suggestions.add(
+          new BusinessMessagesSuggestion()
+              .setReply(new BusinessMessagesSuggestedReply()
+                  .setText(option).setPostbackData(BotConstants.SET_FILTER_COMMAND + filterName + "-" + option)));
+    }
+    return suggestions;
+  }
 
    /**
    * Creates suggestions to add to inventory item cards. 
@@ -129,6 +161,37 @@ public class UIManager {
       }
     }
     return new BusinessMessagesStandaloneCard().setCardContent(card);
+  }
+
+  /**
+   * Creates a rich card carousel out of the user's filters.
+   * @return A carousel rich card.
+   */
+  public static BusinessMessagesCarouselCard getFilterCarousel(String conversationId) {
+    List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
+
+    Filter colorFilter = FilterManager.getFilter(conversationId, BotConstants.COLOR_FILTER_NAME);
+    Filter brandFilter = FilterManager.getFilter(conversationId, BotConstants.BRAND_FILTER_NAME);
+    String colorOption;
+    String brandOption;
+    if (colorFilter == null) colorOption = "None";
+    else colorOption = colorFilter.getValue();
+    if (brandFilter == null) brandOption = "None";
+    else brandOption = brandFilter.getValue();
+
+    cardContents.add(new BusinessMessagesCardContent()
+      .setTitle(COLOR_FILTER_CARD_TITLE)
+      .setDescription(colorOption)
+      .setSuggestions(getFilterSuggestions(BotConstants.COLOR_FILTER_NAME)));
+
+    cardContents.add(new BusinessMessagesCardContent()
+      .setTitle(BRAND_FILTER_CARD_TITLE)
+      .setDescription(brandOption)
+      .setSuggestions(getFilterSuggestions(BotConstants.BRAND_FILTER_NAME)));
+
+    return new BusinessMessagesCarouselCard()
+        .setCardContents(cardContents)
+        .setCardWidth(CardWidth.MEDIUM.toString());
   }
 
   /**
