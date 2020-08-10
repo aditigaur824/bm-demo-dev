@@ -15,6 +15,7 @@ package com.google.businessmessages.cart;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -241,27 +242,57 @@ public class CartBot {
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
    */
   private void sendInventoryCarousel(String conversationId) {
+    List<InventoryItem> validItems = new ArrayList<>(storeInventory.getInventory());
+    for (Filter filter : FilterManager.getActiveFilters(conversationId)) {
+      List<InventoryItem> tempItemList = new ArrayList<>();
+      for (InventoryItem item : validItems) {
+        List<String> itemPropertyList = BotConstants.INVENTORY_PROPERTIES.get(item.getTitle()).get(filter.getName());
+        if (itemPropertyList.contains(filter.getValue())) {
+          tempItemList.add(item);
+        }
+      }
+      validItems = tempItemList;
+    }
+
     try {
       List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(this.userCart);
 
-      BusinessMessagesCarouselCard carouselCard = UIManager.getShopCarousel(this.storeInventory);
+      if (validItems.size() == 0) {
+        sendResponse("Sorry, we don't have any items that matched your filters.", conversationId);
+      } else if (validItems.size() == 1) {
+        BusinessMessagesStandaloneCard standaloneCard = UIManager.getShopCard(validItems);
+        String fallbackText = standaloneCard.getCardContent().getTitle() + "\n\n"
+            + standaloneCard.getCardContent().getDescription() + "\n\n"
+            + standaloneCard.getCardContent().getMedia().getContentInfo().getFileUrl();
 
-      StringBuilder fallbackTextBuilder = new StringBuilder();
-      for (BusinessMessagesCardContent cardContent : carouselCard.getCardContents()) {
-        fallbackTextBuilder.append(cardContent.getTitle() + "\n\n");
-        fallbackTextBuilder.append(cardContent.getDescription() + "\n\n");
-        fallbackTextBuilder.append(cardContent.getMedia().getContentInfo().getFileUrl() + "\n");
-        fallbackTextBuilder.append(("---------------------------------------------\n\n"));
+        // Send the rich card message and suggestions to the user
+        sendResponse(new BusinessMessagesMessage()
+            .setMessageId(UUID.randomUUID().toString())
+            .setRichCard(new BusinessMessagesRichCard()
+                .setStandaloneCard(standaloneCard))
+            .setRepresentative(representative)
+            .setFallback(fallbackText)
+            .setSuggestions(suggestions), conversationId);
+      } else {
+        BusinessMessagesCarouselCard carouselCard = UIManager.getShopCarousel(validItems);
+
+        StringBuilder fallbackTextBuilder = new StringBuilder();
+        for (BusinessMessagesCardContent cardContent : carouselCard.getCardContents()) {
+          fallbackTextBuilder.append(cardContent.getTitle() + "\n\n");
+          fallbackTextBuilder.append(cardContent.getDescription() + "\n\n");
+          fallbackTextBuilder.append(cardContent.getMedia().getContentInfo().getFileUrl() + "\n");
+          fallbackTextBuilder.append(("---------------------------------------------\n\n"));
+        }
+  
+        // Send the carousel card message and suggestions to the user
+        sendResponse(new BusinessMessagesMessage()
+            .setMessageId(UUID.randomUUID().toString())
+            .setRichCard(new BusinessMessagesRichCard()
+                .setCarouselCard(carouselCard))
+            .setRepresentative(representative)
+            .setFallback(fallbackTextBuilder.toString())
+            .setSuggestions(suggestions), conversationId);
       }
-
-      // Send the carousel card message and suggestions to the user
-      sendResponse(new BusinessMessagesMessage()
-          .setMessageId(UUID.randomUUID().toString())
-          .setRichCard(new BusinessMessagesRichCard()
-              .setCarouselCard(carouselCard))
-          .setRepresentative(representative)
-          .setFallback(fallbackTextBuilder.toString())
-          .setSuggestions(suggestions), conversationId);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Exception thrown while sending inventory carousel.", e);
     }

@@ -143,6 +143,25 @@ public class UIManager {
   }
 
   /**
+   * Creates a single shop card.
+   * @return A standalone shop item card.
+   */
+  public static BusinessMessagesStandaloneCard getShopCard(List<InventoryItem> validItems) {
+    BusinessMessagesCardContent card = null;
+    for (InventoryItem currentItem : validItems) {
+      card = new BusinessMessagesCardContent()
+      .setTitle(currentItem.getTitle())
+      .setSuggestions(getInventorySuggestions(currentItem.getId()))
+      .setMedia(new BusinessMessagesMedia()
+        .setHeight(MediaHeight.MEDIUM.toString())
+        .setContentInfo(new BusinessMessagesContentInfo()
+          .setFileUrl(currentItem.getMediaUrl())
+          .setForceRefresh(true)));
+    }
+    return new BusinessMessagesStandaloneCard().setCardContent(card);
+  }
+
+  /**
    * Creates a single cart card.
    * @return A standalone cart item card.
    */
@@ -202,10 +221,10 @@ public class UIManager {
    * Creates a rich card carousel out of items in business inventory.
    * @return A carousel rich card.
    */
-  public static BusinessMessagesCarouselCard getShopCarousel(Inventory storeInventory) {
+  public static BusinessMessagesCarouselCard getShopCarousel(List<InventoryItem> validItems) {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
-    for (InventoryItem currentItem : storeInventory.getInventory()) {
+    for (InventoryItem currentItem : validItems) {
       cardContents.add(new BusinessMessagesCardContent()
         .setTitle(currentItem.getTitle())
         .setSuggestions(getInventorySuggestions(currentItem.getId()))

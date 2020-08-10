@@ -13,11 +13,11 @@
  */
 package com.google.businessmessages.cart;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -91,18 +91,18 @@ public interface BotConstants {
     Map<String, Map<String, List<String>>> INVENTORY_PROPERTIES = new HashMap<String, Map<String, List<String>>>() {{
         put("Blue Running Shoes", ImmutableMap.of("size", Arrays.asList("7", "8", "9"),
             "color", Arrays.asList("blue"),
-            "brand", Arrays.asList("Adidas")));
+            "brand", Arrays.asList("adidas")));
         put("Neon Running Shoes", ImmutableMap.of("size", Arrays.asList("8", "9"),
             "color", Arrays.asList("neon"),
-            "brand", Arrays.asList("Nike")));
+            "brand", Arrays.asList("nike")));
         put("Pink Running Shoes", ImmutableMap.of("size", Arrays.asList("6", "7", "9"),
             "color", Arrays.asList("pink"),
-            "brand", Arrays.asList("New Balance")));
+            "brand", Arrays.asList("new balance")));
         put("Teal Running Shoes", ImmutableMap.of("size", Arrays.asList("6", "7"),
             "color", Arrays.asList("teal"),
-            "brand", Arrays.asList("New Balance")));
+            "brand", Arrays.asList("new balance")));
         put("White Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "8", "9"),
             "color", Arrays.asList("white"),
-            "brand", Arrays.asList("Adidas")));
+            "brand", Arrays.asList("adidas")));
     }};
 }
