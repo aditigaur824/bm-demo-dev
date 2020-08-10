@@ -38,6 +38,7 @@ public interface BotConstants {
     String BRAND_FILTER_NAME = "brand";
 
     // List of suggestion strings
+    String FILTERS_TEXT = "See/Edit My Filters";
     String VIEW_CART_TEXT = "View Cart";
     String CONTINUE_SHOPPING_TEXT = "Continue Shopping";
     String SHOP_TEXT = "Shop Our Collection";
@@ -84,7 +85,7 @@ public interface BotConstants {
                     "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/white_running_shoes.jpg");
     }};
 
-    List<String> colorList = Arrays.asList("Blue", "Neon", "Pink", "Teal", "White");
+    List<String> colorList = Arrays.asList("Blue", "Neon", "Pink");
     List<String> brandList = Arrays.asList("Adidas", "Nike", "New Balance");
 
     Map<String, Map<String, List<String>>> INVENTORY_PROPERTIES = new HashMap<String, Map<String, List<String>>>() {{

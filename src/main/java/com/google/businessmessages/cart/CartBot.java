@@ -13,6 +13,8 @@
  */
 package com.google.businessmessages.cart;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -152,9 +154,9 @@ public class CartBot {
       logger.log(Level.SEVERE, "Attempted to set invalid filter.");
       return;
     }
-    filterValue = filterNameAndValue.substring(filterName.length());
+    filterValue = filterNameAndValue.substring(filterName.length()+1);
     FilterManager.setFilter(conversationId, filterName, filterValue);
-    sendResponse("Your " + filterName + "filter has been set to " + filterValue + ".", conversationId);
+    sendResponse("Your " + filterName + " filter has been set to " + filterValue + ".", conversationId);
   }
 
   /**
@@ -174,7 +176,7 @@ public class CartBot {
       return;
     }
     FilterManager.removeFilter(conversationId, filterName);
-    sendResponse("Your " + filterName + "filter has been removed.", conversationId);
+    sendResponse("Your " + filterName + " filter has been removed.", conversationId);
   }
 
   /**
@@ -218,7 +220,6 @@ public class CartBot {
       for (BusinessMessagesCardContent cardContent : carouselCard.getCardContents()) {
         fallbackTextBuilder.append(cardContent.getTitle() + "\n\n");
         fallbackTextBuilder.append(cardContent.getDescription() + "\n\n");
-        fallbackTextBuilder.append(cardContent.getMedia().getContentInfo().getFileUrl() + "\n");
         fallbackTextBuilder.append(("---------------------------------------------\n\n"));
       }
 
@@ -231,7 +232,7 @@ public class CartBot {
         .setFallback(fallbackTextBuilder.toString())
         .setSuggestions(suggestions), conversationId);
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "Exception thrown while sending inventory carousel.", e);
+      logger.log(Level.SEVERE, "Exception thrown while sending filter carousel.", e);
     }
   }
 
@@ -372,18 +373,25 @@ public class CartBot {
 
   /**
    * Initializes credentials used by the RBM API.
+   *
+   * @param credentialsFileLocation The location for the GCP service account file.
    */
-  private void initCredentials() {
-    logger.info("Initializing credentials for Business Messages.");
+  private void initCredentials(String credentialsFileLocation) {
+    logger.info("Initializing credentials for BM.");
 
     try {
-      this.credential = GoogleCredential.getApplicationDefault();
+      ClassLoader classLoader = getClass().getClassLoader();
+      File file = new File(classLoader.getResource(credentialsFileLocation).getFile());
+
+      this.credential = GoogleCredential
+          .fromStream(new FileInputStream(file));
+
       this.credential = credential.createScoped(Arrays.asList(
           "https://www.googleapis.com/auth/businessmessages"));
 
       this.credential.refreshToken();
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "Exception was thrown while initializing credentials.", e);
+      logger.log(Level.SEVERE, "Exception thrown while initializing credentials.", e);
     }
   }
 
@@ -392,7 +400,7 @@ public class CartBot {
    */
   private void initBmApi() {
     if (this.credential == null) {
-      initCredentials();
+      initCredentials(BotConstants.CREDENTIALS_FILE_NAME);
     }
 
     try {

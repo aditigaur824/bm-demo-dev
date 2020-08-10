@@ -13,7 +13,6 @@ import com.google.api.services.businessmessages.v1.model.BusinessMessagesMedia;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesStandaloneCard;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestedReply;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestion;
-import com.google.common.collect.UnmodifiableIterator;
 import com.google.communications.businessmessages.v1.CardWidth;
 import com.google.communications.businessmessages.v1.MediaHeight;
 
@@ -49,6 +48,11 @@ public class UIManager {
             .setText(BotConstants.SHOP_TEXT).setPostbackData(BotConstants.SHOP_COMMAND)
         ));
     }
+
+    suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText(BotConstants.FILTERS_TEXT).setPostbackData(BotConstants.SEE_FILTERS_COMMAND)
+        ));
 
     suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
@@ -201,9 +205,7 @@ public class UIManager {
   public static BusinessMessagesCarouselCard getShopCarousel(Inventory storeInventory) {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
-    UnmodifiableIterator<InventoryItem> iterator = storeInventory.getInventory().iterator();
-    while(iterator.hasNext()) {
-      InventoryItem currentItem = iterator.next();
+    for (InventoryItem currentItem : storeInventory.getInventory()) {
       cardContents.add(new BusinessMessagesCardContent()
         .setTitle(currentItem.getTitle())
         .setSuggestions(getInventorySuggestions(currentItem.getId()))
