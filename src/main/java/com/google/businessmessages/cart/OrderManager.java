@@ -1,8 +1,12 @@
 package com.google.businessmessages.cart;
 
+import java.util.ArrayList;
+import java.util.List;
+import com.google.appengine.api.datastore.Entity;
+
 public class OrderManager {
     
-    public static List<Order> getAllOrdrs(String conversationId) {
+    public static List<Order> getAllOrders(String conversationId) {
         List<Order> allOrders = new ArrayList<>();
         DataManager dataManager = DataManager.getInstance();
         List<Entity> orders = dataManager.getOrdersFromData(conversationId);
@@ -11,5 +15,9 @@ public class OrderManager {
             allOrders.add(new Order(orderId));
         }
         return allOrders;
+    }
+
+    public static List<Order> getUnscheduledOrders(String conversationId) {
+        
     }
 }

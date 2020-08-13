@@ -19,6 +19,7 @@ public class DataManager {
     protected static final String CART_ITEM_TYPE = "CartItem";
     protected static final String FILTER_TYPE = "Filter";
     protected static final String ORDER_TYPE = "Order";
+    protected static final String PICKUP_TYPE = "Pickup";
     //Properties of the cart and cart item entities in datastore
     protected static final String PROPERTY_CONVERSATION_ID = "conversation_id";
     protected static final String PROPERTY_CART_ID = "cart_id";
@@ -28,6 +29,9 @@ public class DataManager {
     protected static final String PROPERTY_FILTER_NAME = "filter_name";
     protected static final String PROPERTY_FILTER_VALUE = "filter_value";
     protected static final String PROPERTY_ORDER_ID = "order-id";
+    protected static final String PROPERTY_STORE_ADDRESS = "store-address";
+    protected static final String PROPERTY_PICKUP_TIME = "pickup-time";
+    protected static final String PROPERTY_PICKUP_STATUS = "pickup-status";
 
     private static final Logger logger = Logger.getLogger(CartBot.class.getName());
     private final DatastoreService datastore;
@@ -321,8 +325,8 @@ public class DataManager {
                 );
 
         PreparedQuery pq = datastore.prepare(q);
-        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
-        return currentCart;
+        List<Entity> filters = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
+        return filters;
     }
     
     public List<Entity> getOrdersFromData(String conversationId) {
@@ -334,8 +338,8 @@ public class DataManager {
                 );
 
         PreparedQuery pq = datastore.prepare(q);
-        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
-        return currentCart;
+        List<Entity> orders = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
+        return orders;
     }
 
 }
