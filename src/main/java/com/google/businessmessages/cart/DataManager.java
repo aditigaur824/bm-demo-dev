@@ -319,8 +319,8 @@ public class DataManager {
                 );
 
         PreparedQuery pq = datastore.prepare(q);
-        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
-        return currentCart;
+        List<Entity> filters = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
+        return filters;
 	}
 
 }
