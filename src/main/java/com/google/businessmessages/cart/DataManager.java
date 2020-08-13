@@ -18,6 +18,7 @@ public class DataManager {
     protected static final String CART_TYPE = "Cart";
     protected static final String CART_ITEM_TYPE = "CartItem";
     protected static final String FILTER_TYPE = "Filter";
+    protected static final String ORDER_TYPE = "Order";
     //Properties of the cart and cart item entities in datastore
     protected static final String PROPERTY_CONVERSATION_ID = "conversation_id";
     protected static final String PROPERTY_CART_ID = "cart_id";
@@ -26,6 +27,7 @@ public class DataManager {
     protected static final String PROPERTY_COUNT = "count";
     protected static final String PROPERTY_FILTER_NAME = "filter_name";
     protected static final String PROPERTY_FILTER_VALUE = "filter_value";
+    protected static final String PROPERTY_ORDER_ID = "order-id";
 
     private static final Logger logger = Logger.getLogger(CartBot.class.getName());
     private final DatastoreService datastore;
@@ -321,6 +323,19 @@ public class DataManager {
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
         return currentCart;
-	}
+    }
+    
+    public List<Entity> getOrdersFromData(String conversationId) {
+        final Query q = new Query(ORDER_TYPE)
+                .setFilter(
+                        new Query.FilterPredicate(PROPERTY_CONVERSATION_ID,
+                                Query.FilterOperator.EQUAL,
+                                conversationId)
+                );
+
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
+        return currentCart;
+    }
 
 }
