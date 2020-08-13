@@ -1,7 +1,7 @@
 package com.google.businessmessages.cart;
 
 /**
- * The filter object representing the name of the filter (i.e. Color) and the 
+ * The filter object represents the name of the filter (i.e. Color) and the 
  * value it is being set to (i.e. blue).
  */
 public class Filter {

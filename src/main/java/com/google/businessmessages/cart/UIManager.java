@@ -199,7 +199,8 @@ public class UIManager {
   }
 
   /**
-   * Creates a single shop card.
+   * Creates a single shop card. Used when there is only one item in the business inventory
+   * that matches a user's filters.
    * @return A standalone shop item card.
    */
   public static BusinessMessagesStandaloneCard getShopCard(List<InventoryItem> validItems) {
@@ -218,7 +219,7 @@ public class UIManager {
   }
 
   /**
-   * Creates a single cart card.
+   * Creates a single cart card. Used when there is a single item in a user's cart.
    * @return A standalone cart item card.
    */
   public static BusinessMessagesStandaloneCard getCartCard(Inventory storeInventory, Cart userCart) {

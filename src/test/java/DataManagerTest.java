@@ -128,7 +128,7 @@ public class DataManagerTest {
     }
 
     @Test
-    public void testAddFilter() {
+    public void testAddFilter_isCreatedIfMissing() {
         String testAddFilterConversationId = "testAddFilterConversationId";
         String testAddFilterName = "testAddFilterName";
         String testAddFilterValue = "testAddFilterValue";
@@ -143,11 +143,40 @@ public class DataManagerTest {
                 );
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         PreparedQuery pq = datastore.prepare(q);
-        List<Entity> testCart = pq.asList(FetchOptions.Builder.withLimit(1));
-        assertThat(testCart).isNotEmpty();
-        assertThat((String) testCart.get(0).getProperty("conversation_id")).isEqualTo(testAddFilterConversationId);
-        assertThat((String) testCart.get(0).getProperty("filter_name")).isEqualTo(testAddFilterName);
-        assertThat((String) testCart.get(0).getProperty("filter_value")).isEqualTo(testAddFilterValue);
+        List<Entity> testFilter = pq.asList(FetchOptions.Builder.withLimit(1));
+        assertThat(testFilter).isNotEmpty();
+        assertThat((String) testFilter.get(0).getProperty("conversation_id")).isEqualTo(testAddFilterConversationId);
+        assertThat((String) testFilter.get(0).getProperty("filter_name")).isEqualTo(testAddFilterName);
+        assertThat((String) testFilter.get(0).getProperty("filter_value")).isEqualTo(testAddFilterValue);
+    }
+
+    @Test
+    public void testAddFilter_isUpdatedIfExists() {
+        String testUpdateFilterConversationId = "testUpdateFilterConversationId";
+        String testUpdateFilterName = "testUpdateFilterName";
+        String testUpdateFilterOldValue = "testUpdateFilterOldValue";
+        String testUpdateFilterNewValue = "testUpdateFilterNewValue";
+        Entity testUpdateFilter = new Entity("Filter");
+        testUpdateFilter.setProperty("conversation_id", testUpdateFilterConversationId);
+        testUpdateFilter.setProperty("filter_name", testUpdateFilterName);
+        testUpdateFilter.setProperty("filter_value", testUpdateFilterOldValue);
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        datastore.put(testUpdateFilter);
+
+        datamanager.addFilter(testUpdateFilterConversationId, testUpdateFilterName, testUpdateFilterNewValue);
+
+        final Query q = new Query("Filter")
+        .setFilter(
+                new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
+                    new Query.FilterPredicate("conversation_id", Query.FilterOperator.EQUAL, testUpdateFilterConversationId),
+                    new Query.FilterPredicate("filter_name", Query.FilterOperator.EQUAL, testUpdateFilterName)))
+        );
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> testFilter = pq.asList(FetchOptions.Builder.withLimit(1));
+        assertThat(testFilter).isNotEmpty();
+        assertThat((String) testFilter.get(0).getProperty("conversation_id")).isEqualTo(testUpdateFilterConversationId);
+        assertThat((String) testFilter.get(0).getProperty("filter_name")).isEqualTo(testUpdateFilterName);
+        assertThat((String) testFilter.get(0).getProperty("filter_value")).isEqualTo(testUpdateFilterNewValue);
     }
 
     @Test

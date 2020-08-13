@@ -77,6 +77,7 @@ public interface BotConstants {
                 + "commands are: \n\n" + "Help - Shows the list of supported commands and functions\n\n"
                 + "Inquire About Hours - Will respond with the times that our store is open.\n\n"
                 + "Shop Our Collection/Continue Shopping - Will respond with a collection of mock inventory items.\n\n"
+                + "View/Edit Filters - Will respond with a collection of filters and their set values.\n\n"
                 + "View Cart - Will respond with all of the items in your cart.\n\n";
         
         String SIZE_FILTER_RESPONSE_TEXT = "Woohoo! 🎉 I'd love to help you shop! Before we get started, I just need to know a few things about you.\n\n"
