@@ -209,13 +209,13 @@ public class DataManager {
      */
     public void removeFilter(String conversationId, String filterName) {
         Transaction transaction = datastore.beginTransaction();
-        Entity currentItem = getExistingFilter(conversationId, filterName);
+        Entity filter = getExistingFilter(conversationId, filterName);
         try {
             // check if we are deleting null item
-            if (currentItem == null) {
+            if (filter == null) {
                 logger.log(Level.SEVERE, "Attempted deletion on null item.");
             } else {
-                Key key = currentItem.getKey();
+                Key key = filter.getKey();
                 datastore.delete(transaction, key);
             }
             transaction.commit();
@@ -274,11 +274,11 @@ public class DataManager {
                 );
 
         PreparedQuery pq = datastore.prepare(q);
-        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(1));
+        List<Entity> filter = pq.asList(FetchOptions.Builder.withLimit(1));
 
         // return the current configuration settings
-        if (!currentCart.isEmpty()) {
-            return currentCart.get(0);
+        if (!filter.isEmpty()) {
+            return filter.get(0);
         }
 
         return null;
