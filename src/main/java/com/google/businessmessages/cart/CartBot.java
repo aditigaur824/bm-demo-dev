@@ -83,9 +83,11 @@ public class CartBot {
     String normalizedMessage = message.toLowerCase().trim();
 
    if (normalizedMessage.matches(BotConstants.HELP_COMMAND)) {
-      sendResponse(BotConstants.RSP_HELP_TEXT, conversationId);
+      sendResponse(BotConstants.HELP_RESPONSE_TEXT, conversationId);
     } else if (normalizedMessage.matches(BotConstants.HOURS_COMMAND)) {
-      sendResponse(BotConstants.RSP_HOURS_TEXT, conversationId);
+      sendResponse(BotConstants.HOURS_RESPONSE_TEXT, conversationId);
+    } else if (normalizedMessage.startsWith(BotConstants.INIT_FILTER_COMMAND)) {
+      sendFilterSelections(normalizedMessage, conversationId);
     } else if (normalizedMessage.matches(BotConstants.SHOP_COMMAND)) {
       sendInventoryCarousel(conversationId);
     } else if (normalizedMessage.matches(BotConstants.VIEW_CART_COMMAND)) {
@@ -97,12 +99,14 @@ public class CartBot {
       deleteItemFromCart(normalizedMessage, conversationId);
     } else if (normalizedMessage.matches(BotConstants.SEE_FILTERS_COMMAND)) {
       sendFilterCarousel(conversationId);
+    } else if (normalizedMessage.startsWith(BotConstants.SEE_FILTER_OPTIONS_COMMAND)) {
+      sendFilterOptions(normalizedMessage, conversationId);
     } else if (normalizedMessage.startsWith(BotConstants.SET_FILTER_COMMAND)) {
       setFilter(normalizedMessage, conversationId);
     } else if (normalizedMessage.startsWith(BotConstants.REMOVE_FILTER_COMMAND)) {
       removeFilter(normalizedMessage, conversationId);
     } else {
-      sendResponse(BotConstants.RSP_DEFAULT, conversationId);
+      sendResponse(BotConstants.DEFAULT_RESPONSE_TEXT, conversationId);
     }
   }
 
@@ -144,20 +148,27 @@ public class CartBot {
    * @param conversationId The unique id that maps from the agent to the user.
    */
   public void setFilter(String message, String conversationId) {
-    String filterNameAndValue = message.substring(BotConstants.SET_FILTER_COMMAND.length());
+    String filterNameAndValue;
+    if (message.startsWith(BotConstants.INIT_FILTER_COMMAND)) {
+      filterNameAndValue = message.substring(BotConstants.INIT_FILTER_COMMAND.length());
+    } else {
+      filterNameAndValue = message.substring(BotConstants.SET_FILTER_COMMAND.length());
+    }
     String filterName;
     String filterValue;
     if (filterNameAndValue.startsWith(BotConstants.COLOR_FILTER_NAME)) {
       filterName = BotConstants.COLOR_FILTER_NAME;
     } else if (filterNameAndValue.startsWith(BotConstants.BRAND_FILTER_NAME)) {
       filterName = BotConstants.BRAND_FILTER_NAME;
+    } else if (filterNameAndValue.startsWith(BotConstants.SIZE_FILTER_NAME)) {
+      filterName = BotConstants.SIZE_FILTER_NAME;
     } else {
       logger.log(Level.SEVERE, "Attempted to set invalid filter.");
       return;
     }
     filterValue = filterNameAndValue.substring(filterName.length()+1);
     FilterManager.setFilter(conversationId, filterName, filterValue);
-    sendResponse("Your " + filterName + " filter has been set to " + filterValue + ".", conversationId);
+    sendResponse("Thanks! Your " + filterName + " filter has been set to " + filterValue + ".", conversationId);
   }
 
   /**
@@ -187,7 +198,7 @@ public class CartBot {
    */
   private void sendSingleCartItem(String conversationId) {
     try {
-      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(this.userCart);
+      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
 
       BusinessMessagesStandaloneCard standaloneCard = UIManager.getCartCard(this.storeInventory, this.userCart);
       String fallbackText = standaloneCard.getCardContent().getTitle() + "\n\n"
@@ -208,12 +219,33 @@ public class CartBot {
   }
 
   /**
+   * Sends the options for the filter specified in the user's message.
+   * @param message The postback message received from the user.
+   * @param conversationId The unique id mapping between the agent and the user.
+   */
+  private void sendFilterOptions(String message, String conversationId) {
+    try {
+      String filterName = message.substring(BotConstants.SEE_FILTER_OPTIONS_COMMAND.length());
+      String responseText = "Here are your options to filter by " + filterName + ".";
+
+      sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setText(responseText)
+          .setRepresentative(representative)
+          .setFallback(responseText)
+          .setSuggestions(UIManager.getFilterSuggestions(filterName)), conversationId);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while sending filter options.", e);
+    }
+  }
+
+  /**
    * Sends the filter rich card carousel to the user.
    * @param conversationId The unique id mapping between the user and the agent.
    */
   private void sendFilterCarousel(String conversationId) {
     try{
-      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(this.userCart);
+      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
 
       BusinessMessagesCarouselCard carouselCard = UIManager.getFilterCarousel(conversationId);
 
@@ -224,6 +256,8 @@ public class CartBot {
         fallbackTextBuilder.append(("---------------------------------------------\n\n"));
       }
 
+      // Send the text that indicates what the subsequent carousel consists of
+      sendTextResponse("Here are your current filters: ", conversationId);
       // Send the carousel card message and suggestions to the user
       sendResponse(new BusinessMessagesMessage()
         .setMessageId(UUID.randomUUID().toString())
@@ -238,12 +272,65 @@ public class CartBot {
   }
 
   /**
-   * Sends the inventory rich card carousel to the user.
+   * Regulates the preference selection workflow when the user begins shopping with
+   * the bot. Enters this workflow from the shop command (sendInventoryCarousel function).
+   * Leaves this workflow when all filters have been set. Is responsible for sending prompts
+   * and getting responses that pertain to initial filter selection.
+   * @param message The message either containing the filter to set, or indicating that this
+   * function has been called from the sendInventoryCarousel function.
+   * @param conversationId The unique id mapping between user and agent.
+   */
+  private void sendFilterSelections(String message, String conversationId) {
+    if (!message.equalsIgnoreCase(BotConstants.FROM_INVENTORY_CALLBACK)) {
+      setFilter(message, conversationId);
+    }
+    try {
+      if (FilterManager.getAllFilters(conversationId).size() < 3) {
+        String filterName;
+        String filterResponseText;
+        if (FilterManager.getFilter(conversationId, BotConstants.SIZE_FILTER_NAME) == null) {
+          filterName = BotConstants.SIZE_FILTER_NAME;
+          filterResponseText = BotConstants.SIZE_FILTER_RESPONSE_TEXT;
+        } else if (FilterManager.getFilter(conversationId, BotConstants.BRAND_FILTER_NAME) == null) {
+          filterName = BotConstants.BRAND_FILTER_NAME;
+          filterResponseText = BotConstants.BRAND_FILTER_RESPONSE_TEXT;
+        } else if (FilterManager.getFilter(conversationId, BotConstants.COLOR_FILTER_NAME) == null) {
+          filterName = BotConstants.COLOR_FILTER_NAME;
+          filterResponseText = BotConstants.COLOR_FILTER_RESPONSE_TEXT;
+        } else {
+          logger.log(Level.SEVERE, "Filter data corrupted.");
+          return;
+        }
+        sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setText(filterResponseText)
+          .setRepresentative(representative)
+          .setFallback(filterResponseText)
+          .setSuggestions(UIManager.getInitFilterSuggestions(filterName)), conversationId);
+      } else {
+        sendTextResponse(BotConstants.FILTER_SELECTION_COMPLETE_RESPONSE_TEXT, conversationId);
+        sendInventoryCarousel(conversationId);
+      }
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while initializing filters.", e);
+    }
+  }
+
+  /**
+   * Sends the inventory rich card carousel to the user if the user has already 
+   * chosen their item preferences. If they have not, prompts user to select item
+   * preferences (filters).
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
    */
   private void sendInventoryCarousel(String conversationId) {
+    if (FilterManager.getAllFilters(conversationId).size() < 3) {
+      sendFilterSelections(BotConstants.FROM_INVENTORY_CALLBACK, conversationId);
+      return;
+    }
+
     List<InventoryItem> validItems = new ArrayList<>(storeInventory.getInventory());
-    for (Filter filter : FilterManager.getActiveFilters(conversationId)) {
+    for (Filter filter : FilterManager.getAllFilters(conversationId)) {
+      if (filter.getValue().equals("all")) continue;
       List<InventoryItem> tempItemList = new ArrayList<>();
       for (InventoryItem item : validItems) {
         List<String> itemPropertyList = BotConstants.INVENTORY_PROPERTIES.get(item.getTitle()).get(filter.getName());
@@ -255,7 +342,7 @@ public class CartBot {
     }
 
     try {
-      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(this.userCart);
+      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
 
       if (validItems.size() == 0) {
         sendResponse("Sorry, we don't have any items that matched your filters.", conversationId);
@@ -305,7 +392,7 @@ public class CartBot {
    */
   private void sendCartCarousel(String conversationId) {
     try {
-      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(this.userCart);
+      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
 
       BusinessMessagesCarouselCard carouselCard = UIManager.getCartCarousel(this.storeInventory, this.userCart);
 
@@ -331,6 +418,25 @@ public class CartBot {
   }
 
   /**
+   * Posts a message to the Business Messages API that only contains text.
+   *
+   * @param message The message text to send the user.
+   * @param conversationId The conversation ID that uniquely maps to the user and agent.
+   */
+  private void sendTextResponse(String message, String conversationId) {
+    try {
+      // Send plaintext message with default menu to user
+      sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setText(message)
+          .setRepresentative(representative)
+          .setFallback(message), conversationId);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while sending response.", e);
+    }
+  }
+
+  /**
    * Posts a message to the Business Messages API.
    *
    * @param message The message text to send the user.
@@ -344,7 +450,7 @@ public class CartBot {
           .setText(message)
           .setRepresentative(representative)
           .setFallback(message)
-          .setSuggestions(UIManager.getDefaultMenu(this.userCart)), conversationId);
+          .setSuggestions(UIManager.getDefaultMenu(conversationId, this.userCart)), conversationId);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Exception thrown while sending response.", e);
     }

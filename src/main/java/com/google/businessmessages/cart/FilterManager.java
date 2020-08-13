@@ -10,11 +10,11 @@ import com.google.appengine.api.datastore.Entity;
 public class FilterManager {
 
     /**
-     * Gets all active filters associated with the user.
+     * Gets all filters associated with the user.
      * @param conversationId The unique id mapping between the user and the agent.
      * @return The list of active filters. Empty if there are none.
      */
-    public static List<Filter> getActiveFilters(String conversationId) {
+    public static List<Filter> getAllFilters(String conversationId) {
         List<Filter> activeFilters = new ArrayList<>();
         DataManager dataManager = DataManager.getInstance();
         List<Entity> filters = dataManager.getFiltersFromData(conversationId);

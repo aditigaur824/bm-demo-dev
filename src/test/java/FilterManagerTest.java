@@ -44,7 +44,7 @@ public class FilterManagerTest {
     }
 
     @Test
-    public void testGetActiveFilters() {
+    public void testGetAllFilters() {
         String testGetActiveFiltersConversationId = "testGetActiveFiltersConversationId";
         String testGetActiveFilterName1 = "testGetActiveFilterName1";
         String testGetActiveFilterValue1 = "testGetActiveFilterValue1";
@@ -65,7 +65,7 @@ public class FilterManagerTest {
         datastore.put(testGetActiveFilter1);
         datastore.put(testGetActiveFilter2);
 
-        List<Filter> testFilters = FilterManager.getActiveFilters(testGetActiveFiltersConversationId);
+        List<Filter> testFilters = FilterManager.getAllFilters(testGetActiveFiltersConversationId);
 
         assertThat(testFilters.size()).isEqualTo(2);
         for (Filter testFilter : testFilters) {
