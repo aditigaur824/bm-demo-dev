@@ -168,7 +168,9 @@ public class CartBot {
     }
     filterValue = filterNameAndValue.substring(filterName.length()+1);
     FilterManager.setFilter(conversationId, filterName, filterValue);
-    sendResponse("Thanks! Your " + filterName + " filter has been set to " + filterValue + ".", conversationId);
+    if (message.startsWith(BotConstants.SET_FILTER_COMMAND)) {
+      sendResponse("Thanks! Your " + filterName + " filter has been set to " + filterValue + ".", conversationId);
+    }
   }
 
   /**

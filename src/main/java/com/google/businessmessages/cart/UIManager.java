@@ -21,6 +21,7 @@ import com.google.communications.businessmessages.v1.MediaHeight;
  * rich card carousels to send back to CartBot. 
  */
 public class UIManager {
+  private static final int MAX_CAROUSEL_LIMIT = 10;
   private static final String COLOR_FILTER_CARD_TITLE = "Color";
   private static final String BRAND_FILTER_CARD_TITLE = "Brand";
   private static final String SIZE_FILTER_CARD_TITLE = "Size";
@@ -303,7 +304,8 @@ public class UIManager {
   public static BusinessMessagesCarouselCard getShopCarousel(List<InventoryItem> validItems) {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
-    for (InventoryItem currentItem : validItems) {
+    for (int i = 0; i < validItems.size() && i < MAX_CAROUSEL_LIMIT; i++) {
+      InventoryItem currentItem = validItems.get(i);
       cardContents.add(new BusinessMessagesCardContent()
         .setTitle(currentItem.getTitle())
         .setSuggestions(getInventorySuggestions(currentItem.getId()))

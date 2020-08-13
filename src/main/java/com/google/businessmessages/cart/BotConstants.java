@@ -79,19 +79,19 @@ public interface BotConstants {
                 + "Shop Our Collection/Continue Shopping - Will respond with a collection of mock inventory items.\n\n"
                 + "View Cart - Will respond with all of the items in your cart.\n\n";
         
-        String SIZE_FILTER_RESPONSE_TEXT = "Woohoo! I'd love to help you shop! Before we get started, I just need to know a few things about you. "
+        String SIZE_FILTER_RESPONSE_TEXT = "Woohoo! 🎉 I'd love to help you shop! Before we get started, I just need to know a few things about you.\n\n"
                 + "First off, what shoe size are we looking for today?";
         
-        String BRAND_FILTER_RESPONSE_TEXT = "Awesome! I'll make sure we look for shoes in that size today! "
+        String BRAND_FILTER_RESPONSE_TEXT = "Awesome! I'll make sure we look for shoes in that size today! 😊 \n\n"
                 + "Do you mind telling me what brand of shoes you were looking for today? " 
                 + "If you don't have a preference for any of the brands listed below, feel free to select 'all'!";
         
         String COLOR_FILTER_RESPONSE_TEXT = "Thanks! One final question: what color of shoes were you looking for? "
                 + "Once again, if you want to see shoes in all of our colors, you can select 'all'";
 
-        String FILTER_SELECTION_COMPLETE_RESPONSE_TEXT = "Whew! Thanks for bearing with all of my questions. "
-                + "I've saved all of your preferences as filters that you can view and edit whenever you'd like while you shop! " 
-                + "Now, I'll pull up your customized running shoe recommendations!";
+        String FILTER_SELECTION_COMPLETE_RESPONSE_TEXT = "Whew! 😌 Thanks for bearing with all of my questions. "
+                + "I've saved all of your preferences as filters that you can view and edit whenever you'd like while you shop!\n\n" 
+                + "Now, I'll pull up your customized running shoe recommendations! 👟 ";
         
         // Data pertaining to filters and inventory items.
         String colorCardImage = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/color_card_image.jpeg";
