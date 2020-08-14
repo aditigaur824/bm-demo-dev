@@ -10,11 +10,12 @@ public class Pickup {
     private String time;
     private Status status;
     public enum Status {
-        SCHEDULED, CHECKED_IN, PICKED_UP;
+        INCOMPLETE, SCHEDULED, CHECKED_IN, PICKED_UP;
     }
 
     public Pickup(String orderId) {
         this.orderId = orderId;
+        this.status = Status.INCOMPLETE;
     }
 
     public Pickup(String orderId, String storeAddress, String time, Status status) {

@@ -172,6 +172,33 @@ public class DataManager {
     }
 
     /**
+     * Adds a user's order to the database. 
+     * @param conversationId The unique id mapping between a user and the agent.
+     * @param orderId The unique id belonging to the user's order.
+     */
+    public void addOrder(String conversationId, String orderId) {
+        Transaction transaction = datastore.beginTransaction();
+        try {
+            Entity order = new Entity(ORDER_TYPE);
+            order.setProperty(PROPERTY_CONVERSATION_ID, conversationId);
+            order.setProperty(PROPERTY_ORDER_ID, orderId);
+            datastore.put(transaction, order);
+            transaction.commit();
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to add the item.", e);
+        } finally {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+        }
+
+    }
+
+    /**
      * Deletes an item from the user's cart persisted in memory. If there is more than one of 
      * the given item in the user's cart, the count of the item is decremented. 
      * @param cartId The unique id that maps between the user and the agent.
@@ -215,13 +242,13 @@ public class DataManager {
      */
     public void removeFilter(String conversationId, String filterName) {
         Transaction transaction = datastore.beginTransaction();
-        Entity currentItem = getExistingFilter(conversationId, filterName);
+        Entity filter = getExistingFilter(conversationId, filterName);
         try {
             // check if we are deleting null item
-            if (currentItem == null) {
+            if (filter == null) {
                 logger.log(Level.SEVERE, "Attempted deletion on null item.");
             } else {
-                Key key = currentItem.getKey();
+                Key key = filter.getKey();
                 datastore.delete(transaction, key);
             }
             transaction.commit();
@@ -280,11 +307,37 @@ public class DataManager {
                 );
 
         PreparedQuery pq = datastore.prepare(q);
-        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(1));
+        List<Entity> filter = pq.asList(FetchOptions.Builder.withLimit(1));
 
         // return the current configuration settings
-        if (!currentCart.isEmpty()) {
-            return currentCart.get(0);
+        if (!filter.isEmpty()) {
+            return filter.get(0);
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks the datastore for a pickup associated with the provided order.
+     * @param conversationId The unique id mapping between the user and the agent.
+     * @param orderId The id of the order specified.
+     * @return The datastore entity if it exists. 
+     */
+    public Entity getExistingPickup(String conversationId, String orderId) {
+
+        final Query q = new Query(PICKUP_TYPE)
+                .setFilter(
+                        new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
+                            new Query.FilterPredicate(PROPERTY_CONVERSATION_ID, Query.FilterOperator.EQUAL, conversationId),
+                            new Query.FilterPredicate(PROPERTY_ORDER_ID, Query.FilterOperator.EQUAL, orderId)))
+                );
+
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> pickup = pq.asList(FetchOptions.Builder.withLimit(1));
+
+        // return the current configuration settings
+        if (!pickup.isEmpty()) {
+            return pickup.get(0);
         }
 
         return null;
