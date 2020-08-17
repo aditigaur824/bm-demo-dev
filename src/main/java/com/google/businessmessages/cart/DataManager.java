@@ -2,6 +2,7 @@ package com.google.businessmessages.cart;
 
 import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
+import com.google.common.collect.ImmutableList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
@@ -290,7 +291,7 @@ public class DataManager {
      * associated items.
      * @return A list of datastore entries if they exist.
      */
-    public List<Entity> getCartFromData(String cartId) {
+    public ImmutableList<Entity> getCartFromData(String cartId) {
 
         final Query q = new Query(CART_ITEM_TYPE)
                 .setFilter(
@@ -301,7 +302,7 @@ public class DataManager {
 
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
-        return currentCart;
+        return ImmutableList.copyOf(currentCart);
     }
 
     /**
@@ -309,7 +310,7 @@ public class DataManager {
      * @param conversationId The unique id mapping between the user and the agent.
      * @return A list of datastore entries if they exist.
      */
-    public List<Entity> getFiltersFromData(String conversationId) {
+    public ImmutableList<Entity> getFiltersFromData(String conversationId) {
 
         final Query q = new Query(FILTER_TYPE)
                 .setFilter(
@@ -320,7 +321,7 @@ public class DataManager {
 
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> filters = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
-        return filters;
+        return ImmutableList.copyOf(filters);
 	}
 
 }

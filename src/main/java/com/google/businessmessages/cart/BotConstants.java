@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -34,6 +34,7 @@ public interface BotConstants {
         String BOT_AGENT_NAME = "BM Cart Bot";
 
         //List of filter names
+        int NUM_SUPPORTED_FILTERS = 3;
         String COLOR_FILTER_NAME = "color";
         String BRAND_FILTER_NAME = "brand";
         String SIZE_FILTER_NAME = "size";
@@ -94,17 +95,25 @@ public interface BotConstants {
                 + "I've saved all of your preferences as filters that you can view and edit whenever you'd like while you shop!\n\n" 
                 + "Now, I'll pull up your customized running shoe recommendations! 👟 ";
         
+        String SET_FILTER_RESPONSE_TEXT = "Thanks! Your %s filter has been set to %s.";
+        
+        String REMOVE_FILTER_RESPONSE_TEXT = "Your %s filter has been removed.";
+
+        String CURRENT_FILTERS_RESPONSE_TEXT = "Here are your current filters: ";
+
+        String NO_INVENTORY_RESULTS_RESPONSE_TEXT = "Sorry, we don't have any items that matched your filters.";
+
         // Data pertaining to filters and inventory items.
-        String colorCardImage = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/color_card_image.jpeg";
-        List<String> colorList = Arrays.asList("All", "Blue", "Neon", "Pink", "White", "Purple", "Black");
+        String COLOR_CARD_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/color_card_image.jpeg";
+        ImmutableList<String> COLOR_LIST = ImmutableList.of("All", "Blue", "Neon", "Pink", "White", "Purple", "Black");
 
-        String brandCardImage = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/brand_collage.jpg";
-        List<String> brandList = Arrays.asList("All", "Adidas", "Nike", "New Balance", "Asics");
+        String BRAND_CARD_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/brand_collage.jpg";
+        ImmutableList<String> BRAND_LIST = ImmutableList.of("All", "Adidas", "Nike", "New Balance", "Asics");
 
-        String sizeCardImage = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/size_card_image.jpg";
-        List<String> sizeList = Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12");
+        String SIZE_CARD_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/size_card_image.jpg";
+        ImmutableList<String> SIZE_LIST = ImmutableList.of("5", "6", "7", "8", "9", "10", "11", "12");
 
-        Map<String, String> INVENTORY_IMAGES = new HashMap<String, String>() {{
+        ImmutableMap<String, String> INVENTORY_IMAGES = ImmutableMap.copyOf(new HashMap<String, String>() {{
                 put("Asics Blue Running Shoes",
                         "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/blue_running_shoes.jpeg");
                 put("Adidas Neon Running Shoes",
@@ -131,47 +140,112 @@ public interface BotConstants {
                         "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pink_neon_running_shoes_nb.jpg");
                 put("Asics Pink and Purple Running Shoes",
                         "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pink_purple_running_shoes.jpeg");
-        }};
+        }});
 
-        Map<String, Map<String, List<String>>> INVENTORY_PROPERTIES = new HashMap<String, Map<String, List<String>>>() {{
-                put("Asics Blue Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("blue"),
-                "brand", Arrays.asList("asics")));
-                put("Adidas Neon Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("neon"),
-                "brand", Arrays.asList("adidas")));
-                put("Asics Pink Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("pink"),
-                "brand", Arrays.asList("asics")));
-                put("Asics Purple Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("purple", "pink"),
-                "brand", Arrays.asList("asics")));
-                put("Asics White Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("blue", "white", "purple"),
-                "brand", Arrays.asList("asics")));
-                put("Nike Neon and Grey Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("neon", "grey"),
-                "brand", Arrays.asList("nike")));
-                put("New Balance Black Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("black"),
-                "brand", Arrays.asList("new balance")));
-                put("New Balance White Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("white"),
-                "brand", Arrays.asList("new balance")));
-                put("Nike Neon Blue Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("neon", "blue"),
-                "brand", Arrays.asList("nike")));
-                put("Nike Navy Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("blue"),
-                "brand", Arrays.asList("nike")));
-                put("Asics Neon Orange Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("neon"),
-                "brand", Arrays.asList("asics")));
-                put("New Balance Neon Pink Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("neon"),
-                "brand", Arrays.asList("new balance")));
-                put("Asics Pink and Purple Running Shoes", ImmutableMap.of("size", Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
-                "color", Arrays.asList("pink", "purple"),
-                "brand", Arrays.asList("asics")));
-        }};
+        ImmutableMap<String, Map<String, List<String>>> INVENTORY_PROPERTIES = ImmutableMap.copyOf(new HashMap<String, Map<String, List<String>>>() {{
+                put("Asics Blue Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("blue"),
+                                "brand", 
+                                Arrays.asList("asics")));
+                put("Adidas Neon Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("neon"),
+                                "brand", 
+                                Arrays.asList("adidas")));
+                put("Asics Pink Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("pink"),
+                                "brand", 
+                                Arrays.asList("asics")));
+                put("Asics Purple Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("purple", "pink"),
+                                "brand", 
+                                Arrays.asList("asics")));
+                put("Asics White Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("blue", "white", "purple"),
+                                "brand", 
+                                Arrays.asList("asics")));
+                put("Nike Neon and Grey Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("neon", "grey"),
+                                "brand", 
+                                Arrays.asList("nike")));
+                put("New Balance Black Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("black"),
+                                "brand", 
+                                Arrays.asList("new balance")));
+                put("New Balance White Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("white"),
+                                "brand", 
+                                Arrays.asList("new balance")));
+                put("Nike Neon Blue Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("neon", "blue"),
+                                "brand", 
+                                Arrays.asList("nike")));
+                put("Nike Navy Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("blue"),
+                                "brand", 
+                                Arrays.asList("nike")));
+                put("Asics Neon Orange Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("neon"),
+                                "brand", 
+                                Arrays.asList("asics")));
+                put("New Balance Neon Pink Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("neon"),
+                                "brand", 
+                                Arrays.asList("new balance")));
+                put("Asics Pink and Purple Running Shoes", 
+                        ImmutableMap.of(
+                                "size", 
+                                Arrays.asList("5", "6", "7", "8", "9", "10", "11", "12"),
+                                "color", 
+                                Arrays.asList("pink", "purple"),
+                                "brand", 
+                                Arrays.asList("asics")));
+        }});
 }
