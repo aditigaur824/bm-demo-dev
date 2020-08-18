@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -328,15 +329,15 @@ public class CartBot {
 
     List<Filter> filtersMinusAll = FilterManager.getAllFilters(conversationId).stream()
         .filter(x -> !x.getValue().equals("all")).collect(Collectors.toList());
-    List<InventoryItem> validItems = storeInventory.getInventory().asList();
-    /* TODO: Fix filtering
+    List<InventoryItem> validItems = storeInventory.getInventory().asList()
       .stream()
       .filter(item -> {
-          return filtersMinusAll.stream().allMatch(f ->
-              item.getProperties().forEach(prop -> prop.getName().equals(f.getName())));
+        return filtersMinusAll.stream().allMatch(f -> {
+          Optional<ItemProperty> matchingProp = item.getProperties().stream().filter(prop -> prop.getName().equals(f.getName())).findFirst();
+          return matchingProp.map(prop -> prop.getOptions().contains(f.getValue())).orElse(false);
+        });
       })
       .collect(Collectors.toList());
-    */
 
     try {
       List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
