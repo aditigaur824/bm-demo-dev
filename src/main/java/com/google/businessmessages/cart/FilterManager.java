@@ -1,5 +1,6 @@
 package com.google.businessmessages.cart;
 
+import java.util.stream.Collectors;
 import com.google.appengine.api.datastore.Entity;
 import com.google.common.collect.ImmutableList;
 
@@ -14,15 +15,13 @@ public class FilterManager {
      * @return The list of active filters. Empty if there are none.
      */
     public static ImmutableList<Filter> getAllFilters(String conversationId) {
-        ImmutableList.Builder<Filter> builder = new ImmutableList.Builder<>();
-        DataManager dataManager = DataManager.getInstance();
-        ImmutableList<Entity> filters = dataManager.getFiltersFromData(conversationId);
-        for (Entity ent : filters) {
-            String filterName = (String) ent.getProperty(DataManager.PROPERTY_FILTER_NAME);
-            String filterValue = (String) ent.getProperty(DataManager.PROPERTY_FILTER_VALUE);
-            builder.add(new Filter(filterName, filterValue));
-        }
-        return builder.build();
+        return ImmutableList.copyOf(DataManager.getInstance().getFiltersFromData(conversationId)
+            .stream()
+            .map(ent -> 
+                new Filter(
+                    (String) ent.getProperty(DataManager.PROPERTY_FILTER_NAME),
+                    (String) ent.getProperty(DataManager.PROPERTY_FILTER_VALUE))
+            ).collect(Collectors.toList()));
     }
 
     /**
