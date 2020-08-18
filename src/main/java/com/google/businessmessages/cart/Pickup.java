@@ -1,16 +1,18 @@
 package com.google.businessmessages.cart;
 
+import java.util.Date;
+
 /**
- * Represents all information pertinent to a user's scheduled pickup. Each pickup 
- * corresponds to one store order.
+ * Represents all information pertinent to a user's scheduled pickup. Each pickup corresponds to one
+ * store order.
  */
 public class Pickup {
     private String orderId;
     private String storeAddress;
-    private String time;
+    private Date date;
     private Status status;
     public enum Status {
-        INCOMPLETE, SCHEDULED, CHECKED_IN, PICKED_UP;
+        INCOMPLETE, SCHEDULED, CHECKED_IN, COMPLETE;
     }
 
     public Pickup(String orderId) {
@@ -18,10 +20,10 @@ public class Pickup {
         this.status = Status.INCOMPLETE;
     }
 
-    public Pickup(String orderId, String storeAddress, String time, Status status) {
+    public Pickup(String orderId, String storeAddress, Date date, Status status) {
         this.orderId = orderId;
         this.storeAddress = storeAddress;
-        this.time = time;
+        this.date = date;
         this.status = status;
     }
 
@@ -45,8 +47,8 @@ public class Pickup {
      * Gets the time the pickup is scheduled for.
      * @return time The pickup time.
      */
-    public String getTime() {
-        return this.time;
+    public Date getTime() {
+        return this.date;
     }
 
     /**

@@ -66,6 +66,11 @@ public interface BotConstants {
         String SHOP_COMMAND = "shop";
         String HELP_COMMAND = "^help.*|^commands\\s.*|see the help menu";
 
+        //List of pickup properties for callbacks
+        String PICKUP_STATUS = "pickup-status";
+        String PICKUP_STORE_ADDRESS = "store-address";
+        String PICKUP_DATE = "pickup-date";
+
         // List of pre-programmed responses
         String DEFAULT_RESPONSE_TEXT =
                 "Sorry, I didn't quite get that. Perhaps you were looking for one of these options?";

@@ -2,7 +2,9 @@ package com.google.businessmessages.cart;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import com.google.appengine.api.datastore.Entity;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Manages all operations that add, remove, modify, or view the filters a user sets.
@@ -15,15 +17,13 @@ public class FilterManager {
      * @return The list of active filters. Empty if there are none.
      */
     public static List<Filter> getAllFilters(String conversationId) {
-        List<Filter> activeFilters = new ArrayList<>();
-        DataManager dataManager = DataManager.getInstance();
-        List<Entity> filters = dataManager.getFiltersFromData(conversationId);
-        for (Entity ent : filters) {
-            String filterName = (String) ent.getProperty(DataManager.PROPERTY_FILTER_NAME);
-            String filterValue = (String) ent.getProperty(DataManager.PROPERTY_FILTER_VALUE);
-            activeFilters.add(new Filter(filterName, filterValue));
-        }
-        return activeFilters;
+        return ImmutableList.copyOf(DataManager.getInstance().getFiltersFromData(conversationId)
+        .stream()
+        .map(ent -> 
+            new Filter(
+                (String) ent.getProperty(DataManager.PROPERTY_FILTER_NAME),
+                (String) ent.getProperty(DataManager.PROPERTY_FILTER_VALUE))
+        ).collect(Collectors.toList()));
     }
 
     /**
