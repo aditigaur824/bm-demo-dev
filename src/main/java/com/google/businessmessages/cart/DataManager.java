@@ -2,6 +2,7 @@ package com.google.businessmessages.cart;
 
 import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
+import com.google.common.collect.ImmutableList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
@@ -150,7 +151,7 @@ public class DataManager {
      * @param conversationId The unique id mapping between the user and the agent.
      * @return A list of datastore entries if they exist.
      */
-    public List<Entity> getFiltersFromData(String conversationId) {
+    public ImmutableList<Entity> getFiltersFromData(String conversationId) {
         final Query q = new Query(FILTER_TYPE)
                 .setFilter(
                         new Query.FilterPredicate(PROPERTY_CONVERSATION_ID,
@@ -160,7 +161,7 @@ public class DataManager {
 
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> filters = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
-        return filters;
+        return ImmutableList.copyOf(filters);
     }
 
     //Functions modifying/querying Cart objects.
@@ -310,7 +311,8 @@ public class DataManager {
      * associated items.
      * @return A list of datastore entries if they exist.
      */
-    public List<Entity> getCartFromData(String cartId) {
+    public ImmutableList<Entity> getCartFromData(String cartId) {
+
         final Query q = new Query(CART_ITEM_TYPE)
                 .setFilter(
                         new Query.FilterPredicate(PROPERTY_CART_ID,
@@ -320,7 +322,7 @@ public class DataManager {
 
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
-        return currentCart;
+        return ImmutableList.copyOf(currentCart);
     }
 
     //Functions modifying/querying for Order objects.
@@ -355,7 +357,7 @@ public class DataManager {
      * @param conversationId The unique id mapping between the user and the agent.
      * @return A list of datastore entries if they exist.
      */
-    public List<Entity> getOrdersFromData(String conversationId) {
+    public ImmutableList<Entity> getOrdersFromData(String conversationId) {
         final Query q = new Query(ORDER_TYPE)
                 .setFilter(
                         new Query.FilterPredicate(PROPERTY_CONVERSATION_ID,
@@ -365,7 +367,7 @@ public class DataManager {
 
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> orders = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
-        return orders;
+        return ImmutableList.copyOf(orders);
     }
 
     //Functions modifying/querying for Pickup objects.
@@ -454,7 +456,7 @@ public class DataManager {
      * @param conversationId The unique id mapping between the user and the agent.
      * @return The list of pickup datastore entries if there are any.
      */
-    public List<Entity> getPickupsFromData(String conversationId) {
+    public ImmutableList<Entity> getPickupsFromData(String conversationId) {
         final Query q = new Query(PICKUP_TYPE)
                 .setFilter(
                         new Query.FilterPredicate(PROPERTY_CONVERSATION_ID,
@@ -464,7 +466,7 @@ public class DataManager {
 
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> pickups = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
-        return pickups;
+        return ImmutableList.copyOf(pickups);
     }
  
     /**
@@ -473,7 +475,7 @@ public class DataManager {
      * @param status The status of the pickup that is being queried for.
      * @return The list of pickup datastore entries if there are any.
      */
-    public List<Entity> getPickupsWithStatus(String conversationId, Pickup.Status status) {
+    public ImmutableList<Entity> getPickupsWithStatus(String conversationId, Pickup.Status status) {
         String queryStatus = pickupStatusToString(status);
         final Query q = new Query(PICKUP_TYPE)
                 .setFilter(
@@ -484,7 +486,7 @@ public class DataManager {
 
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> pickups = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
-        return pickups;
+        return ImmutableList.copyOf(pickups);
     }
 
     /**

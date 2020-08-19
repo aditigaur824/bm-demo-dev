@@ -1,6 +1,6 @@
 package com.google.businessmessages.cart;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -15,20 +15,23 @@ public class InventoryItem {
     private String title;
     private String mediaUrl;
     private double price;
-    private Map<String, List<String>> properties;
+    private List<ItemProperty> properties;
 
     public InventoryItem(String itemTitle, String itemMediaURL, Map<String, List<String>> itemProperties) {
         this.id = UUID.nameUUIDFromBytes(itemTitle.getBytes()).toString();
         this.title = itemTitle;
         this.mediaUrl = itemMediaURL;
-        this.properties = itemProperties;
+        this.properties = new ArrayList<>();
+        for (Map.Entry<String, List<String>> ent : itemProperties.entrySet()) {
+            properties.add(new ItemProperty(ent.getKey(), ent.getValue()));
+        }
     }
 
     public InventoryItem(String itemTitle, String itemMediaURL) {
         this.id = UUID.nameUUIDFromBytes(itemTitle.getBytes()).toString();
         this.title = itemTitle;
         this.mediaUrl = itemMediaURL;
-        this.properties = new HashMap<>();
+        this.properties = new ArrayList<>();
     }
 
     public InventoryItem(String itemTitle, String itemMediaURL, double itemPrice) {
@@ -72,7 +75,7 @@ public class InventoryItem {
      * Gets the map of properties associated with this item.
      * @return properties The list of properties and their associated values.
      */
-    public Map<String, List<String>> getProperties() {
+    public List<ItemProperty> getProperties() {
         return this.properties;
     }
 }

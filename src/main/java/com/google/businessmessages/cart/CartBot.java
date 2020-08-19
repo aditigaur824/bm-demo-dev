@@ -15,14 +15,14 @@ package com.google.businessmessages.cart;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import java.util.stream.Collectors;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
@@ -220,13 +220,13 @@ public class CartBot {
     } else if (filterNameAndValue.startsWith(BotConstants.SIZE_FILTER_NAME)) {
       filterName = BotConstants.SIZE_FILTER_NAME;
     } else {
-      logger.log(Level.SEVERE, "Attempted to set invalid filter.");
+      logger.log(Level.SEVERE, "Attempted to set invalid filter. The entered filter name and value: " + filterNameAndValue);
       return;
     }
-    filterValue = filterNameAndValue.substring(filterName.length()+1);
+    filterValue = filterNameAndValue.substring(filterName.length() + 1);
     FilterManager.setFilter(conversationId, filterName, filterValue);
     if (message.startsWith(BotConstants.SET_FILTER_COMMAND)) {
-      sendResponse("Thanks! Your " + filterName + " filter has been set to " + filterValue + ".", conversationId);
+      sendResponse(String.format(BotConstants.SET_FILTER_RESPONSE_TEXT, filterName, filterValue), conversationId);
     }
   }
 
@@ -243,11 +243,11 @@ public class CartBot {
     } else if (filterNameAndValue.startsWith(BotConstants.BRAND_FILTER_NAME)) {
       filterName = BotConstants.BRAND_FILTER_NAME;
     } else {
-      logger.log(Level.SEVERE, "Attempted to remove invalid filter.");
+      logger.log(Level.SEVERE, "Attempted to remove invalid filter. The entered filter name and value: " + filterNameAndValue);
       return;
     }
     FilterManager.removeFilter(conversationId, filterName);
-    sendResponse("Your " + filterName + " filter has been removed.", conversationId);
+    sendResponse(String.format(BotConstants.REMOVE_FILTER_RESPONSE_TEXT, filterName), conversationId);
   }
 
   /**
@@ -316,7 +316,7 @@ public class CartBot {
       }
 
       // Send the text that indicates what the subsequent carousel consists of
-      sendTextResponse("Here are your current filters: ", conversationId);
+      sendTextResponse(BotConstants.CURRENT_FILTERS_RESPONSE_TEXT, conversationId);
       // Send the carousel card message and suggestions to the user
       sendResponse(new BusinessMessagesMessage()
         .setMessageId(UUID.randomUUID().toString())
@@ -332,8 +332,8 @@ public class CartBot {
 
   /**
    * Regulates the preference selection workflow when the user begins shopping with
-   * the bot. Enters this workflow from the shop command (sendInventoryCarousel function).
-   * Leaves this workflow when all filters have been set. Is responsible for sending prompts
+   * the bot. This function enters this workflow from the shop command (sendInventoryCarousel function) and
+   * leaves this workflow when all filters have been set. This function is responsible for sending prompts
    * and getting responses that pertain to initial filter selection.
    * @param message The message either containing the filter to set, or indicating that this
    * function has been called from the sendInventoryCarousel function.
@@ -344,32 +344,28 @@ public class CartBot {
       setFilter(message, conversationId);
     }
     try {
-      if (FilterManager.getAllFilters(conversationId).size() < 3) {
-        String filterName;
-        String filterResponseText;
-        if (FilterManager.getFilter(conversationId, BotConstants.SIZE_FILTER_NAME) == null) {
-          filterName = BotConstants.SIZE_FILTER_NAME;
-          filterResponseText = BotConstants.SIZE_FILTER_RESPONSE_TEXT;
-        } else if (FilterManager.getFilter(conversationId, BotConstants.BRAND_FILTER_NAME) == null) {
-          filterName = BotConstants.BRAND_FILTER_NAME;
-          filterResponseText = BotConstants.BRAND_FILTER_RESPONSE_TEXT;
-        } else if (FilterManager.getFilter(conversationId, BotConstants.COLOR_FILTER_NAME) == null) {
-          filterName = BotConstants.COLOR_FILTER_NAME;
-          filterResponseText = BotConstants.COLOR_FILTER_RESPONSE_TEXT;
-        } else {
-          logger.log(Level.SEVERE, "Filter data corrupted.");
-          return;
-        }
-        sendResponse(new BusinessMessagesMessage()
-          .setMessageId(UUID.randomUUID().toString())
-          .setText(filterResponseText)
-          .setRepresentative(representative)
-          .setFallback(filterResponseText)
-          .setSuggestions(UIManager.getInitFilterSuggestions(filterName)), conversationId);
+      String filterName;
+      String filterResponseText;
+      if (FilterManager.getFilter(conversationId, BotConstants.SIZE_FILTER_NAME) == null) {
+        filterName = BotConstants.SIZE_FILTER_NAME;
+        filterResponseText = BotConstants.SIZE_FILTER_RESPONSE_TEXT;
+      } else if (FilterManager.getFilter(conversationId, BotConstants.BRAND_FILTER_NAME) == null) {
+        filterName = BotConstants.BRAND_FILTER_NAME;
+        filterResponseText = BotConstants.BRAND_FILTER_RESPONSE_TEXT;
+      } else if (FilterManager.getFilter(conversationId, BotConstants.COLOR_FILTER_NAME) == null) {
+        filterName = BotConstants.COLOR_FILTER_NAME;
+        filterResponseText = BotConstants.COLOR_FILTER_RESPONSE_TEXT;
       } else {
         sendTextResponse(BotConstants.FILTER_SELECTION_COMPLETE_RESPONSE_TEXT, conversationId);
         sendInventoryCarousel(conversationId);
+        return;
       }
+      sendResponse(new BusinessMessagesMessage()
+        .setMessageId(UUID.randomUUID().toString())
+        .setText(filterResponseText)
+        .setRepresentative(representative)
+        .setFallback(filterResponseText)
+        .setSuggestions(UIManager.getInitFilterSuggestions(filterName)), conversationId);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Exception thrown while initializing filters.", e);
     }
@@ -382,29 +378,28 @@ public class CartBot {
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
    */
   private void sendInventoryCarousel(String conversationId) {
-    if (FilterManager.getAllFilters(conversationId).size() < 3) {
+    if (FilterManager.getAllFilters(conversationId).size() < BotConstants.NUM_SUPPORTED_FILTERS) {
       sendFilterSelections(BotConstants.FROM_INVENTORY_CALLBACK, conversationId);
       return;
     }
 
-    List<InventoryItem> validItems = new ArrayList<>(storeInventory.getInventory());
-    for (Filter filter : FilterManager.getAllFilters(conversationId)) {
-      if (filter.getValue().equals("all")) continue;
-      List<InventoryItem> tempItemList = new ArrayList<>();
-      for (InventoryItem item : validItems) {
-        List<String> itemPropertyList = BotConstants.INVENTORY_PROPERTIES.get(item.getTitle()).get(filter.getName());
-        if (itemPropertyList.contains(filter.getValue())) {
-          tempItemList.add(item);
-        }
-      }
-      validItems = tempItemList;
-    }
+    List<Filter> filtersMinusAll = FilterManager.getAllFilters(conversationId).stream()
+        .filter(x -> !x.getValue().equals("all")).collect(Collectors.toList());
+    List<InventoryItem> validItems = storeInventory.getInventory().asList()
+      .stream()
+      .filter(item -> {
+        return filtersMinusAll.stream().allMatch(f -> {
+          Optional<ItemProperty> matchingProp = item.getProperties().stream().filter(prop -> prop.getName().equals(f.getName())).findFirst();
+          return matchingProp.map(prop -> prop.getOptions().contains(f.getValue())).orElse(false);
+        });
+      })
+      .collect(Collectors.toList());
 
     try {
       List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
 
       if (validItems.size() == 0) {
-        sendResponse("Sorry, we don't have any items that matched your filters.", conversationId);
+        sendResponse(BotConstants.NO_INVENTORY_RESULTS_RESPONSE_TEXT, conversationId);
       } else if (validItems.size() == 1) {
         BusinessMessagesStandaloneCard standaloneCard = UIManager.getShopCard(validItems);
         String fallbackText = standaloneCard.getCardContent().getTitle() + "\n\n"

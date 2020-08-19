@@ -62,7 +62,7 @@ public class UIManager {
         ));
     }
     
-    if (FilterManager.getAllFilters(conversationId).size() > 0) {
+    if (!FilterManager.getAllFilters(conversationId).isEmpty()) {
       suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
             .setText(BotConstants.FILTERS_TEXT).setPostbackData(BotConstants.SEE_FILTERS_COMMAND)
@@ -90,11 +90,11 @@ public class UIManager {
 
     List<String> filterOptions;
     if (filterName.equals(BotConstants.COLOR_FILTER_NAME)) {
-      filterOptions = BotConstants.colorList;
+      filterOptions = BotConstants.COLOR_LIST;
     } else if (filterName.equals(BotConstants.BRAND_FILTER_NAME)) {
-      filterOptions = BotConstants.brandList;
+      filterOptions = BotConstants.BRAND_LIST;
     } else if (filterName.equals(BotConstants.SIZE_FILTER_NAME)) {
-      filterOptions = BotConstants.sizeList;
+      filterOptions = BotConstants.SIZE_LIST;
     } else {
       filterOptions = new ArrayList<>();
     }
@@ -118,11 +118,11 @@ public class UIManager {
 
     List<String> filterOptions;
     if (filterName.equals(BotConstants.COLOR_FILTER_NAME)) {
-      filterOptions = BotConstants.colorList;
+      filterOptions = BotConstants.COLOR_LIST;
     } else if (filterName.equals(BotConstants.BRAND_FILTER_NAME)) {
-      filterOptions = BotConstants.brandList;
+      filterOptions = BotConstants.BRAND_LIST;
     } else if (filterName.equals(BotConstants.SIZE_FILTER_NAME)) {
-      filterOptions = BotConstants.sizeList;
+      filterOptions = BotConstants.SIZE_LIST;
     } else {
       filterOptions = new ArrayList<>();
     }
@@ -332,7 +332,7 @@ public class UIManager {
       .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())
           .setContentInfo(new BusinessMessagesContentInfo()
-            .setFileUrl(BotConstants.colorCardImage)
+            .setFileUrl(BotConstants.COLOR_CARD_IMAGE)
             .setForceRefresh(true))));
 
     cardContents.add(new BusinessMessagesCardContent()
@@ -342,7 +342,7 @@ public class UIManager {
       .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())
           .setContentInfo(new BusinessMessagesContentInfo()
-            .setFileUrl(BotConstants.brandCardImage)
+            .setFileUrl(BotConstants.BRAND_CARD_IMAGE)
             .setForceRefresh(true))));
 
     cardContents.add(new BusinessMessagesCardContent()
@@ -352,7 +352,7 @@ public class UIManager {
       .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())
           .setContentInfo(new BusinessMessagesContentInfo()
-            .setFileUrl(BotConstants.sizeCardImage)
+            .setFileUrl(BotConstants.SIZE_CARD_IMAGE)
             .setForceRefresh(true))));
 
     return new BusinessMessagesCarouselCard()

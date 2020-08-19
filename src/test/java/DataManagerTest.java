@@ -9,6 +9,7 @@ import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.businessmessages.cart.DataManager;
+import com.google.common.collect.ImmutableList;
 import static com.google.common.truth.Truth.assertThat;
 
 public class DataManagerTest {
@@ -246,7 +247,7 @@ public class DataManagerTest {
         datastore.put(testGetCartItem1);
         datastore.put(testGetCartItem2);
 
-        List<Entity> testCart = datamanager.getCartFromData(testGetCartId);
+        ImmutableList<Entity> testCart = datamanager.getCartFromData(testGetCartId);
         
         assertThat(testCart.size()).isEqualTo(2);
         for (Entity ent : testCart) {
@@ -273,7 +274,7 @@ public class DataManagerTest {
         datastore.put(testGetFilter1);
         datastore.put(testGetFilter2);
 
-        List<Entity> testFilters = datamanager.getFiltersFromData(testGetFilterConversationId);
+        ImmutableList<Entity> testFilters = datamanager.getFiltersFromData(testGetFilterConversationId);
         
         assertThat(testFilters.size()).isEqualTo(2);
         for (Entity ent : testFilters) {
