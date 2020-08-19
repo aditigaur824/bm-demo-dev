@@ -34,9 +34,8 @@ public class OrderManager {
     public static List<Order> getUnscheduledOrders(String conversationId) {
         List<Order> unscheduledOrders = new ArrayList<>();
         List<Order> allOrders = getAllOrders(conversationId);
-        DataManager dataManager = DataManager.getInstance();
         for (Order order : allOrders) {
-            if (dataManager.getExistingPickup(conversationId, order.getId()) == null) {
+            if (DataManager.getInstance().getExistingPickup(conversationId, order.getId()) == null) {
                 unscheduledOrders.add(order);
             }
         }

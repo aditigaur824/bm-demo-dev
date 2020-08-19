@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -52,6 +51,9 @@ public interface BotConstants {
         String ADD_ITEM_TEXT = "\uD83D\uDED2 Add to Cart";
         String INCREMENT_COUNT_TEXT = "\u2795";
         String DECREMENT_COUNT_TEXT = "\u2796";
+        String SCHEDULE_PICKUP_TEXT = "Schedule Pickup";
+        String CHOOSE_STORE_ADDRESS_TEXT = "Choose this Store";
+        String CANCEL_TEXT = "Cancel";
 
         // List of recognized commands to produce certain responses
         String INIT_FILTER_COMMAND = "init-filter-";
@@ -64,6 +66,8 @@ public interface BotConstants {
         String VIEW_CART_COMMAND = "cart";
         String HOURS_COMMAND = "hours";
         String SHOP_COMMAND = "shop";
+        String SCHEDULE_PICKUP_COMMAND = "schedule-pickup-";
+        String CANCEL_PICKUP_COMMAND = "cancel-pickup-";
         String HELP_COMMAND = "^help.*|^commands\\s.*|see the help menu";
 
         //List of pickup properties for callbacks
@@ -76,6 +80,19 @@ public interface BotConstants {
                 "Sorry, I didn't quite get that. Perhaps you were looking for one of these options?";
 
         String HOURS_RESPONSE_TEXT = "We are open Monday - Friday from 9 A.M. to 5 P.M.";
+
+        String PICKUP_CHOOSE_STORE_ADDRESS_TEXT = "Way to go! 🙌 We will have this pickup scheduled in no time!\n\n"
+                + "First, let's choose a pickup location.";
+
+        String PICKUP_CHOOSE_TIME_TEXT = "I've got that store down!\n\n" 
+                + "Next, let's choose a time for your pickup!";
+
+        String PICKUP_SCHEDULE_COMPLETED_TEXT = "Nice! I've got your pickup scheduled! 😊 \n\n"
+                + "On the day of your pick up, check back with me, and I'll guide you through "
+                + "checking in with your store!";
+
+        String PICKUP_CANCELED_TEXT = "No worries! I've canceled this pickup.\n\n"
+                + "If you change your mind, you can always click schedule pickup again!";
 
         String HELP_RESPONSE_TEXT = "Welcome to the help menu! This program will echo "
                 + "any text that you enter that is not part of a supported command. The supported "
@@ -99,6 +116,56 @@ public interface BotConstants {
                 + "I've saved all of your preferences as filters that you can view and edit whenever you'd like while you shop!\n\n" 
                 + "Now, I'll pull up your customized running shoe recommendations! 👟 ";
         
+        
+        //Data pertaining to store locations
+        ImmutableMap<String, String> STORE_NAME_TO_ADDRESS = ImmutableMap.copyOf(new HashMap<String, String>() {{
+                put("G-Shoes Mountain View", 
+                        "1600 Amphitheatre Pkwy, Mountain View, CA 94043");
+                put("G-Shoes Kirkland", 
+                        "747 6th St South, Kirkland, WA 98033");
+                put("G-Shoes New York", 
+                        "85 10th Ave, New York, NY 10011");
+        }});
+
+        ImmutableMap<String, String> STORE_NAME_TO_LOCATION = ImmutableMap.copyOf(new HashMap<String, String>() {{
+                put("G-Shoes Mountain View", 
+                        "https://maps.googleapis.com/maps/api/staticmap?center=37.422128,-122.084045&zoom=12&size=250x250&markers=color:red%7C37.422128,-122.084045&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4");
+                put("G-Shoes Kirkland", 
+                        "https://maps.googleapis.com/maps/api/staticmap?center=47.669940,-122.197099&zoom=12&size=250x250&markers=color:red%7C47.669940,-122.197099&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4");
+                put("G-Shoes New York", 
+                        "https://maps.googleapis.com/maps/api/staticmap?center=40.743545,-74.007939&zoom=12&size=250x250&markers=color:red%7C40.743545,-74.007939&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4");
+        }});
+
+        ImmutableMap<String, String> STORE_NAME_TO_TIME_ZONE = ImmutableMap.copyOf(new HashMap<String, String>() {{
+                put("G-Shoes Mountain View", 
+                        "GMT-7:00");
+                put("G-Shoes Kirkland", 
+                        "GMT-7:00");
+                put("G-Shoes New York", 
+                        "GMT-4:00");
+        }});
+
+        //Data pertaining to pickup time slots
+        String CALENDAR_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/calendar_art.png";
+
+        ImmutableMap<String, String> PICKUP_DATES = ImmutableMap.copyOf(new HashMap<String, String>() {{
+                put("Saturday, Sept. 5",
+                        "9/5");
+                put("Monday, Sept. 7",
+                        "9/7");
+                put("Tuesday, Sept. 8",
+                        "9/8");
+        }});
+
+        ImmutableMap<String, String> PICKUP_TIMES = ImmutableMap.copyOf(new HashMap<String, String>() {{
+                put("8 A.M. - 10 A.M.",
+                        "8-10");
+                put("12 P.M. - 2 P.M.",
+                        "12-2");
+                put("3 P.M. - 5 P.M.",
+                        "3-5");
+        }});
+
         // Data pertaining to filters and inventory items.
         String colorCardImage = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/color_card_image.jpeg";
         List<String> colorList = Arrays.asList("All", "Blue", "Neon", "Pink", "White", "Purple", "Black");

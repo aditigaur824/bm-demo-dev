@@ -20,6 +20,12 @@ public class Pickup {
         this.status = Status.INCOMPLETE;
     }
 
+    public Pickup(String orderId, String storeAddress) {
+        this.orderId = orderId;
+        this.storeAddress = storeAddress;
+        this.status = Status.INCOMPLETE;
+    }
+
     public Pickup(String orderId, String storeAddress, Date date, Status status) {
         this.orderId = orderId;
         this.storeAddress = storeAddress;

@@ -2,6 +2,7 @@ package com.google.businessmessages.cart;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +36,14 @@ public class UIManager {
   */
   public static List<BusinessMessagesSuggestion> getDefaultMenu(String conversationId, Cart userCart) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    if (!OrderManager.getUnscheduledOrders(conversationId).isEmpty()) {
+      suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText(BotConstants.SCHEDULE_PICKUP_TEXT).setPostbackData(BotConstants.SCHEDULE_PICKUP_COMMAND
+              + OrderManager.getUnscheduledOrders(conversationId).get(0).getId())
+        ));
+    }
 
     if (!userCart.getItems().isEmpty()) {
       suggestions.add(new BusinessMessagesSuggestion()
@@ -184,6 +193,59 @@ public class UIManager {
             .setReply(new BusinessMessagesSuggestedReply()
                 .setText(BotConstants.DECREMENT_COUNT_TEXT).setPostbackData(BotConstants.DELETE_ITEM_COMMAND + itemId)));
 
+    return suggestions;
+  }
+
+  /**
+   * Creates suggestions for cards hosting store addresses. These suggestions will route to a callback
+   * that will allow the user to select a store for pickup. 
+   * @param orderId The identifier of the order the callback will refer to.
+   * @param storeName The store the user will be choosing for pickup if they click on the suggestion.
+   */
+  public static List<BusinessMessagesSuggestion> getStoreCardSuggestions(String orderId, String storeName) {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText(BotConstants.CHOOSE_STORE_ADDRESS_TEXT).setPostbackData(BotConstants.SCHEDULE_PICKUP_COMMAND 
+                  + orderId + "-" + BotConstants.PICKUP_STORE_ADDRESS + storeName)));
+    
+    return suggestions;
+  }
+
+  /**
+   * Creates suggestions for cards hosting pickup dates. These suggestions will route to a callback that 
+   * will allow the user to select a date/time for pickup. 
+   * @param orderId The identifier of the order the callback will refer to.
+   * @param date The date these suggestions are embedded in. 
+   */
+  public static List<BusinessMessagesSuggestion> getPickupTimeSuggestions(String orderId, String date) {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    for (Map.Entry<String, String> time : BotConstants.PICKUP_TIMES.entrySet()) {
+      suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText(time.getKey()).setPostbackData(BotConstants.SCHEDULE_PICKUP_COMMAND 
+                  + orderId + "-" + BotConstants.PICKUP_DATE + date + "-" + time.getValue())));
+    }
+
+    return suggestions;
+  }
+
+  /**
+   * Creates a cancel pickup suggestion chip. Clicking on this chip will cancel the pickup and remove the instance
+   * from the user's data.
+   */
+  public static List<BusinessMessagesSuggestion> getCancelPickupSuggestion(String orderId) {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText(BotConstants.CANCEL_TEXT).setPostbackData(BotConstants.CANCEL_PICKUP_COMMAND + orderId)));
+    
     return suggestions;
   }
 
@@ -344,6 +406,57 @@ public class UIManager {
       } catch (NoSuchElementException e) {
         logger.log(Level.SEVERE, "Item in cart not in inventory.", e);
       }
+    }
+
+    return new BusinessMessagesCarouselCard()
+        .setCardContents(cardContents)
+        .setCardWidth(CardWidth.MEDIUM.toString());
+  }
+
+  /**
+   * Constructs and returns a rich card carousel out of the different store locations such that the user
+   * can select one to be the location of their scheduled pickup.
+   * @param orderId The order identifier for which the pickup is being scheduled.
+   * @return The carousel of different store locations.
+   */
+  public static BusinessMessagesCarouselCard getStoreAddressCarousel(String orderId) {
+    List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
+
+    for (Map.Entry<String, String> ent : BotConstants.STORE_NAME_TO_LOCATION.entrySet()) {
+        cardContents.add(new BusinessMessagesCardContent()
+        .setTitle(ent.getKey())
+        .setDescription(BotConstants.STORE_NAME_TO_ADDRESS.get(ent.getKey()))
+        .setSuggestions(getStoreCardSuggestions(orderId, ent.getKey()))
+        .setMedia(new BusinessMessagesMedia()
+          .setHeight(MediaHeight.MEDIUM.toString())
+          .setContentInfo(new BusinessMessagesContentInfo()
+            .setFileUrl(ent.getValue())
+            .setForceRefresh(true))));
+    }
+
+    return new BusinessMessagesCarouselCard()
+        .setCardContents(cardContents)
+        .setCardWidth(CardWidth.MEDIUM.toString());
+  }
+
+  /**
+   * Constructs and returns a rich card carousel out of different dates such that the user 
+   * can select one to be the day of their scheduled pickup. 
+   * @param orderId The order identifier for which the pickup is being scheduled.
+   * @return The carousel of different dates with their respective times.
+   */
+  public static BusinessMessagesCarouselCard getPickupTimesCarousel(String orderId) {
+    List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
+
+    for (Map.Entry<String, String> ent : BotConstants.PICKUP_DATES.entrySet()) {
+        cardContents.add(new BusinessMessagesCardContent()
+        .setTitle(ent.getKey())
+        .setSuggestions(getPickupTimeSuggestions(orderId, ent.getValue()))
+        .setMedia(new BusinessMessagesMedia()
+          .setHeight(MediaHeight.MEDIUM.toString())
+          .setContentInfo(new BusinessMessagesContentInfo()
+            .setFileUrl(BotConstants.CALENDAR_IMAGE)
+            .setForceRefresh(true))));
     }
 
     return new BusinessMessagesCarouselCard()

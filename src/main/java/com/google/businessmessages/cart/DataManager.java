@@ -29,10 +29,10 @@ public class DataManager {
     protected static final String PROPERTY_COUNT = "count";
     protected static final String PROPERTY_FILTER_NAME = "filter_name";
     protected static final String PROPERTY_FILTER_VALUE = "filter_value";
-    protected static final String PROPERTY_ORDER_ID = "order-id";
-    protected static final String PROPERTY_STORE_ADDRESS = "store-address";
-    protected static final String PROPERTY_PICKUP_TIME = "pickup-time";
-    protected static final String PROPERTY_PICKUP_STATUS = "pickup-status";
+    protected static final String PROPERTY_ORDER_ID = "order_id";
+    protected static final String PROPERTY_STORE_ADDRESS = "store_address";
+    protected static final String PROPERTY_PICKUP_TIME = "pickup_time";
+    protected static final String PROPERTY_PICKUP_STATUS = "pickup_status";
     //Types of pickup statuses in datastore
     protected static final String PICKUP_INCOMPLETE_STATUS = "incomplete";
     protected static final String PICKUP_SCHEDULED_STATUS = "scheduled";
@@ -417,6 +417,36 @@ public class DataManager {
                 transaction.rollback();
             }
         } 
+    }
+
+    /**
+     * Cancels a pickup by removing the associated entity from the database.
+     * @param conversationId The unique id mapping between the user and the agent.
+     * @param orderId The order for which the associated pickup is being removed.
+     */
+    public void cancelPickup(String conversationId, String orderId) {
+        Transaction transaction = datastore.beginTransaction();
+        Entity pickup = getExistingPickup(conversationId, orderId);
+        try {
+            // check if we are deleting null item
+            if (pickup == null) {
+                logger.log(Level.SEVERE, "Attempted pickup deletion on null item.");
+            } else {
+                Key key = pickup.getKey();
+                datastore.delete(transaction, key);
+            }
+            transaction.commit();
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to delete the item.", e);
+        } finally {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+        }
     }
 
     /**
