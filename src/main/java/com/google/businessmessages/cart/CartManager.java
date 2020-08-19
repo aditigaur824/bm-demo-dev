@@ -1,6 +1,5 @@
 package com.google.businessmessages.cart;
 
-import java.util.List;
 import java.util.UUID;
 import com.google.appengine.api.datastore.Entity;
 import com.google.common.collect.ImmutableList;
@@ -39,7 +38,7 @@ public class CartManager {
     private static ImmutableList<CartItem> getCartItems(String cartId) {
         ImmutableList.Builder<CartItem> builder = new ImmutableList.Builder<>();
         DataManager dataManager = DataManager.getInstance();
-        List<Entity> itemList = dataManager.getCartFromData(cartId);
+        ImmutableList<Entity> itemList = dataManager.getCartFromData(cartId);
         if (itemList != null) {
             for (Entity ent : itemList) {
                 String id = (String) ent.getProperty(DataManager.PROPERTY_ITEM_ID);
