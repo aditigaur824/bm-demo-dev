@@ -15,6 +15,7 @@ package com.google.businessmessages.cart;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import com.google.common.collect.ImmutableList;
@@ -140,17 +141,17 @@ public interface BotConstants {
 
         ImmutableMap<String, String> STORE_NAME_TO_TIME_ZONE = ImmutableMap.copyOf(new HashMap<String, String>() {{
                 put("G-Shoes Mountain View", 
-                        "GMT-7:00");
+                        "7");
                 put("G-Shoes Kirkland", 
-                        "GMT-7:00");
+                        "7");
                 put("G-Shoes New York", 
-                        "GMT-4:00");
+                        "4");
         }});
 
         //Data pertaining to pickup time slots
         String CALENDAR_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/calendar_art.png";
 
-        ImmutableMap<String, String> PICKUP_DATES = ImmutableMap.copyOf(new HashMap<String, String>() {{
+        ImmutableMap<String, String> PICKUP_DATES = ImmutableMap.copyOf(new LinkedHashMap<String, String>() {{
                 put("Saturday, Sept. 5",
                         "9/5");
                 put("Monday, Sept. 7",
@@ -159,13 +160,13 @@ public interface BotConstants {
                         "9/8");
         }});
 
-        ImmutableMap<String, String> PICKUP_TIMES = ImmutableMap.copyOf(new HashMap<String, String>() {{
+        ImmutableMap<String, String> PICKUP_TIMES = ImmutableMap.copyOf(new LinkedHashMap<String, String>() {{
                 put("8 A.M. - 10 A.M.",
                         "8-10");
                 put("12 P.M. - 2 P.M.",
-                        "12-2");
+                        "12-14");
                 put("3 P.M. - 5 P.M.",
-                        "3-5");
+                        "15-17");
         }});
         String SET_FILTER_RESPONSE_TEXT = "Thanks! Your %s filter has been set to %s.";
         

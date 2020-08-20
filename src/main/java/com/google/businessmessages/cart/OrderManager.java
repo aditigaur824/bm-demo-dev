@@ -1,8 +1,7 @@
 package com.google.businessmessages.cart;
 
-import java.util.ArrayList;
-import java.util.List;
-import com.google.appengine.api.datastore.Entity;
+import java.util.stream.Collectors;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Manages all database operations to create and retrieve order instances.
@@ -14,15 +13,12 @@ public class OrderManager {
      * @param conversationId The unique id mapping between the agent and the user.
      * @return All orders associated with the user.
      */
-    public static List<Order> getAllOrders(String conversationId) {
-        List<Order> allOrders = new ArrayList<>();
-        DataManager dataManager = DataManager.getInstance();
-        List<Entity> orders = dataManager.getOrdersFromData(conversationId);
-        for (Entity ent : orders) {
-            String orderId = (String) ent.getProperty(DataManager.PROPERTY_ORDER_ID);
-            allOrders.add(new Order(orderId));
-        }
-        return allOrders;
+    public static ImmutableList<Order> getAllOrders(String conversationId) {
+        return ImmutableList.copyOf(DataManager.getInstance().getOrdersFromData(conversationId)
+            .stream()
+            .map(ent->
+                new Order((String) ent.getProperty(DataManager.PROPERTY_ORDER_ID))
+            ).collect(Collectors.toList()));
     }
 
     /**
@@ -31,15 +27,12 @@ public class OrderManager {
      * @param conversationId The unique id mapping between the agent and the user.
      * @return All user orders not scheduled for pickup yet.
      */
-    public static List<Order> getUnscheduledOrders(String conversationId) {
-        List<Order> unscheduledOrders = new ArrayList<>();
-        List<Order> allOrders = getAllOrders(conversationId);
-        for (Order order : allOrders) {
-            if (DataManager.getInstance().getExistingPickup(conversationId, order.getId()) == null) {
-                unscheduledOrders.add(order);
-            }
-        }
-        return unscheduledOrders;
+    public static ImmutableList<Order> getUnscheduledOrders(String conversationId) {
+        return ImmutableList.copyOf(getAllOrders(conversationId)
+            .stream()
+            .filter(order->
+                DataManager.getInstance().getExistingPickup(conversationId, order.getId()) == null)
+            .collect(Collectors.toList()));
     }
 
     /**
