@@ -139,13 +139,13 @@ public interface BotConstants {
                         "https://maps.googleapis.com/maps/api/staticmap?center=40.743545,-74.007939&zoom=12&size=250x250&markers=color:red%7C40.743545,-74.007939&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4");
         }});
 
-        ImmutableMap<String, String> STORE_NAME_TO_TIME_ZONE = ImmutableMap.copyOf(new HashMap<String, String>() {{
+        ImmutableMap<String, Integer> STORE_NAME_TO_TIME_ZONE_OFFSET = ImmutableMap.copyOf(new HashMap<String, Integer>() {{
                 put("G-Shoes Mountain View", 
-                        "7");
+                        7);
                 put("G-Shoes Kirkland", 
-                        "7");
+                        7);
                 put("G-Shoes New York", 
-                        "4");
+                        4);
         }});
 
         //Data pertaining to pickup time slots

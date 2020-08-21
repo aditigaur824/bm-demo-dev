@@ -139,7 +139,7 @@ public class CartBot {
         sendTextResponse(BotConstants.PICKUP_CHOOSE_TIME_TEXT, conversationId);
         sendPickupTimesCarousel(conversationId, orderId);
       } else if (payload.startsWith(BotConstants.PICKUP_DATE)) {
-        String storeTimeZone = BotConstants.STORE_NAME_TO_TIME_ZONE
+        int storeTimeZone = BotConstants.STORE_NAME_TO_TIME_ZONE_OFFSET
           .get(PickupManager.getPickup(conversationId, orderId)
           .getStoreAddress());
         String dateString = payload.substring(BotConstants.PICKUP_DATE.length());

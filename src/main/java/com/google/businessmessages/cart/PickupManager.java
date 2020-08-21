@@ -2,7 +2,6 @@ package com.google.businessmessages.cart;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 import com.google.appengine.api.datastore.Entity;
 import com.google.common.collect.ImmutableList;
@@ -114,14 +113,13 @@ public class PickupManager {
 
     /**
      * Creates a pickup Date object by parsing the inputted time zone and date strings.
-     * @param timeZone The timezone that the dateString assumes.
+     * @param timeZoneOffset The timezone offset off of UTC that the dateString assumes.
      * @param dateString The string containing the month, date, and hour of the user's
      * scheduled pickup.
      * @return The date object containing the time of the pickup.
      */
-    public static Date createPickupDate(String timeZone, String dateString) {
+    public static Date createPickupDate(int timeZoneOffset, String dateString) {
         Calendar cal = new Calendar.Builder().build();
-        int timeZoneOffset = Integer.parseInt(timeZone);
         int year = 2020;
         String[] dateStringParts = dateString.split("/", 2);
         int month = Integer.parseInt(dateStringParts[0]) - 1;
