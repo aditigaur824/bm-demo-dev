@@ -74,7 +74,7 @@ public interface BotConstants {
         String SCHEDULE_PICKUP_COMMAND = "schedule-pickup-";
         String CANCEL_PICKUP_COMMAND = "cancel-pickup-";
         String VIEW_PICKUP_COMMAND = "view-pickup";
-        String GCAL_LINK_COMMAND = "open-cal_url-";
+        String GCAL_LINK_COMMAND = "open-cal-url-";
         String HELP_COMMAND = "^help.*|^commands\\s.*|see the help menu";
 
         //List of pickup properties for callbacks
@@ -85,6 +85,21 @@ public interface BotConstants {
         
         //Property value when pickup has been added to the calendar
         String PICKUP_ADDED_CALENDAR_TRUE = "added";
+
+        //Postback data string formatters
+        String INIT_FILTER_POSTBACK = INIT_FILTER_COMMAND + "%s-%s";
+        String REMOVE_FILTER_POSTBACK = REMOVE_FILTER_COMMAND + "%s";
+        String SET_FILTER_POSTBACK = SET_FILTER_COMMAND + "%s-%s";
+        String SEE_FILTER_OPTIONS_POSTBACK = SEE_FILTER_OPTIONS_COMMAND + "%s";
+        String ADD_ITEM_POSTBACK = ADD_ITEM_COMMAND + "%s";
+        String DELETE_ITEM_POSTBACK = DELETE_ITEM_COMMAND + "%s";
+        String SCHEDULE_PICKUP_POSTBACK = SCHEDULE_PICKUP_COMMAND + "%s";
+        String CHOOSE_STORE_ADDRESS_POSTBACK = SCHEDULE_PICKUP_COMMAND + "%s-"
+                + PICKUP_STORE_ADDRESS + "%s";
+        String CHOOSE_PICKUP_TIME_POSTBACK = SCHEDULE_PICKUP_COMMAND + "%s-"
+                + PICKUP_DATE + "%s-%s";
+        String CANCEL_PICKUP_POSTBACK = CANCEL_PICKUP_COMMAND + "%s";
+        String GCAL_LINK_POSTBACK = GCAL_LINK_COMMAND + "%s";
 
         //Pickup Card Constants
         String PICKUP_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pickup_art.png";

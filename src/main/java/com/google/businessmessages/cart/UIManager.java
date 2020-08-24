@@ -44,8 +44,8 @@ public class UIManager {
     if (!OrderManager.getUnscheduledOrders(conversationId).isEmpty()) {
       suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
-            .setText(BotConstants.SCHEDULE_PICKUP_TEXT).setPostbackData(BotConstants.SCHEDULE_PICKUP_COMMAND
-              + OrderManager.getUnscheduledOrders(conversationId).get(0).getId())
+            .setText(BotConstants.SCHEDULE_PICKUP_TEXT).setPostbackData(String.format(BotConstants.SCHEDULE_PICKUP_POSTBACK,
+              OrderManager.getUnscheduledOrders(conversationId).get(0).getId()))
         ));
     }
 
@@ -114,7 +114,8 @@ public class UIManager {
       suggestions.add(
           new BusinessMessagesSuggestion()
               .setReply(new BusinessMessagesSuggestedReply()
-                  .setText(option).setPostbackData(BotConstants.INIT_FILTER_COMMAND + filterName + "-" + option)));
+                  .setText(option).setPostbackData(String.format(BotConstants.INIT_FILTER_POSTBACK, 
+                    filterName, option))));
     }
     return suggestions;
   }
@@ -141,12 +142,15 @@ public class UIManager {
     suggestions.add(
           new BusinessMessagesSuggestion()
               .setReply(new BusinessMessagesSuggestedReply()
-                  .setText("Remove").setPostbackData(BotConstants.REMOVE_FILTER_COMMAND + filterName)));
+                  .setText("Remove").setPostbackData(
+                    String.format(BotConstants.REMOVE_FILTER_POSTBACK, filterName))));
     for (String option : filterOptions) {
       suggestions.add(
           new BusinessMessagesSuggestion()
               .setReply(new BusinessMessagesSuggestedReply()
-                  .setText(option).setPostbackData(BotConstants.SET_FILTER_COMMAND + filterName + "-" + option)));
+                  .setText(option).setPostbackData(
+                    String.format(BotConstants.SET_FILTER_POSTBACK, 
+                    filterName, option))));
     }
     return suggestions;
   }
@@ -162,11 +166,13 @@ public class UIManager {
     suggestions.add(
           new BusinessMessagesSuggestion()
               .setReply(new BusinessMessagesSuggestedReply()
-                  .setText("Remove").setPostbackData(BotConstants.REMOVE_FILTER_COMMAND + filterName)));
+                  .setText("Remove").setPostbackData(
+                    String.format(BotConstants.REMOVE_FILTER_POSTBACK, filterName))));
       suggestions.add(
           new BusinessMessagesSuggestion()
               .setReply(new BusinessMessagesSuggestedReply()
-                  .setText(BotConstants.EDIT_FILTER_TEXT).setPostbackData(BotConstants.SEE_FILTER_OPTIONS_COMMAND + filterName)));
+                  .setText(BotConstants.EDIT_FILTER_TEXT).setPostbackData(
+                      String.format(BotConstants.SEE_FILTER_OPTIONS_POSTBACK, filterName))));
     return suggestions;
   }
 
@@ -181,7 +187,8 @@ public class UIManager {
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText(BotConstants.ADD_ITEM_TEXT).setPostbackData(BotConstants.ADD_ITEM_COMMAND + itemId)));
+                .setText(BotConstants.ADD_ITEM_TEXT).setPostbackData(
+                  String.format(BotConstants.ADD_ITEM_POSTBACK, itemId))));
 
     return suggestions;
   }
@@ -197,12 +204,14 @@ public class UIManager {
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText(BotConstants.INCREMENT_COUNT_TEXT).setPostbackData(BotConstants.ADD_ITEM_COMMAND + itemId)));
+                .setText(BotConstants.INCREMENT_COUNT_TEXT).setPostbackData(
+                  String.format(BotConstants.ADD_ITEM_POSTBACK, itemId))));
 
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText(BotConstants.DECREMENT_COUNT_TEXT).setPostbackData(BotConstants.DELETE_ITEM_COMMAND + itemId)));
+                .setText(BotConstants.DECREMENT_COUNT_TEXT).setPostbackData(
+                  String.format(BotConstants.DELETE_ITEM_POSTBACK, itemId))));
 
     return suggestions;
   }
@@ -219,8 +228,9 @@ public class UIManager {
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText(BotConstants.CHOOSE_STORE_ADDRESS_TEXT).setPostbackData(BotConstants.SCHEDULE_PICKUP_COMMAND 
-                  + orderId + "-" + BotConstants.PICKUP_STORE_ADDRESS + storeName)));
+                .setText(BotConstants.CHOOSE_STORE_ADDRESS_TEXT).setPostbackData(
+                  String.format(BotConstants.CHOOSE_STORE_ADDRESS_POSTBACK, orderId, storeName)
+                )));
     
     return suggestions;
   }
@@ -238,8 +248,9 @@ public class UIManager {
       suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText(time.getKey()).setPostbackData(BotConstants.SCHEDULE_PICKUP_COMMAND 
-                  + orderId + "-" + BotConstants.PICKUP_DATE + date + "-" + time.getValue())));
+                .setText(time.getKey()).setPostbackData(
+                  String.format(BotConstants.CHOOSE_PICKUP_TIME_POSTBACK, orderId, date, time.getValue())
+                )));
     }
 
     return suggestions;
@@ -255,7 +266,9 @@ public class UIManager {
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText(BotConstants.CANCEL_TEXT).setPostbackData(BotConstants.CANCEL_PICKUP_COMMAND + orderId)));
+                .setText(BotConstants.CANCEL_TEXT).setPostbackData(
+                  String.format(BotConstants.CANCEL_PICKUP_POSTBACK, orderId)
+                )));
     
     return suggestions;
   }
@@ -286,7 +299,9 @@ public class UIManager {
                 .setOpenUrlAction(
                     new BusinessMessagesOpenUrlAction()
                         .setUrl(gcalLink))
-                .setText(BotConstants.ADD_TO_CAL_TEXT).setPostbackData(BotConstants.GCAL_LINK_COMMAND + pickup.getOrderId())));
+                .setText(BotConstants.ADD_TO_CAL_TEXT).setPostbackData(
+                  String.format(BotConstants.GCAL_LINK_POSTBACK, pickup.getOrderId())
+                )));
     }
 
     suggestions.addAll(getCancelPickupSuggestion(pickup.getOrderId()));
