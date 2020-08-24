@@ -1,6 +1,8 @@
 package com.google.businessmessages.cart;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -11,7 +13,9 @@ import com.google.api.services.businessmessages.v1.model.BusinessMessagesCardCon
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCarouselCard;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesContentInfo;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesMedia;
+import com.google.api.services.businessmessages.v1.model.BusinessMessagesOpenUrlAction;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesStandaloneCard;
+import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestedAction;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestedReply;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestion;
 import com.google.communications.businessmessages.v1.CardWidth;
@@ -66,6 +70,13 @@ public class UIManager {
       suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
             .setText(BotConstants.FILTERS_TEXT).setPostbackData(BotConstants.SEE_FILTERS_COMMAND)
+        ));
+    }
+
+    if (!PickupManager.getAllPickups(conversationId).isEmpty()) {
+      suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText(BotConstants.VIEW_PICKUPS_TEXT).setPostbackData(BotConstants.VIEW_PICKUP_COMMAND)
         ));
     }
 
@@ -249,6 +260,38 @@ public class UIManager {
     return suggestions;
   }
 
+  /**
+   * Creates suggestions to attach to a pickup confirmation card. Includes relevant 
+   * information about the pickup such as the pickup location and time. 
+   * Also includes an external link action to add the pickup to the user's google calendar.
+   * @param pickup The pickup the confirmation card is for.
+   * @return The cancel and add to calendar suggestions for the specified pickup.
+   */
+  public static List<BusinessMessagesSuggestion> getPickupCardSuggestions(Pickup pickup) {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    SimpleDateFormat formatter = new SimpleDateFormat("YYYYMMdd'T'HHmmssZ");
+    String startTime = formatter.format(pickup.getTime());
+    Calendar endTimeCal = new Calendar.Builder().setInstant(pickup.getTime()).build();
+    endTimeCal.add(Calendar.HOUR, BotConstants.TIME_SLOT_DURATION);
+    String endTime = formatter.format(endTimeCal.getTime());
+
+    String storeMapsLink = BotConstants.STORE_NAME_TO_MAPS_LINK.get(pickup.getStoreAddress());
+
+    String gcalLink = String.format(BotConstants.GCAL_LINK_TEMPLATE, startTime, endTime, storeMapsLink);
+
+    suggestions.add(new BusinessMessagesSuggestion()
+          .setAction(new BusinessMessagesSuggestedAction()
+              .setOpenUrlAction(
+                  new BusinessMessagesOpenUrlAction()
+                      .setUrl(gcalLink))
+              .setText(BotConstants.ADD_TO_CAL_TEXT).setPostbackData(BotConstants.GCAL_LINK_COMMAND)));
+    
+    suggestions.addAll(getCancelPickupSuggestion(pickup.getOrderId()));
+
+    return suggestions;
+  }
+
    /**
    * Creates the help suggestion chip. 
    * @return A help suggested reply.
@@ -277,6 +320,35 @@ public class UIManager {
           .setFileUrl(currentItem.getMediaUrl())
           .setForceRefresh(true)));
     }
+    return new BusinessMessagesStandaloneCard().setCardContent(card);
+  }
+
+  /**
+   * Creates pickup cards to detail relevant information about a scheduled pickup.
+   * Allows the user to cancel the pickup or add it to their google calendar.
+   * @param pickup The pickup for which the card is being generated.
+   * @return The rich card with pickup information.
+   */
+  public static BusinessMessagesStandaloneCard getPickupCard(Pickup pickup) {
+    SimpleDateFormat formatter = new SimpleDateFormat("EEE MM/dd hh:mm a");
+    Calendar pickupTimeCal = new Calendar.Builder().setInstant(pickup.getTime()).build();
+    pickupTimeCal.add(Calendar.HOUR, 
+      -1 * BotConstants.STORE_NAME_TO_TIME_ZONE_OFFSET.get(pickup.getStoreAddress()));
+    String startTime = formatter.format(pickupTimeCal.getTime());
+    pickupTimeCal.add(Calendar.HOUR, BotConstants.TIME_SLOT_DURATION);
+    formatter = new SimpleDateFormat("hh:mm a");
+    String endTime = formatter.format(pickupTimeCal.getTime());
+
+    BusinessMessagesCardContent card = new BusinessMessagesCardContent()
+      .setTitle(String.format(BotConstants.PICKUP_TITLE, pickup.getOrderId()))
+      .setDescription("Store: " + pickup.getStoreAddress() + "\n"
+        + "Time: " + startTime + " - " + endTime)
+      .setSuggestions(getPickupCardSuggestions(pickup))
+      .setMedia(new BusinessMessagesMedia()
+        .setHeight(MediaHeight.MEDIUM.toString())
+        .setContentInfo(new BusinessMessagesContentInfo()
+          .setFileUrl(BotConstants.PICKUP_IMAGE)
+          .setForceRefresh(true)));
     return new BusinessMessagesStandaloneCard().setCardContent(card);
   }
 
@@ -354,6 +426,26 @@ public class UIManager {
           .setContentInfo(new BusinessMessagesContentInfo()
             .setFileUrl(BotConstants.SIZE_CARD_IMAGE)
             .setForceRefresh(true))));
+
+    return new BusinessMessagesCarouselCard()
+        .setCardContents(cardContents)
+        .setCardWidth(CardWidth.MEDIUM.toString());
+  }
+
+  /**
+   * Creates a rich card carousel full of the user's scheduled pickups
+   * so that the user can see details of their pickups and cancel the ones
+   * they no longer want scheduled.
+   * @param pickups The list of the user's pickups.
+   * @return A carousel rich card.
+   */
+  public static BusinessMessagesCarouselCard getPickupCarousel(List<Pickup> pickups) {
+    List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
+
+    for (int i = 0; i < pickups.size() && i < MAX_CAROUSEL_LIMIT; i++) {
+      cardContents.add(getPickupCard(pickups.get(i)).getCardContent()
+        .setSuggestions(getCancelPickupSuggestion(pickups.get(i).getOrderId())));
+    }
 
     return new BusinessMessagesCarouselCard()
         .setCardContents(cardContents)

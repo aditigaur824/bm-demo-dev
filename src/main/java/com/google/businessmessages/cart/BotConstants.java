@@ -55,6 +55,8 @@ public interface BotConstants {
         String INCREMENT_COUNT_TEXT = "\u2795";
         String DECREMENT_COUNT_TEXT = "\u2796";
         String SCHEDULE_PICKUP_TEXT = "Schedule Pickup";
+        String VIEW_PICKUPS_TEXT = "View Pickups";
+        String ADD_TO_CAL_TEXT = "Add to Calendar";
         String CHOOSE_STORE_ADDRESS_TEXT = "Choose this Store";
         String CANCEL_TEXT = "Cancel";
 
@@ -71,12 +73,21 @@ public interface BotConstants {
         String SHOP_COMMAND = "shop";
         String SCHEDULE_PICKUP_COMMAND = "schedule-pickup-";
         String CANCEL_PICKUP_COMMAND = "cancel-pickup-";
+        String VIEW_PICKUP_COMMAND = "view_pickup";
+        String GCAL_LINK_COMMAND = "open_cal_url";
         String HELP_COMMAND = "^help.*|^commands\\s.*|see the help menu";
 
         //List of pickup properties for callbacks
         String PICKUP_STATUS = "pickup-status";
         String PICKUP_STORE_ADDRESS = "store-address";
         String PICKUP_DATE = "pickup-date";
+
+        //Pickup Card Constants
+        String PICKUP_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pickup_art.png";
+        String PICKUP_TITLE = "Pickup for Order: %s";
+        String GCAL_LINK_TEMPLATE = "https://www.google.com/calendar/render?action=TEMPLATE&text=Your+G-Shoes+Pick+Up&dates="
+        + "%s/%s" 
+        + "&details=For+location+details,+link+here:+%s";
 
         // List of pre-programmed responses
         String DEFAULT_RESPONSE_TEXT =
@@ -91,6 +102,7 @@ public interface BotConstants {
                 + "Next, let's choose a time for your pickup!";
 
         String PICKUP_SCHEDULE_COMPLETED_TEXT = "Nice! I've got your pickup scheduled! 😊 \n\n"
+                + "I hope the details below look okay! \n\n"
                 + "On the day of your pick up, check back with me, and I'll guide you through "
                 + "checking in with your store!";
 
@@ -139,6 +151,15 @@ public interface BotConstants {
                         "https://maps.googleapis.com/maps/api/staticmap?center=40.743545,-74.007939&zoom=12&size=250x250&markers=color:red%7C40.743545,-74.007939&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4");
         }});
 
+        ImmutableMap<String, String> STORE_NAME_TO_MAPS_LINK = ImmutableMap.copyOf(new HashMap<String, String>() {{
+                put("G-Shoes Mountain View", 
+                        "https://www.google.com/maps/place/Googleplex/@37.4219999,-122.0862462,17z/data=!3m1!4b1!4m5!3m4!1s0x808fba02425dad8f:0x6c296c66619367e0!8m2!3d37.4219999!4d-122.0840575");
+                put("G-Shoes Kirkland", 
+                        "https://www.google.com/maps/place/Google+Building+C/@47.669846,-122.1996099,17z/data=!3m1!4b1!4m5!3m4!1s0x549012dae8b1164f:0x94ca4b8d5cc5fb58!8m2!3d47.669846!4d-122.1974212");
+                put("G-Shoes New York", 
+                        "https://www.google.com/maps/place/Google+NYC:+8510+Building/@40.7420814,-74.0072099,17z/data=!4m8!1m2!2m1!1sgoogl+new+york!3m4!1s0x89c259c0b6279809:0xf0f85f5d47fed64c!8m2!3d40.7434001!4d-74.0079724");
+        }});
+
         ImmutableMap<String, Integer> STORE_NAME_TO_TIME_ZONE_OFFSET = ImmutableMap.copyOf(new HashMap<String, Integer>() {{
                 put("G-Shoes Mountain View", 
                         7);
@@ -149,6 +170,8 @@ public interface BotConstants {
         }});
 
         //Data pertaining to pickup time slots
+        int TIME_SLOT_DURATION = 2;
+
         String CALENDAR_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/calendar_art.png";
 
         ImmutableMap<String, String> PICKUP_DATES = ImmutableMap.copyOf(new LinkedHashMap<String, String>() {{
