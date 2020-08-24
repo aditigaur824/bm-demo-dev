@@ -101,12 +101,16 @@ public class PickupManager {
         } else {
             String storeAddress = (String) pickupEntity.getProperty(DataManager.PROPERTY_STORE_ADDRESS);
             Date date = (Date) pickupEntity.getProperty(DataManager.PROPERTY_PICKUP_TIME);
+            boolean addedToCal = false;
+            if (pickupEntity.hasProperty(DataManager.PROPERTY_PICKUP_ADDED_CAL)) {
+                addedToCal = true;
+            }
             if (pickupStatus.equals(DataManager.PICKUP_SCHEDULED_STATUS)) {
-                return new Pickup(orderId, storeAddress, date, Pickup.Status.SCHEDULED);
+                return new Pickup(orderId, storeAddress, date, Pickup.Status.SCHEDULED, addedToCal);
             } else if (pickupStatus.equals(DataManager.PICKUP_CHECKED_IN_STATUS)) {
-                return new Pickup(orderId, storeAddress, date, Pickup.Status.CHECKED_IN);
+                return new Pickup(orderId, storeAddress, date, Pickup.Status.CHECKED_IN, addedToCal);
             } else {
-                return new Pickup(orderId, storeAddress, date, Pickup.Status.COMPLETE);
+                return new Pickup(orderId, storeAddress, date, Pickup.Status.COMPLETE, addedToCal);
             }
         }
     }

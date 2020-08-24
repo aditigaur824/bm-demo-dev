@@ -34,6 +34,7 @@ public class DataManager {
     protected static final String PROPERTY_STORE_ADDRESS = "store_address";
     protected static final String PROPERTY_PICKUP_TIME = "pickup_time";
     protected static final String PROPERTY_PICKUP_STATUS = "pickup_status";
+    protected static final String PROPERTY_PICKUP_ADDED_CAL = "pickup_cal";
     //Types of pickup statuses in datastore
     protected static final String PICKUP_INCOMPLETE_STATUS = "incomplete";
     protected static final String PICKUP_SCHEDULED_STATUS = "scheduled";
@@ -510,6 +511,8 @@ public class DataManager {
                     currentPickup.setProperty(PROPERTY_STORE_ADDRESS, (String) propertyValue);
                 } else if (propertyName.equals(BotConstants.PICKUP_DATE)) {
                     currentPickup.setProperty(PROPERTY_PICKUP_TIME, (Date) propertyValue);
+                } else if (propertyName.equals(BotConstants.PICKUP_ADDED_CALENDAR)) {
+                    currentPickup.setProperty(PROPERTY_PICKUP_ADDED_CAL, (String) propertyValue);
                 } else {
                     logger.log(Level.SEVERE, "Attempted to set invalid pickup property: " + propertyName + ".");
                 }

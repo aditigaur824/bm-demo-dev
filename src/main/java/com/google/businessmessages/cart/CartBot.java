@@ -111,8 +111,8 @@ public class CartBot {
       sendCancelPickupResponse(normalizedMessage, conversationId);
     } else if (normalizedMessage.matches(BotConstants.VIEW_PICKUP_COMMAND)) {
       sendPickupCarousel(conversationId);
-    } else if (normalizedMessage.matches(BotConstants.GCAL_LINK_COMMAND)) {
-      
+    } else if (normalizedMessage.startsWith(BotConstants.GCAL_LINK_COMMAND)) {
+      setPickupCalendarAdded(normalizedMessage, conversationId);
     } else {
       sendResponse(BotConstants.DEFAULT_RESPONSE_TEXT, conversationId);
     }
@@ -170,6 +170,18 @@ public class CartBot {
     String orderId = normalizedMessage.substring(BotConstants.CANCEL_PICKUP_COMMAND.length());
     PickupManager.cancelPickup(conversationId, orderId);
     sendResponse(BotConstants.PICKUP_CANCELED_TEXT, conversationId);
+  }
+
+  /**
+   * Sets the specified pickup's calendar added field so the user is not prompted to add the event
+   * to their gcal after they have already done so.
+   * @param normalizedMessage The message that contains the pickup for which the order has been added.
+   * @param conversationId The unique id mapping between the agent and the user.
+   */
+  public void setPickupCalendarAdded(String normalizedMessage, String conversationId) {
+    String orderId = normalizedMessage.substring(BotConstants.GCAL_LINK_COMMAND.length());
+    PickupManager.updatePickupProperties(conversationId, orderId, 
+      BotConstants.PICKUP_ADDED_CALENDAR, BotConstants.PICKUP_ADDED_CALENDAR_TRUE);
   }
 
   /**

@@ -73,14 +73,18 @@ public interface BotConstants {
         String SHOP_COMMAND = "shop";
         String SCHEDULE_PICKUP_COMMAND = "schedule-pickup-";
         String CANCEL_PICKUP_COMMAND = "cancel-pickup-";
-        String VIEW_PICKUP_COMMAND = "view_pickup";
-        String GCAL_LINK_COMMAND = "open_cal_url";
+        String VIEW_PICKUP_COMMAND = "view-pickup";
+        String GCAL_LINK_COMMAND = "open-cal_url-";
         String HELP_COMMAND = "^help.*|^commands\\s.*|see the help menu";
 
         //List of pickup properties for callbacks
         String PICKUP_STATUS = "pickup-status";
         String PICKUP_STORE_ADDRESS = "store-address";
         String PICKUP_DATE = "pickup-date";
+        String PICKUP_ADDED_CALENDAR = "pickup-cal";
+        
+        //Property value when pickup has been added to the calendar
+        String PICKUP_ADDED_CALENDAR_TRUE = "added";
 
         //Pickup Card Constants
         String PICKUP_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pickup_art.png";

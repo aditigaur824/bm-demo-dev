@@ -270,23 +270,25 @@ public class UIManager {
   public static List<BusinessMessagesSuggestion> getPickupCardSuggestions(Pickup pickup) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
 
-    SimpleDateFormat formatter = new SimpleDateFormat("YYYYMMdd'T'HHmmssZ");
-    String startTime = formatter.format(pickup.getTime());
-    Calendar endTimeCal = new Calendar.Builder().setInstant(pickup.getTime()).build();
-    endTimeCal.add(Calendar.HOUR, BotConstants.TIME_SLOT_DURATION);
-    String endTime = formatter.format(endTimeCal.getTime());
+    if (!pickup.getAddedToCal()) {
+      SimpleDateFormat formatter = new SimpleDateFormat("YYYYMMdd'T'HHmmssZ");
+      String startTime = formatter.format(pickup.getTime());
+      Calendar endTimeCal = new Calendar.Builder().setInstant(pickup.getTime()).build();
+      endTimeCal.add(Calendar.HOUR, BotConstants.TIME_SLOT_DURATION);
+      String endTime = formatter.format(endTimeCal.getTime());
 
-    String storeMapsLink = BotConstants.STORE_NAME_TO_MAPS_LINK.get(pickup.getStoreAddress());
+      String storeMapsLink = BotConstants.STORE_NAME_TO_MAPS_LINK.get(pickup.getStoreAddress());
 
-    String gcalLink = String.format(BotConstants.GCAL_LINK_TEMPLATE, startTime, endTime, storeMapsLink);
+      String gcalLink = String.format(BotConstants.GCAL_LINK_TEMPLATE, startTime, endTime, storeMapsLink);
 
-    suggestions.add(new BusinessMessagesSuggestion()
-          .setAction(new BusinessMessagesSuggestedAction()
-              .setOpenUrlAction(
-                  new BusinessMessagesOpenUrlAction()
-                      .setUrl(gcalLink))
-              .setText(BotConstants.ADD_TO_CAL_TEXT).setPostbackData(BotConstants.GCAL_LINK_COMMAND)));
-    
+      suggestions.add(new BusinessMessagesSuggestion()
+            .setAction(new BusinessMessagesSuggestedAction()
+                .setOpenUrlAction(
+                    new BusinessMessagesOpenUrlAction()
+                        .setUrl(gcalLink))
+                .setText(BotConstants.ADD_TO_CAL_TEXT).setPostbackData(BotConstants.GCAL_LINK_COMMAND + pickup.getOrderId())));
+    }
+
     suggestions.addAll(getCancelPickupSuggestion(pickup.getOrderId()));
 
     return suggestions;
@@ -443,8 +445,7 @@ public class UIManager {
     List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
 
     for (int i = 0; i < pickups.size() && i < MAX_CAROUSEL_LIMIT; i++) {
-      cardContents.add(getPickupCard(pickups.get(i)).getCardContent()
-        .setSuggestions(getCancelPickupSuggestion(pickups.get(i).getOrderId())));
+      cardContents.add(getPickupCard(pickups.get(i)).getCardContent());
     }
 
     return new BusinessMessagesCarouselCard()

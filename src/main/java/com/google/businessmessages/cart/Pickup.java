@@ -10,6 +10,7 @@ public class Pickup {
     private String orderId;
     private String storeAddress;
     private Date date;
+    private boolean addedToCal;
     private Status status;
     public enum Status {
         INCOMPLETE, SCHEDULED, CHECKED_IN, COMPLETE;
@@ -26,11 +27,12 @@ public class Pickup {
         this.status = Status.INCOMPLETE;
     }
 
-    public Pickup(String orderId, String storeAddress, Date date, Status status) {
+    public Pickup(String orderId, String storeAddress, Date date, Status status, boolean addedToCal) {
         this.orderId = orderId;
         this.storeAddress = storeAddress;
         this.date = date;
         this.status = status;
+        this.addedToCal = addedToCal;
     }
 
     /**
@@ -63,6 +65,16 @@ public class Pickup {
      */
     public Status getStatus() {
         return this.status;
+    }
+
+    /**
+     * Gets the boolean indicating whether the user has already added this pickup
+     * to their gcal. 
+     * @return addedToCal The boolean indicating whether the user has already added the pickup
+     * to gcal.
+     */
+    public boolean getAddedToCal() {
+        return this.addedToCal;
     }
 
     /**
