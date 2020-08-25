@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCardContent;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCarouselCard;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesContentInfo;
+import com.google.api.services.businessmessages.v1.model.BusinessMessagesDialAction;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesMedia;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesOpenUrlAction;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesStandaloneCard;
@@ -40,6 +41,14 @@ public class UIManager {
   */
   public static List<BusinessMessagesSuggestion> getDefaultMenu(String conversationId, Cart userCart) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    if (!PickupManager.getPickupsReadyForCheckin(conversationId).isEmpty()) {
+      suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText(BotConstants.CHECK_IN_TEXT).setPostbackData(String.format(BotConstants.CHECK_IN_POSTBACK,
+              PickupManager.getPickupsReadyForCheckin(conversationId).get(0).getOrderId()))
+        ));
+    }
 
     if (!OrderManager.getUnscheduledOrders(conversationId).isEmpty()) {
       suggestions.add(new BusinessMessagesSuggestion()
@@ -86,6 +95,24 @@ public class UIManager {
         ));
 
     suggestions.add(getHelpMenuItem());
+
+    return suggestions;
+   }
+
+   /**
+    * Creates suggestions for when the user has checked in for their pickup. 
+    * Allows the user to call an associate in case there are any issues with their pickup.
+    * @return Call suggestion. 
+    */
+   public static List<BusinessMessagesSuggestion> getCheckinSuggestions() {
+     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+     suggestions.add(new BusinessMessagesSuggestion()
+          .setAction(new BusinessMessagesSuggestedAction()
+              .setDialAction(
+                  new BusinessMessagesDialAction()
+                      .setPhoneNumber("+14085055624"))
+              .setText("Call an Associate").setPostbackData("call_example")));
 
     return suggestions;
    }

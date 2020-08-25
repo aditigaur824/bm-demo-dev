@@ -59,6 +59,7 @@ public interface BotConstants {
         String ADD_TO_CAL_TEXT = "Add to Calendar";
         String CHOOSE_STORE_ADDRESS_TEXT = "Choose this Store";
         String CANCEL_TEXT = "Cancel";
+        String CHECK_IN_TEXT = "Check In";
 
         // List of recognized commands to produce certain responses
         String INIT_FILTER_COMMAND = "init-filter-";
@@ -75,6 +76,7 @@ public interface BotConstants {
         String CANCEL_PICKUP_COMMAND = "cancel-pickup-";
         String VIEW_PICKUP_COMMAND = "view-pickup";
         String GCAL_LINK_COMMAND = "open-cal-url-";
+        String CHECK_IN_COMMAND = "check-in-";
         String HELP_COMMAND = "^help.*|^commands\\s.*|see the help menu";
 
         //List of pickup properties for callbacks
@@ -100,6 +102,7 @@ public interface BotConstants {
                 + PICKUP_DATE + "%s-%s";
         String CANCEL_PICKUP_POSTBACK = CANCEL_PICKUP_COMMAND + "%s";
         String GCAL_LINK_POSTBACK = GCAL_LINK_COMMAND + "%s";
+        String CHECK_IN_POSTBACK = CHECK_IN_COMMAND + "%s";
 
         //Pickup Card Constants
         String PICKUP_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pickup_art.png";
@@ -127,6 +130,9 @@ public interface BotConstants {
 
         String PICKUP_CANCELED_TEXT = "No worries! I've canceled this pickup.\n\n"
                 + "If you change your mind, you can always click schedule pickup again!";
+
+        String CHECK_IN_RESPONSE_TEXT = "Woot! I've got you all checked in! ✔️ \n\n"
+                + "A sales associate will be out with your order in about 2 minutes!";
 
         String HELP_RESPONSE_TEXT = "Welcome to the help menu! This program will echo "
                 + "any text that you enter that is not part of a supported command. The supported "

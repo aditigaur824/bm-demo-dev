@@ -85,6 +85,29 @@ public class PickupManager {
     }
 
     /**
+     * Gets all pickups whose pickup time windows are active and are therefore 
+     * ready for check-in. 
+     * @param conversationId The unique id mapping between the agent and the user.
+     * @return The list of pickups ready for pickup. Empty if there are none.
+     */
+    public static ImmutableList<Pickup> getPickupsReadyForCheckin(String conversationId) {
+        ImmutableList.Builder<Pickup> builder = new ImmutableList.Builder<>();
+        ImmutableList<Pickup> activePickups = getPickupsWithStatus(conversationId, Pickup.Status.SCHEDULED);
+        Date currentTime = new Date();
+        for (Pickup pickup : activePickups) {
+            Calendar endTimeCal = new Calendar.Builder()
+                .setInstant(pickup.getTime())
+                .build();
+            endTimeCal.add(Calendar.HOUR, BotConstants.TIME_SLOT_DURATION);
+            Date endTime = endTimeCal.getTime();
+            if (currentTime.after(pickup.getTime()) && currentTime.before(endTime)) {
+                builder.add(pickup);
+            }
+        }
+        return builder.build();
+    }
+
+    /**
      * Converts an Entity datatype returned by datastore to a Pickup object.
      * @param pickupEntity The entity to be converted to a pickup object.
      * @return The pickup object.
