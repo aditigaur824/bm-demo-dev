@@ -27,6 +27,15 @@
         <url-pattern>/callback</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>GetCart</servlet-name>
+        <servlet-class>com.google.businessmessages.cart.servlets.GetCart</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GetCart</servlet-name>
+        <url-pattern>/cart</url-pattern>
+    </servlet-mapping>
+
     <!-- Require user signin for all resources. -->
     <security-constraint>
         <web-resource-collection>
@@ -44,6 +53,11 @@
             <web-resource-name>AgentCallback</web-resource-name>
             <url-pattern>/callback</url-pattern>
             <url-pattern>/forbidden</url-pattern>
+        </web-resource-collection>
+
+        <web-resource-collection>
+            <web-resource-name>GetCart</web-resource-name>
+            <url-pattern>/cart</url-pattern>
         </web-resource-collection>
     </security-constraint>
 </web-app>
