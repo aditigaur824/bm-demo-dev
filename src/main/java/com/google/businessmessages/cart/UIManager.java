@@ -100,6 +100,25 @@ public class UIManager {
    }
 
    /**
+    * Gets parking slots that the user can choose from to check in for their pickup.
+    * @return A list of available parking slots.
+    */
+   public static List<BusinessMessagesSuggestion> getParkingSpotSuggestions() {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    for (Integer parkingSlot : BotConstants.PARKING_SLOTS) {
+      suggestions.add(new BusinessMessagesSuggestion()
+      .setReply(new BusinessMessagesSuggestedReply()
+          .setText(Integer.toString(parkingSlot)).setPostbackData(
+            String.format(BotConstants.CHOOSE_PARKING_SLOT_POSTBACK, parkingSlot.intValue())
+          )
+      ));
+    }
+
+    return suggestions;
+   }
+
+   /**
     * Creates suggestions for when the user has checked in for their pickup. 
     * Allows the user to call an associate in case there are any issues with their pickup.
     * @return Call suggestion. 

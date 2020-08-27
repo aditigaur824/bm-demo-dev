@@ -113,8 +113,54 @@ public class CartBot {
       sendPickupCarousel(conversationId);
     } else if (normalizedMessage.startsWith(BotConstants.GCAL_LINK_COMMAND)) {
       setPickupCalendarAdded(normalizedMessage, conversationId);
+    } else if (normalizedMessage.startsWith(BotConstants.CHECK_IN_COMMAND)) {
+      sendCheckinResponse(normalizedMessage, conversationId);
+    } else if (normalizedMessage.startsWith(BotConstants.CHOOSE_PARKING_COMMAND)) {
+      sendChooseParkingResponse(normalizedMessage, conversationId);
     } else {
       sendResponse(BotConstants.DEFAULT_RESPONSE_TEXT, conversationId);
+    }
+  }
+
+  /**
+   * Sends a response to the user when the user checks in for a scheduled pickup.
+   * Prompts the user to select the parking spot that they are in so the associate knows
+   * where to bring their order. 
+   * @param normalizedMessage The message containing the order id that the user is picking up.
+   * @param conversationId The unique id mapping between the user and the agent.
+   */
+  private void sendCheckinResponse(String normalizedMessage, String conversationId) {
+    String orderId = normalizedMessage.substring(BotConstants.CHECK_IN_COMMAND.length());
+    PickupManager.updatePickupProperties(conversationId, orderId, BotConstants.PICKUP_STATUS, Pickup.Status.CHECKED_IN);
+    try {
+      sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setText(BotConstants.CHECK_IN_RESPONSE_TEXT)
+          .setRepresentative(representative)
+          .setFallback(BotConstants.CHECK_IN_RESPONSE_TEXT)
+          .setSuggestions(UIManager.getParkingSpotSuggestions()), conversationId);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while sending response.", e);
+    }
+  }
+
+  /**
+   * Sends a response to the user confirming that they have chosen their parking spot
+   * and that their associate is on their way with their order. Approximates a wait time.
+   * @param normalizedMessage The message containing the parking spot the user has checked-in with.
+   * @param conversationId The unique id mapping between the user and the agent.
+   */
+  private void sendChooseParkingResponse(String normalizedMessage, String conversationId) {
+    try {
+      String parkingSpot = normalizedMessage.substring(BotConstants.CHOOSE_PARKING_COMMAND.length());
+      sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setText(String.format(BotConstants.PARKING_SPOT_RESPONSE_TEXT, parkingSpot))
+          .setRepresentative(representative)
+          .setFallback(String.format(BotConstants.PARKING_SPOT_RESPONSE_TEXT, parkingSpot))
+          .setSuggestions(UIManager.getCheckinSuggestions()), conversationId);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while sending response.", e);
     }
   }
 

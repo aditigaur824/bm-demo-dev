@@ -77,6 +77,7 @@ public interface BotConstants {
         String VIEW_PICKUP_COMMAND = "view-pickup";
         String GCAL_LINK_COMMAND = "open-cal-url-";
         String CHECK_IN_COMMAND = "check-in-";
+        String CHOOSE_PARKING_COMMAND = "choose-parking-";
         String HELP_COMMAND = "^help.*|^commands\\s.*|see the help menu";
 
         //List of pickup properties for callbacks
@@ -103,6 +104,7 @@ public interface BotConstants {
         String CANCEL_PICKUP_POSTBACK = CANCEL_PICKUP_COMMAND + "%s";
         String GCAL_LINK_POSTBACK = GCAL_LINK_COMMAND + "%s";
         String CHECK_IN_POSTBACK = CHECK_IN_COMMAND + "%s";
+        String CHOOSE_PARKING_SLOT_POSTBACK = CHOOSE_PARKING_COMMAND + "%d";
 
         //Pickup Card Constants
         String PICKUP_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pickup_art.png";
@@ -131,7 +133,9 @@ public interface BotConstants {
         String PICKUP_CANCELED_TEXT = "No worries! I've canceled this pickup.\n\n"
                 + "If you change your mind, you can always click schedule pickup again!";
 
-        String CHECK_IN_RESPONSE_TEXT = "Woot! I've got you all checked in! ✔️ \n\n"
+        String CHECK_IN_RESPONSE_TEXT = "Ooh, nice! What parking spot are you in?";
+
+        String PARKING_SPOT_RESPONSE_TEXT = "Woot! I've got you all checked in at parking slot %s! ✔️ \n\n"
                 + "A sales associate will be out with your order in about 2 minutes!";
 
         String HELP_RESPONSE_TEXT = "Welcome to the help menu! This program will echo "
@@ -199,7 +203,11 @@ public interface BotConstants {
 
         String CALENDAR_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/calendar_art.png";
 
+        ImmutableList<Integer> PARKING_SLOTS =  ImmutableList.copyOf(Arrays.asList(2, 4, 5, 9, 12));
+
         ImmutableMap<String, String> PICKUP_DATES = ImmutableMap.copyOf(new LinkedHashMap<String, String>() {{
+                put("Wednesday, Aug. 26",
+                        "8/26");
                 put("Saturday, Sept. 5",
                         "9/5");
                 put("Monday, Sept. 7",
@@ -213,9 +221,10 @@ public interface BotConstants {
                         "8-10");
                 put("12 P.M. - 2 P.M.",
                         "12-14");
-                put("3 P.M. - 5 P.M.",
-                        "15-17");
+                put("6 P.M. - 8 P.M.",
+                        "18-20");
         }});
+
         String SET_FILTER_RESPONSE_TEXT = "Thanks! Your %s filter has been set to %s.";
         
         String REMOVE_FILTER_RESPONSE_TEXT = "Your %s filter has been removed.";
