@@ -259,6 +259,37 @@ public class DataManagerTest {
     }
 
     @Test
+    public void testEmptyCart() {
+        String testEmptyCartId = "testEmptyCartId";
+        String testEmptyCartItemId1 = "testEmptyCartItemId1";
+        String testEmptyCartItemId2 = "testEmptyCartItemId2";
+        Entity testEmptyCartItem1 = new Entity("CartItem");
+        testEmptyCartItem1.setProperty("cart_id", testEmptyCartId);
+        testEmptyCartItem1.setProperty("item_id", testEmptyCartItemId1);
+        testEmptyCartItem1.setProperty("count", 1);
+        Entity testEmptyCartItem2 = new Entity("CartItem");
+        testEmptyCartItem2.setProperty("cart_id", testEmptyCartId);
+        testEmptyCartItem2.setProperty("item_id", testEmptyCartItemId2);
+        testEmptyCartItem2.setProperty("count", 1);
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        datastore.put(testEmptyCartItem1);
+        datastore.put(testEmptyCartItem2);
+
+        datamanager.emptyCart(testEmptyCartId);
+
+        final Query q = new Query("CartItem")
+                .setFilter(
+                        new Query.FilterPredicate("cart_id",
+                                Query.FilterOperator.EQUAL,
+                                testEmptyCartId)
+                );
+
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(50));
+        assertThat(currentCart).isEmpty();
+    }
+
+    @Test
     public void testGetFiltersFromData() {
         String testGetFilterConversationId = "testGetFilterConversationId";
         List<String> testNames = new ArrayList<>();

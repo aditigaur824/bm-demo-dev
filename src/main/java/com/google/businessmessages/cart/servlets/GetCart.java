@@ -1,18 +1,15 @@
 package com.google.businessmessages.cart.servlets;
 
-import java.util.List;
-import java.util.logging.Logger;
 import java.io.IOException;
+import java.util.List;
 import javax.servlet.annotation.WebServlet;
-import com.google.appengine.api.datastore.Entity;
-import com.google.businessmessages.cart.DataManager;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import com.google.appengine.api.datastore.Entity;
+import com.google.businessmessages.cart.DataManager;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 /**
  * Servlet for starting the conversation with the bot.
@@ -37,8 +34,8 @@ public class GetCart extends HttpServlet {
         JsonArray items = new JsonArray();
         for (Entity ent : cartItems) {
             JsonObject itemObj = new JsonObject();
-            itemObj.addProperty("item_title", (String) ent.getProperty("item_title"));
-            itemObj.addProperty("item_count", Long.toString((Long) ent.getProperty("count")));
+            itemObj.addProperty("itemTitle", (String) ent.getProperty("item_title"));
+            itemObj.addProperty("itemCount", Long.toString((Long) ent.getProperty("count")));
             items.add(itemObj);
         }
         cartObject.add("items", items);

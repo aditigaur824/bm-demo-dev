@@ -114,6 +114,8 @@ public interface BotConstants {
 
         String HOURS_RESPONSE_TEXT = "We are open Monday - Friday from 9 A.M. to 5 P.M.";
 
+        String PLACED_ORDER_RESPONSE_TEXT = "Thanks for placing an order! 🛍 Psst! To schedule a pickup, click below! ⬇️";
+
         String PICKUP_CHOOSE_STORE_ADDRESS_TEXT = "Way to go! 🙌 We will have this pickup scheduled in no time!\n\n"
                 + "First, let's choose a pickup location.";
 
@@ -128,6 +130,8 @@ public interface BotConstants {
         String PICKUP_CANCELED_TEXT = "No worries! I've canceled this pickup.\n\n"
                 + "If you change your mind, you can always click schedule pickup again!";
 
+        String VIEW_PICKUPS_RESPONSE_TEXT = "Here are your scheduled pickups!";
+        
         String HELP_RESPONSE_TEXT = "Welcome to the help menu! This program will echo "
                 + "any text that you enter that is not part of a supported command. The supported "
                 + "commands are: \n\n" + "Help - Shows the list of supported commands and functions\n\n"

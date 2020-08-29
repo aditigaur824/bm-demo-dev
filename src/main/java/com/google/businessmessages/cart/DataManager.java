@@ -208,6 +208,29 @@ public class DataManager {
         return null;
     }
 
+    /**
+     * Gets the user's conversationId by querying with the cartId.
+     * @param cartId The cartId that will be used to return the user is exists.
+     * Returns null otherwise.
+     */
+    public Entity getUserFromCartId(String cartId) {
+        final Query q = new Query(CART_TYPE)
+                .setFilter(
+                        new Query.FilterPredicate(PROPERTY_CART_ID,
+                                Query.FilterOperator.EQUAL,
+                                cartId)
+                );
+
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> user = pq.asList(FetchOptions.Builder.withLimit(1));
+        if (!user.isEmpty()) {
+            return user.get(0);
+        }
+        return null;
+    }
+
+
+
     //Functions modifying/querying for CartItem objects.
     /**
      * Adds an item to the user's cart persisted in memory. If the item already exists in
@@ -270,6 +293,39 @@ public class DataManager {
                 datastore.put(transaction, currentItem);
               }
             }
+            transaction.commit();
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to delete the item.", e);
+        } finally {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+        }
+    }
+
+    /**
+     * Empties the cart when the user has already checked out with all items in their cart.
+     * @param cartId The identifier of the user's cart.
+     */
+    public void emptyCart(String cartId) {
+        final Query q = new Query(CART_ITEM_TYPE)
+                .setFilter(
+                        new Query.FilterPredicate(PROPERTY_CART_ID,
+                                Query.FilterOperator.EQUAL,
+                                cartId)
+                );
+
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
+        
+        TransactionOptions options = TransactionOptions.Builder.withXG(true);
+        Transaction transaction = datastore.beginTransaction(options);
+        try {
+            currentCart.stream().forEach(ent -> datastore.delete(transaction, ent.getKey()));
             transaction.commit();
         } catch (IllegalStateException e) {
             logger.log(Level.SEVERE, "The transaction is not active.", e);

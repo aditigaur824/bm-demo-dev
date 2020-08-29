@@ -35,6 +35,15 @@
         <servlet-name>GetCart</servlet-name>
         <url-pattern>/cart</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>SubmitOrder</servlet-name>
+        <servlet-class>com.google.businessmessages.cart.servlets.SubmitOrder</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SubmitOrder</servlet-name>
+        <url-pattern>/submitorder</url-pattern>
+    </servlet-mapping>
 
     <!-- Require user signin for all resources. -->
     <security-constraint>
@@ -58,6 +67,11 @@
         <web-resource-collection>
             <web-resource-name>GetCart</web-resource-name>
             <url-pattern>/cart</url-pattern>
+        </web-resource-collection>
+
+        <web-resource-collection>
+            <web-resource-name>SubmitOrder</web-resource-name>
+            <url-pattern>/submitorder</url-pattern>
         </web-resource-collection>
     </security-constraint>
 </web-app>

@@ -68,6 +68,10 @@ public class CartBot {
     initBmApi();
   }
 
+  public void setUserCart(String conversationId) {
+    this.userCart = CartManager.getOrCreateCart(conversationId);
+  }
+
   /**
    * Routes the message to produce a response based on the incoming message if it matches an
    * existing supported command. Otherwise, the inbound message is echoed back to the user.
@@ -77,7 +81,7 @@ public class CartBot {
    */
   public void routeMessage(String message, String conversationId) {
     //initialize user's cart
-    this.userCart = CartManager.getOrCreateCart(conversationId);
+    this.setUserCart(conversationId);
 
     //begin parsing message
     String normalizedMessage = message.toLowerCase().trim();
@@ -359,7 +363,7 @@ public class CartBot {
         }
   
         // Send the text that indicates what the subsequent carousel consists of
-        sendTextResponse(BotConstants.CURRENT_FILTERS_RESPONSE_TEXT, conversationId);
+        sendTextResponse(BotConstants.VIEW_PICKUPS_RESPONSE_TEXT, conversationId);
         // Send the carousel card message and suggestions to the user
         sendResponse(new BusinessMessagesMessage()
           .setMessageId(UUID.randomUUID().toString())
@@ -660,7 +664,7 @@ public class CartBot {
    * @param message The message text to send the user.
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
    */
-  private void sendResponse(String message, String conversationId) {
+  public void sendResponse(String message, String conversationId) {
     try {
       // Send plaintext message with default menu to user
       sendResponse(new BusinessMessagesMessage()
