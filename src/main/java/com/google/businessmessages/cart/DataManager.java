@@ -435,18 +435,18 @@ public class DataManager {
      * @return The string mapping of the status enum.
      */
     private String pickupStatusToString(Pickup.Status status) {
+        System.out.println(status);
         String queryStatus;
-        switch(status) {
-            case INCOMPLETE:
-                queryStatus = PICKUP_INCOMPLETE_STATUS;
-            case SCHEDULED:
-                queryStatus = PICKUP_SCHEDULED_STATUS;
-            case CHECKED_IN:
-                queryStatus = PICKUP_CHECKED_IN_STATUS;
-            case COMPLETE:
-                queryStatus = PICKUP_COMPLETED_STATUS;
-            default:
-                queryStatus = PICKUP_SCHEDULED_STATUS;
+        if (status.equals(Pickup.Status.INCOMPLETE)) {
+            queryStatus = PICKUP_INCOMPLETE_STATUS;
+        } else if (status.equals(Pickup.Status.SCHEDULED)) {
+            queryStatus = PICKUP_SCHEDULED_STATUS;
+        } else if (status.equals(Pickup.Status.CHECKED_IN)) {
+            queryStatus = PICKUP_CHECKED_IN_STATUS;
+        } else if (status.equals(Pickup.Status.COMPLETE)) {
+            queryStatus = PICKUP_COMPLETED_STATUS;
+        } else {
+            queryStatus = PICKUP_SCHEDULED_STATUS;
         }
         return queryStatus;
     }
