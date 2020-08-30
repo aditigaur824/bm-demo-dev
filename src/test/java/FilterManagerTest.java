@@ -122,7 +122,9 @@ public class FilterManagerTest {
                 );
         PreparedQuery pq = datastore.prepare(q);
         List<Entity> testFilter = pq.asList(FetchOptions.Builder.withLimit(1));
-        assertThat(testFilter).isEmpty();
+        assertThat(testFilter.get(0).getProperty("conversation_id")).isEqualTo(testRemoveFilterConversationId);
+        assertThat(testFilter.get(0).getProperty("filter_name")).isEqualTo(testRemoveFilterName);
+        assertThat(testFilter.get(0).getProperty("filter_value")).isEqualTo("all");
     }
 
     @After

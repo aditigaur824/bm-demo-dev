@@ -59,6 +59,6 @@ public class FilterManager {
      */
     public static void removeFilter(String conversationId, String filterName) {
         DataManager dataManager = DataManager.getInstance(); 
-        dataManager.removeFilter(conversationId, filterName);
+        dataManager.addFilter(conversationId, filterName, "all");
     }
 }

@@ -86,7 +86,7 @@ public class CartBot {
     //begin parsing message
     String normalizedMessage = message.toLowerCase().trim();
 
-   if (normalizedMessage.matches(BotConstants.HELP_COMMAND)) {
+    if (normalizedMessage.matches(BotConstants.HELP_COMMAND)) {
       sendResponse(BotConstants.HELP_RESPONSE_TEXT, conversationId);
     } else if (normalizedMessage.matches(BotConstants.HOURS_COMMAND)) {
       sendResponse(BotConstants.HOURS_RESPONSE_TEXT, conversationId);
@@ -121,7 +121,8 @@ public class CartBot {
       sendCheckinResponse(normalizedMessage, conversationId);
     } else if (normalizedMessage.startsWith(BotConstants.CHOOSE_PARKING_COMMAND)) {
       sendChooseParkingResponse(normalizedMessage, conversationId);
-    } else {
+    } else if (!normalizedMessage.equals(BotConstants.CHECKOUT_COMMAND)
+      && !normalizedMessage.equals(BotConstants.VIEW_PROD_DETAILS_COMMAND)) {
       sendResponse(BotConstants.DEFAULT_RESPONSE_TEXT, conversationId);
     }
   }
@@ -504,6 +505,7 @@ public class CartBot {
         filterResponseText = BotConstants.COLOR_FILTER_RESPONSE_TEXT;
       } else {
         sendTextResponse(BotConstants.FILTER_SELECTION_COMPLETE_RESPONSE_TEXT, conversationId);
+        sendTextResponse(BotConstants.FILTER_SELECTION_COMPLETE_RESPONSE_TEXT_2, conversationId);
         sendInventoryCarousel(conversationId);
         return;
       }

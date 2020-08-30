@@ -48,10 +48,12 @@ public interface BotConstants {
         String EDIT_FILTER_TEXT = "Edit this Filter";
         String VIEW_CART_TEXT = "View Cart";
         String CONTINUE_SHOPPING_TEXT = "Continue Shopping";
+        String CHECKOUT_TEXT = "Checkout";
         String SHOP_TEXT = "Shop Our Collection";
         String HOURS_TEXT = "Inquire About Hours";
         String HELP_TEXT = "Help";
         String ADD_ITEM_TEXT = "\uD83D\uDED2 Add to Cart";
+        String VIEW_PROD_DETAILS_TEXT = "Product Details";
         String INCREMENT_COUNT_TEXT = "\u2795";
         String DECREMENT_COUNT_TEXT = "\u2796";
         String SCHEDULE_PICKUP_TEXT = "Schedule Pickup";
@@ -69,7 +71,9 @@ public interface BotConstants {
         String REMOVE_FILTER_COMMAND = "remove-filter-";
         String DELETE_ITEM_COMMAND = "del-cart-";
         String ADD_ITEM_COMMAND = "add-cart-";
+        String VIEW_PROD_DETAILS_COMMAND = "view-product-details";
         String VIEW_CART_COMMAND = "cart";
+        String CHECKOUT_COMMAND = "checkout";
         String HOURS_COMMAND = "hours";
         String SHOP_COMMAND = "shop";
         String SCHEDULE_PICKUP_COMMAND = "schedule-pickup-";
@@ -105,6 +109,11 @@ public interface BotConstants {
         String GCAL_LINK_POSTBACK = GCAL_LINK_COMMAND + "%s";
         String CHECK_IN_POSTBACK = CHECK_IN_COMMAND + "%s";
         String CHOOSE_PARKING_SLOT_POSTBACK = CHOOSE_PARKING_COMMAND + "%d";
+
+        //Link to mock website
+        String STORE_SITE_LINK = "http://localhost:8000";
+        //Link that user will checkout with
+        String CHECKOUT_LINK = "http://localhost:8000/checkout.html?cartId=%s"; 
 
         //Pickup Card Constants
         String PICKUP_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pickup_art.png";
@@ -150,19 +159,17 @@ public interface BotConstants {
                 + "View/Edit Filters - Will respond with a collection of filters and their set values.\n\n"
                 + "View Cart - Will respond with all of the items in your cart.\n\n";
         
-        String SIZE_FILTER_RESPONSE_TEXT = "Woohoo! 🎉 I'd love to help you shop! Before we get started, I just need to know a few things about you.\n\n"
-                + "First off, what shoe size are we looking for today?";
+        String SIZE_FILTER_RESPONSE_TEXT = "Woohoo! 🎉 I'd love to help you shop! First off, what shoe size are we looking for today?";
         
         String BRAND_FILTER_RESPONSE_TEXT = "Awesome! I'll make sure we look for shoes in that size today! 😊 \n\n"
-                + "Do you mind telling me what brand of shoes you were looking for today? " 
-                + "If you don't have a preference for any of the brands listed below, feel free to select 'all'!";
+                + "Next - what brand are you looking for?";
         
-        String COLOR_FILTER_RESPONSE_TEXT = "Thanks! One final question: what color of shoes were you looking for? "
-                + "Once again, if you want to see shoes in all of our colors, you can select 'all'";
+        String COLOR_FILTER_RESPONSE_TEXT = "Thanks! Lastly, what color? 🎨 ";
 
         String FILTER_SELECTION_COMPLETE_RESPONSE_TEXT = "Whew! 😌 Thanks for bearing with all of my questions. "
-                + "I've saved all of your preferences as filters that you can view and edit whenever you'd like while you shop!\n\n" 
-                + "Now, I'll pull up your customized running shoe recommendations! 👟 ";
+                + "I've saved all of your preferences as filters that you can view and edit whenever you'd like while you shop! 📝"; 
+        
+        String FILTER_SELECTION_COMPLETE_RESPONSE_TEXT_2 = "Now, I'll pull up your customized running shoe recommendations! 👟 ";
         
         
         //Data pertaining to store locations
@@ -231,11 +238,11 @@ public interface BotConstants {
 
         String SET_FILTER_RESPONSE_TEXT = "Thanks! Your %s filter has been set to %s.";
         
-        String REMOVE_FILTER_RESPONSE_TEXT = "Your %s filter has been removed.";
+        String REMOVE_FILTER_RESPONSE_TEXT = "Your %s filter has been removed!";
 
-        String CURRENT_FILTERS_RESPONSE_TEXT = "Here are your current filters: ";
+        String CURRENT_FILTERS_RESPONSE_TEXT = "Here are your current filters:";
 
-        String NO_INVENTORY_RESULTS_RESPONSE_TEXT = "Sorry, we don't have any items that matched your filters.";
+        String NO_INVENTORY_RESULTS_RESPONSE_TEXT = "Sorry, we don't have any items that matched your filters. 😭";
 
         // Data pertaining to filters and inventory items.
         String COLOR_CARD_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/color_card_image.jpeg";

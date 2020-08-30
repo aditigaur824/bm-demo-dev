@@ -60,6 +60,17 @@ public class UIManager {
 
     if (!userCart.getItems().isEmpty()) {
       suggestions.add(new BusinessMessagesSuggestion()
+            .setAction(new BusinessMessagesSuggestedAction()
+                .setOpenUrlAction(
+                    new BusinessMessagesOpenUrlAction()
+                        .setUrl(
+                          String.format(BotConstants.CHECKOUT_LINK, userCart.getId())
+                        ))
+                .setText(BotConstants.CHECKOUT_TEXT).setPostbackData(
+                  BotConstants.CHECKOUT_COMMAND
+              )));
+
+      suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
             .setText(BotConstants.VIEW_CART_TEXT).setPostbackData(BotConstants.VIEW_CART_COMMAND)
         ));
@@ -209,16 +220,18 @@ public class UIManager {
   public static List<BusinessMessagesSuggestion> getFilterCardSuggestions(String filterName) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
 
-    suggestions.add(
-          new BusinessMessagesSuggestion()
-              .setReply(new BusinessMessagesSuggestedReply()
-                  .setText("Remove").setPostbackData(
-                    String.format(BotConstants.REMOVE_FILTER_POSTBACK, filterName))));
+    if (!filterName.equals(BotConstants.SIZE_FILTER_NAME)) {
       suggestions.add(
-          new BusinessMessagesSuggestion()
-              .setReply(new BusinessMessagesSuggestedReply()
-                  .setText(BotConstants.EDIT_FILTER_TEXT).setPostbackData(
-                      String.format(BotConstants.SEE_FILTER_OPTIONS_POSTBACK, filterName))));
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText("Remove").setPostbackData(
+                  String.format(BotConstants.REMOVE_FILTER_POSTBACK, filterName))));
+    }
+    suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText(BotConstants.EDIT_FILTER_TEXT).setPostbackData(
+                    String.format(BotConstants.SEE_FILTER_OPTIONS_POSTBACK, filterName))));
     return suggestions;
   }
 
@@ -229,6 +242,15 @@ public class UIManager {
    */
   public static List<BusinessMessagesSuggestion> getInventorySuggestions(String itemId) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    suggestions.add(new BusinessMessagesSuggestion()
+            .setAction(new BusinessMessagesSuggestedAction()
+                .setOpenUrlAction(
+                    new BusinessMessagesOpenUrlAction()
+                        .setUrl(BotConstants.STORE_SITE_LINK))
+                .setText(BotConstants.VIEW_PROD_DETAILS_TEXT).setPostbackData(
+                  BotConstants.VIEW_PROD_DETAILS_COMMAND
+                )));
 
     suggestions.add(
         new BusinessMessagesSuggestion()
@@ -376,6 +398,7 @@ public class UIManager {
     for (InventoryItem currentItem : validItems) {
       card = new BusinessMessagesCardContent()
       .setTitle(currentItem.getTitle())
+      .setDescription("In stock.")
       .setSuggestions(getInventorySuggestions(currentItem.getId()))
       .setMedia(new BusinessMessagesMedia()
         .setHeight(MediaHeight.MEDIUM.toString())
@@ -525,6 +548,7 @@ public class UIManager {
       InventoryItem currentItem = validItems.get(i);
       cardContents.add(new BusinessMessagesCardContent()
         .setTitle(currentItem.getTitle())
+        .setDescription("In stock.")
         .setSuggestions(getInventorySuggestions(currentItem.getId()))
         .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())
