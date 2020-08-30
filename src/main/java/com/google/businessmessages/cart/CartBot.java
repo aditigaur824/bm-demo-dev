@@ -175,7 +175,11 @@ public class CartBot {
   private void sendSchedulePickup(String normalizedMessage, String conversationId) {
     String[] orderIdAndPayload = normalizedMessage.substring(BotConstants.SCHEDULE_PICKUP_COMMAND.length())
                                                   .split("-", 2);
-    String orderId = orderIdAndPayload[0];
+    if (orderIdAndPayload.length == 0) {
+      sendResponse(BotConstants.DEFAULT_RESPONSE_TEXT, conversationId);
+      return;
+    }
+    String orderId = orderIdAndPayload[0]; 
     if (orderIdAndPayload.length == 1) {
       //initial part of the workflow
       PickupManager.addPickup(conversationId, orderId);
@@ -233,7 +237,7 @@ public class CartBot {
   /**
    * Adds specified item to the user's cart.
    * 
-   * @param message        The message that contains which item to add to the cart.
+   * @param message The message that contains which item to add to the cart.
    * @param conversationId The unique id that maps from the agent to the user.
    */
   public void addItemToCart(String message, String conversationId) {

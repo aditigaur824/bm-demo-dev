@@ -195,8 +195,7 @@ public class UIManager {
           new BusinessMessagesSuggestion()
               .setReply(new BusinessMessagesSuggestedReply()
                   .setText(option).setPostbackData(
-                    String.format(BotConstants.SET_FILTER_POSTBACK, 
-                    filterName, option))));
+                    String.format(BotConstants.SET_FILTER_POSTBACK, filterName, option))));
     }
     return suggestions;
   }
@@ -275,8 +274,7 @@ public class UIManager {
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
                 .setText(BotConstants.CHOOSE_STORE_ADDRESS_TEXT).setPostbackData(
-                  String.format(BotConstants.CHOOSE_STORE_ADDRESS_POSTBACK, orderId, storeName)
-                )));
+                  String.format(BotConstants.CHOOSE_STORE_ADDRESS_POSTBACK, orderId, storeName))));
     
     return suggestions;
   }
@@ -295,8 +293,7 @@ public class UIManager {
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
                 .setText(time.getKey()).setPostbackData(
-                  String.format(BotConstants.CHOOSE_PICKUP_TIME_POSTBACK, orderId, date, time.getValue())
-                )));
+                  String.format(BotConstants.CHOOSE_PICKUP_TIME_POSTBACK, orderId, date, time.getValue()))));
     }
 
     return suggestions;
@@ -313,8 +310,7 @@ public class UIManager {
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
                 .setText(BotConstants.CANCEL_TEXT).setPostbackData(
-                  String.format(BotConstants.CANCEL_PICKUP_POSTBACK, orderId)
-                )));
+                  String.format(BotConstants.CANCEL_PICKUP_POSTBACK, orderId))));
     
     return suggestions;
   }
@@ -346,8 +342,7 @@ public class UIManager {
                     new BusinessMessagesOpenUrlAction()
                         .setUrl(gcalLink))
                 .setText(BotConstants.ADD_TO_CAL_TEXT).setPostbackData(
-                  String.format(BotConstants.GCAL_LINK_POSTBACK, pickup.getOrderId())
-                )));
+                  String.format(BotConstants.GCAL_LINK_POSTBACK, pickup.getOrderId()))));
     }
 
     suggestions.addAll(getCancelPickupSuggestion(pickup.getOrderId()));
@@ -362,8 +357,7 @@ public class UIManager {
   public static BusinessMessagesSuggestion getHelpMenuItem() {
     return new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
-            .setText(BotConstants.HELP_TEXT).setPostbackData(BotConstants.HELP_TEXT)
-        );
+            .setText(BotConstants.HELP_TEXT).setPostbackData(BotConstants.HELP_TEXT));
   }
 
   /**
@@ -395,8 +389,7 @@ public class UIManager {
   public static BusinessMessagesStandaloneCard getPickupCard(Pickup pickup) {
     SimpleDateFormat formatter = new SimpleDateFormat("EEE MM/dd hh:mm a");
     Calendar pickupTimeCal = new Calendar.Builder().setInstant(pickup.getTime()).build();
-    pickupTimeCal.add(Calendar.HOUR, 
-      -1 * BotConstants.STORE_NAME_TO_TIME_ZONE_OFFSET.get(pickup.getStoreAddress()));
+    pickupTimeCal.add(Calendar.HOUR, -1 * BotConstants.STORE_NAME_TO_TIME_ZONE_OFFSET.get(pickup.getStoreAddress()));
     String startTime = formatter.format(pickupTimeCal.getTime());
     pickupTimeCal.add(Calendar.HOUR, BotConstants.TIME_SLOT_DURATION);
     formatter = new SimpleDateFormat("hh:mm a");
