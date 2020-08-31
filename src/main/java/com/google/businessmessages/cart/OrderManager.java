@@ -16,9 +16,8 @@ public class OrderManager {
     public static ImmutableList<Order> getAllOrders(String conversationId) {
         return ImmutableList.copyOf(DataManager.getInstance().getOrdersFromData(conversationId)
             .stream()
-            .map(ent->
-                new Order((String) ent.getProperty(DataManager.PROPERTY_ORDER_ID))
-            ).collect(Collectors.toList()));
+            .map(ent -> new Order((String) ent.getProperty(DataManager.PROPERTY_ORDER_ID)))
+            .collect(Collectors.toList()));
     }
 
     /**
@@ -30,7 +29,7 @@ public class OrderManager {
     public static ImmutableList<Order> getUnscheduledOrders(String conversationId) {
         return ImmutableList.copyOf(getAllOrders(conversationId)
             .stream()
-            .filter(order->
+            .filter(order ->
                 DataManager.getInstance().getExistingPickup(conversationId, order.getId()) == null)
             .collect(Collectors.toList()));
     }
