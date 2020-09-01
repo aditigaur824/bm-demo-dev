@@ -577,7 +577,8 @@ public class CartBot {
   private void sendInventoryCarousel(String context, String conversationId) {
     if (!context.equals(BotConstants.EMPTY_CONTEXT_STRING) &&
           !WidgetContextManager.hasBeenSeen(conversationId, new WidgetContext(context))) {
-        sendContextResponse(context, conversationId);
+      sendContextResponse(context, conversationId);
+      return;
     }
     if (FilterManager.getAllFilters(conversationId).size() < BotConstants.NUM_SUPPORTED_FILTERS) {
       sendFilterSelections(BotConstants.FROM_INVENTORY_CALLBACK, conversationId);
