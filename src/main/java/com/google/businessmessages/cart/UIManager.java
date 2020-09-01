@@ -108,6 +108,10 @@ public class UIManager {
    public static List<BusinessMessagesSuggestion> getContextResponseSuggestions() {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
 
+    suggestions.add(new BusinessMessagesSuggestion()
+      .setReply(new BusinessMessagesSuggestedReply()
+          .setText(BotConstants.ACCEPT_CONTEXT_TEXT).setPostbackData(
+            BotConstants.SHOP_COMMAND)));
 
    }
 
