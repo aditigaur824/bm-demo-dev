@@ -330,15 +330,16 @@ public class CartBot {
   /**
    * Sends a rich card carousel with all of the user's scheduled pickups so that 
    * the user can see the store name and time they have scheduled various pickups 
-   * for.
+   * for. Should only be called when the user has non-zero pickups.
    * @param conversationId The unique id mapping between the user and the agent.
    */
   private void sendPickupCarousel(String conversationId) {
     try{
       List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
       List<Pickup> pickups = PickupManager.getAllPickups(conversationId);
-
-      if (pickups.size() == 1) {
+      if (pickups.isEmpty()) {
+        sendResponse(BotConstants.NO_PICKUPS_TEXT, conversationId);
+      } else if (pickups.size() == 1) {
         BusinessMessagesStandaloneCard standaloneCard = UIManager.getPickupCard(pickups.get(0));
         String fallbackText = standaloneCard.getCardContent().getTitle() + "\n\n"
             + standaloneCard.getCardContent().getDescription() + "\n\n"
@@ -541,12 +542,17 @@ public class CartBot {
   }
 
   /**
-   * Sends the cart rich card carousel to the user.
-   *
+   * Sends the cart rich card carousel to the user. Used when the user's cart
+   * has more than one item.
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
    */
   private void sendCartCarousel(String conversationId) {
     try {
+      if (userCart.getItems().isEmpty()) {
+        sendResponse(BotConstants.NO_CART_ITEMS_TEXT, conversationId);
+        return;
+      }
+
       List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
 
       BusinessMessagesCarouselCard carouselCard = UIManager.getCartCarousel(this.storeInventory, this.userCart);
