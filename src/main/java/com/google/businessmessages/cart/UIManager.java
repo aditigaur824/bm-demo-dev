@@ -100,6 +100,18 @@ public class UIManager {
    }
 
    /**
+    * Returns yes or no suggestions when the user is asked whether
+    * they would like to continue browsing the products they had already 
+    * been searching for. 
+    * @return List of yes/no suggestions.
+    */
+   public static List<BusinessMessagesSuggestion> getContextResponseSuggestions() {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+
+   }
+
+   /**
     * Gets parking slots that the user can choose from to check in for their pickup.
     * @return A list of available parking slots.
     */
@@ -110,9 +122,7 @@ public class UIManager {
       suggestions.add(new BusinessMessagesSuggestion()
       .setReply(new BusinessMessagesSuggestedReply()
           .setText(Integer.toString(parkingSlot)).setPostbackData(
-            String.format(BotConstants.CHOOSE_PARKING_SLOT_POSTBACK, parkingSlot.intValue())
-          )
-      ));
+            String.format(BotConstants.CHOOSE_PARKING_SLOT_POSTBACK, parkingSlot.intValue()))));
     }
 
     return suggestions;

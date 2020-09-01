@@ -78,9 +78,10 @@ public class CartBot {
    * existing supported command. Otherwise, the inbound message is echoed back to the user.
    *
    * @param message The received message from a user.
+   * @param context The context accompanying the message (i.e. the browsing location from the business website).
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
    */
-  public void routeMessage(String message, String conversationId) {
+  public void routeMessage(String message, String context, String conversationId) {
     //initialize user's cart
     this.setUserCart(conversationId);
 
@@ -94,7 +95,7 @@ public class CartBot {
     } else if (normalizedMessage.startsWith(BotConstants.INIT_FILTER_COMMAND)) {
       sendFilterSelections(normalizedMessage, conversationId);
     } else if (normalizedMessage.matches(BotConstants.SHOP_COMMAND)) {
-      sendInventoryCarousel(conversationId);
+      sendInventoryCarousel(context, conversationId);
     } else if (normalizedMessage.matches(BotConstants.VIEW_CART_COMMAND)) {
       if (userCart.getItems().size() > 1) sendCartCarousel(conversationId);
       else sendSingleCartItem(conversationId);
@@ -527,7 +528,7 @@ public class CartBot {
         filterResponseText = BotConstants.COLOR_FILTER_RESPONSE_TEXT;
       } else {
         sendTextResponse(BotConstants.FILTER_SELECTION_COMPLETE_RESPONSE_TEXT, conversationId);
-        sendInventoryCarousel(conversationId);
+        sendInventoryCarousel(BotConstants.EMPTY_CONTEXT_STRING, conversationId);
         return;
       }
       sendResponse(new BusinessMessagesMessage()
@@ -542,13 +543,41 @@ public class CartBot {
   }
 
   /**
+   * Sends a response to the user based on their browsing context. The user
+   * can choose whether they want to browse products similar to what they have
+   * been shopping for, or whether they want something different.
+   * @param context The context string containing search queries.
+   * @param conversationId The unique id mapping between the user and the agent.
+   */
+  private void sendContextResponse(String context, String conversationId) {
+    try {
+      sendTextResponse(
+        String.format(BotConstants.CONTEXT_RESPONSE_TEXT, context), 
+        conversationId);
+      sendResponse(new BusinessMessagesMessage()
+        .setMessageId(UUID.randomUUID().toString())
+        .setText(BotConstants.CONTEXT_RESPONSE_TEXT_2)
+        .setRepresentative(representative)
+        .setSuggestions(UIManager.getContextResponseSuggestions())
+        .setFallback(BotConstants.CONTEXT_RESPONSE_TEXT_2), conversationId);
+    } catch(Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while sending context response where context was: "
+        + context + ".");
+    }
+  } 
+
+  /**
    * Sends the inventory rich card carousel to the user if the user has already 
    * chosen their item preferences. If they have not, prompts user to select item
    * preferences (filters).
+   * @param context The items, if any, the user has been searching for.
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
    */
-  private void sendInventoryCarousel(String conversationId) {
+  private void sendInventoryCarousel(String context, String conversationId) {
     if (FilterManager.getAllFilters(conversationId).size() < BotConstants.NUM_SUPPORTED_FILTERS) {
+      if (context.equals(BotConstants.EMPTY_CONTEXT_STRING)) {
+        sendContextResponse(context, conversationId);
+      }
       sendFilterSelections(BotConstants.FROM_INVENTORY_CALLBACK, conversationId);
       return;
     }

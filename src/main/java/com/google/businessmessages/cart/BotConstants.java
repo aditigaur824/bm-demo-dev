@@ -39,6 +39,9 @@ public interface BotConstants {
         String BRAND_FILTER_NAME = "brand";
         String SIZE_FILTER_NAME = "size";
 
+        //The context expected when the BM widget context is empty
+        String EMPTY_CONTEXT_STRING = "none";
+
         //List of workflow indicators
         String FROM_INVENTORY_CALLBACK = "From inventory callback.";
 
@@ -46,6 +49,8 @@ public interface BotConstants {
         String FILTERS_TEXT = "See/Edit My Filters";
         String EDIT_FILTER_TEXT = "Edit this Filter";
         String VIEW_CART_TEXT = "View Cart";
+        String ACCEPT_CONTEXT_TEXT = "Yes! 👍";
+        String REJECT_CONTEXT_TEXT = "No thanks! 🤷";
         String CONTINUE_SHOPPING_TEXT = "Continue Shopping";
         String SHOP_TEXT = "Shop Our Collection";
         String HOURS_TEXT = "Inquire About Hours";
@@ -118,6 +123,10 @@ public interface BotConstants {
 
         String HOURS_RESPONSE_TEXT = "We are open Monday - Friday from 9 A.M. to 5 P.M.";
 
+        String CONTEXT_RESPONSE_TEXT = "Woohoo! 🎉 I'd love to help you shop! I see you've been searching for %s! Awesome taste! 👍";
+
+        String CONTEXT_RESPONSE_TEXT_2 = "Would you like to continue searching for %s?";
+
         String PLACED_ORDER_RESPONSE_TEXT = "Thanks for placing an order! 🛍 Psst! To schedule a pickup, click below! ⬇️";
 
         String PICKUP_CHOOSE_STORE_ADDRESS_TEXT = "Way to go! 🙌 We will have this pickup scheduled in no time!\n\n"
@@ -140,6 +149,7 @@ public interface BotConstants {
 
         String PARKING_SPOT_RESPONSE_TEXT = "Woot! I've got you all checked in at parking slot %s! ✔️ \n\n"
                 + "A sales associate will be out with your order in about 2 minutes!";
+
         String NO_PICKUPS_TEXT = "You don't have any pickups scheduled at this time!"
                 + "But we can always fix that! 😉";
         
@@ -154,8 +164,8 @@ public interface BotConstants {
                 + "View/Edit Filters - Will respond with a collection of filters and their set values.\n\n"
                 + "View Cart - Will respond with all of the items in your cart.\n\n";
         
-        String SIZE_FILTER_RESPONSE_TEXT = "Woohoo! 🎉 I'd love to help you shop! Before we get started, I just need to know a few things about you.\n\n"
-                + "First off, what shoe size are we looking for today?";
+        String SIZE_FILTER_RESPONSE_TEXT = "Alright! Let's get started!"
+                + " What shoe size are we looking for today?";
         
         String BRAND_FILTER_RESPONSE_TEXT = "Awesome! I'll make sure we look for shoes in that size today! 😊 \n\n"
                 + "Do you mind telling me what brand of shoes you were looking for today? " 
