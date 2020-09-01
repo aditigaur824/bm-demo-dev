@@ -15,7 +15,6 @@ package com.google.businessmessages.cart;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import com.google.common.collect.ImmutableList;
@@ -141,6 +140,11 @@ public interface BotConstants {
 
         String PARKING_SPOT_RESPONSE_TEXT = "Woot! I've got you all checked in at parking slot %s! ✔️ \n\n"
                 + "A sales associate will be out with your order in about 2 minutes!";
+        String NO_PICKUPS_TEXT = "You don't have any pickups scheduled at this time!"
+                + "But we can always fix that! 😉";
+        
+        String NO_CART_ITEMS_TEXT = "You don't have any items in your cart at this time!"
+        + "But we can always fix that! 😉";
 
         String HELP_RESPONSE_TEXT = "Welcome to the help menu! This program will echo "
                 + "any text that you enter that is not part of a supported command. The supported "
@@ -166,68 +170,62 @@ public interface BotConstants {
         
         
         //Data pertaining to store locations
-        ImmutableMap<String, String> STORE_NAME_TO_ADDRESS = ImmutableMap.copyOf(new HashMap<String, String>() {{
-                put("G-Shoes Mountain View", 
-                        "1600 Amphitheatre Pkwy, Mountain View, CA 94043");
-                put("G-Shoes Kirkland", 
-                        "747 6th St South, Kirkland, WA 98033");
-                put("G-Shoes New York", 
+        ImmutableMap<String, String> STORE_NAME_TO_ADDRESS = ImmutableMap.of(
+                "G-Shoes Mountain View", 
+                        "1600 Amphitheatre Pkwy, Mountain View, CA 94043",
+                "G-Shoes Kirkland", 
+                        "747 6th St South, Kirkland, WA 98033",
+                "G-Shoes New York", 
                         "85 10th Ave, New York, NY 10011");
-        }});
 
-        ImmutableMap<String, String> STORE_NAME_TO_LOCATION = ImmutableMap.copyOf(new HashMap<String, String>() {{
-                put("G-Shoes Mountain View", 
-                        "https://maps.googleapis.com/maps/api/staticmap?center=37.422128,-122.084045&zoom=12&size=250x250&markers=color:red%7C37.422128,-122.084045&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4");
-                put("G-Shoes Kirkland", 
-                        "https://maps.googleapis.com/maps/api/staticmap?center=47.669940,-122.197099&zoom=12&size=250x250&markers=color:red%7C47.669940,-122.197099&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4");
-                put("G-Shoes New York", 
+        ImmutableMap<String, String> STORE_NAME_TO_LOCATION = ImmutableMap.of(
+                "G-Shoes Mountain View", 
+                        "https://maps.googleapis.com/maps/api/staticmap?center=37.422128,-122.084045&zoom=12&size=250x250&markers=color:red%7C37.422128,-122.084045&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4",
+                "G-Shoes Kirkland", 
+                        "https://maps.googleapis.com/maps/api/staticmap?center=47.669940,-122.197099&zoom=12&size=250x250&markers=color:red%7C47.669940,-122.197099&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4",
+                "G-Shoes New York", 
                         "https://maps.googleapis.com/maps/api/staticmap?center=40.743545,-74.007939&zoom=12&size=250x250&markers=color:red%7C40.743545,-74.007939&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4");
-        }});
 
-        ImmutableMap<String, String> STORE_NAME_TO_MAPS_LINK = ImmutableMap.copyOf(new HashMap<String, String>() {{
-                put("G-Shoes Mountain View", 
-                        "https://www.google.com/maps/place/Googleplex/@37.4219999,-122.0862462,17z/data=!3m1!4b1!4m5!3m4!1s0x808fba02425dad8f:0x6c296c66619367e0!8m2!3d37.4219999!4d-122.0840575");
-                put("G-Shoes Kirkland", 
-                        "https://www.google.com/maps/place/Google+Building+C/@47.669846,-122.1996099,17z/data=!3m1!4b1!4m5!3m4!1s0x549012dae8b1164f:0x94ca4b8d5cc5fb58!8m2!3d47.669846!4d-122.1974212");
-                put("G-Shoes New York", 
+        ImmutableMap<String, String> STORE_NAME_TO_MAPS_LINK = ImmutableMap.of(
+                "G-Shoes Mountain View", 
+                        "https://www.google.com/maps/place/Googleplex/@37.4219999,-122.0862462,17z/data=!3m1!4b1!4m5!3m4!1s0x808fba02425dad8f:0x6c296c66619367e0!8m2!3d37.4219999!4d-122.0840575",
+                "G-Shoes Kirkland", 
+                        "https://www.google.com/maps/place/Google+Building+C/@47.669846,-122.1996099,17z/data=!3m1!4b1!4m5!3m4!1s0x549012dae8b1164f:0x94ca4b8d5cc5fb58!8m2!3d47.669846!4d-122.1974212",
+                "G-Shoes New York", 
                         "https://www.google.com/maps/place/Google+NYC:+8510+Building/@40.7420814,-74.0072099,17z/data=!4m8!1m2!2m1!1sgoogl+new+york!3m4!1s0x89c259c0b6279809:0xf0f85f5d47fed64c!8m2!3d40.7434001!4d-74.0079724");
-        }});
 
-        ImmutableMap<String, Integer> STORE_NAME_TO_TIME_ZONE_OFFSET = ImmutableMap.copyOf(new HashMap<String, Integer>() {{
-                put("G-Shoes Mountain View", 
-                        7);
-                put("G-Shoes Kirkland", 
-                        7);
-                put("G-Shoes New York", 
+        ImmutableMap<String, Integer> STORE_NAME_TO_TIME_ZONE_OFFSET = ImmutableMap.of(
+                "G-Shoes Mountain View", 
+                        7,
+                "G-Shoes Kirkland", 
+                        7,
+                "G-Shoes New York", 
                         4);
-        }});
 
         //Data pertaining to pickup time slots
         int TIME_SLOT_DURATION = 2;
 
         String CALENDAR_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/calendar_art.png";
 
-        ImmutableList<Integer> PARKING_SLOTS =  ImmutableList.copyOf(Arrays.asList(2, 4, 5, 9, 12));
+        ImmutableList<Integer> PARKING_SLOTS =  ImmutableList.of(2, 4, 5, 9, 12);
 
-        ImmutableMap<String, String> PICKUP_DATES = ImmutableMap.copyOf(new LinkedHashMap<String, String>() {{
-                put("Wednesday, Aug. 26",
-                        "8/26");
-                put("Saturday, Sept. 5",
-                        "9/5");
-                put("Monday, Sept. 7",
-                        "9/7");
-                put("Tuesday, Sept. 8",
+        ImmutableMap<String, String> PICKUP_DATES = ImmutableMap.of(
+                "Tuesday, Sept. 1",
+                        "9/1",
+                "Saturday, Sept. 5",
+                        "9/5",
+                "Monday, Sept. 7",
+                        "9/7",
+                "Tuesday, Sept. 8",
                         "9/8");
-        }});
 
-        ImmutableMap<String, String> PICKUP_TIMES = ImmutableMap.copyOf(new LinkedHashMap<String, String>() {{
-                put("8 A.M. - 10 A.M.",
-                        "8-10");
-                put("12 P.M. - 2 P.M.",
-                        "12-14");
-                put("6 P.M. - 8 P.M.",
-                        "18-20");
-        }});
+        ImmutableMap<String, String> PICKUP_TIMES = ImmutableMap.of(
+                "8 A.M. - 10 A.M.",
+                        "8-10",
+                "12 P.M. - 2 P.M.",
+                        "12-14",
+                "12 A.M. - 2 A.M.",
+                        "0-2");
 
         String SET_FILTER_RESPONSE_TEXT = "Thanks! Your %s filter has been set to %s.";
         
