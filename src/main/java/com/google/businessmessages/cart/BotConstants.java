@@ -164,8 +164,7 @@ public interface BotConstants {
                 + "View/Edit Filters - Will respond with a collection of filters and their set values.\n\n"
                 + "View Cart - Will respond with all of the items in your cart.\n\n";
         
-        String SIZE_FILTER_RESPONSE_TEXT = "Alright! Let's get started!"
-                + " What shoe size are we looking for today?";
+        String SIZE_FILTER_RESPONSE_TEXT = "Alright! Let's get started! What shoe size are we looking for today?";
         
         String BRAND_FILTER_RESPONSE_TEXT = "Awesome! I'll make sure we look for shoes in that size today! 😊 \n\n"
                 + "Do you mind telling me what brand of shoes you were looking for today? " 
