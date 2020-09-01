@@ -203,45 +203,25 @@ public interface BotConstants {
 
         String CALENDAR_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/calendar_art.png";
 
-<<<<<<< HEAD
-        ImmutableList<Integer> PARKING_SLOTS =  ImmutableList.copyOf(Arrays.asList(2, 4, 5, 9, 12));
+        ImmutableList<Integer> PARKING_SLOTS =  ImmutableList.of(2, 4, 5, 9, 12);
 
-        ImmutableMap<String, String> PICKUP_DATES = ImmutableMap.copyOf(new LinkedHashMap<String, String>() {{
-                put("Wednesday, Aug. 26",
-                        "8/26");
-                put("Saturday, Sept. 5",
-                        "9/5");
-                put("Monday, Sept. 7",
-                        "9/7");
-                put("Tuesday, Sept. 8",
-=======
         ImmutableMap<String, String> PICKUP_DATES = ImmutableMap.of(
+                "Tuesday, Sept. 1",
+                        "9/1",
                 "Saturday, Sept. 5",
                         "9/5",
                 "Monday, Sept. 7",
                         "9/7",
                 "Tuesday, Sept. 8",
->>>>>>> f99212eb5f8a3475d7d53d84c066f70efe4aff11
                         "9/8");
 
-<<<<<<< HEAD
-        ImmutableMap<String, String> PICKUP_TIMES = ImmutableMap.copyOf(new LinkedHashMap<String, String>() {{
-                put("8 A.M. - 10 A.M.",
-                        "8-10");
-                put("12 P.M. - 2 P.M.",
-                        "12-14");
-                put("6 P.M. - 8 P.M.",
-                        "18-20");
-        }});
-=======
         ImmutableMap<String, String> PICKUP_TIMES = ImmutableMap.of(
                 "8 A.M. - 10 A.M.",
                         "8-10",
                 "12 P.M. - 2 P.M.",
                         "12-14",
-                "3 P.M. - 5 P.M.",
-                        "15-17");
->>>>>>> f99212eb5f8a3475d7d53d84c066f70efe4aff11
+                "12 A.M. - 2 A.M.",
+                        "0-2");
 
         String SET_FILTER_RESPONSE_TEXT = "Thanks! Your %s filter has been set to %s.";
         
