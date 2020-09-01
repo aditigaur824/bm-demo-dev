@@ -145,8 +145,6 @@ public class CartBot {
           .setRepresentative(representative)
           .setFallback(BotConstants.CHECK_IN_RESPONSE_TEXT)
           .setSuggestions(UIManager.getParkingSpotSuggestions()), conversationId);
-      wait(5000);
-      sendPickupCSAT(conversationId);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Exception thrown while sending response.", e);
     }
@@ -186,6 +184,7 @@ public class CartBot {
           .setRepresentative(representative)
           .setFallback(String.format(BotConstants.PARKING_SPOT_RESPONSE_TEXT, parkingSpot))
           .setSuggestions(UIManager.getCheckinSuggestions()), conversationId);
+      sendPickupCSAT(conversationId);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Exception thrown while sending response.", e);
     }
