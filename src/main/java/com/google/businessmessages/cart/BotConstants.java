@@ -229,10 +229,10 @@ public interface BotConstants {
         ImmutableMap<String, String> PICKUP_TIMES = ImmutableMap.of(
                 "8 A.M. - 10 A.M.",
                         "8-10",
-                "12 P.M. - 2 P.M.",
-                        "12-14",
-                "12 A.M. - 2 A.M.",
-                        "0-2");
+                "11 A.M. - 1 P.M.",
+                        "11-13",
+                "3 P.M. - 5 P.M.",
+                        "15-17");
 
         String SET_FILTER_RESPONSE_TEXT = "Thanks! Your %s filter has been set to %s.";
         
