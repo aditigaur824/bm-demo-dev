@@ -43,7 +43,11 @@ public class PickupManager {
      */
     public static void updatePickupProperties(String conversationId, String orderId, String propertyName, Object propertyValue) {
         DataManager dataManager = DataManager.getInstance();
-        dataManager.updatePickupProperties(conversationId, orderId, propertyName, propertyValue);
+        dataManager.updatePickupProperties(
+            conversationId, 
+            orderId, 
+            propertyName, 
+            propertyValue);
     }
 
     /**
@@ -65,9 +69,8 @@ public class PickupManager {
     public static ImmutableList<Pickup> getAllPickups(String conversationId) {
         return ImmutableList.copyOf(DataManager.getInstance().getPickupsFromData(conversationId)
             .stream()
-            .map(ent -> 
-                entityToPickup(ent)
-            ).collect(Collectors.toList()));
+            .map(ent -> entityToPickup(ent))
+            .collect(Collectors.toList()));
     }
 
     /**
@@ -77,11 +80,11 @@ public class PickupManager {
      * @return The list of pickups. Empty if there are none.
      */
     public static ImmutableList<Pickup> getPickupsWithStatus(String conversationId, Pickup.Status status) {
-        return ImmutableList.copyOf(DataManager.getInstance().getPickupsWithStatus(conversationId, status)
+        return ImmutableList.copyOf(
+            DataManager.getInstance().getPickupsWithStatus(conversationId, status)
             .stream()
-            .map(ent -> 
-                entityToPickup(ent)
-            ).collect(Collectors.toList()));
+            .map(ent -> entityToPickup(ent))
+            .collect(Collectors.toList()));
     }
 
     /**
@@ -92,7 +95,9 @@ public class PickupManager {
      */
     public static ImmutableList<Pickup> getPickupsReadyForCheckin(String conversationId) {
         ImmutableList.Builder<Pickup> builder = new ImmutableList.Builder<>();
-        ImmutableList<Pickup> activePickups = getPickupsWithStatus(conversationId, Pickup.Status.SCHEDULED);
+        ImmutableList<Pickup> activePickups = getPickupsWithStatus(
+            conversationId, 
+            Pickup.Status.SCHEDULED);
         Date currentTime = new Date();
         for (Pickup pickup : activePickups) {
             Calendar endTimeCal = new Calendar.Builder()
@@ -147,7 +152,7 @@ public class PickupManager {
      */
     public static Date createPickupDate(int timeZoneOffset, String dateString) {
         Calendar cal = new Calendar.Builder().build();
-        int year = 2020;
+        int year = Calendar.getInstance().get(Calendar.YEAR);
         String[] dateStringParts = dateString.split("/", 2);
         int month = Integer.parseInt(dateStringParts[0]) - 1;
         dateString = dateStringParts[1];
