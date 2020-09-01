@@ -549,6 +549,8 @@ public class CartBot {
    * @param conversationId The unique id mapping between the user and the agent.
    */
   private void sendContextResponse(String context, String conversationId) {
+    //Store the context to avoid prompting with the same context again
+    WidgetContextManager.storeContext(conversationId, new WidgetContext(context));
     try {
       sendTextResponse(
         String.format(BotConstants.CONTEXT_RESPONSE_TEXT, context), 
@@ -573,10 +575,11 @@ public class CartBot {
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
    */
   private void sendInventoryCarousel(String context, String conversationId) {
-    if (FilterManager.getAllFilters(conversationId).size() < BotConstants.NUM_SUPPORTED_FILTERS) {
-      if (context.equals(BotConstants.EMPTY_CONTEXT_STRING)) {
+    if (!context.equals(BotConstants.EMPTY_CONTEXT_STRING) &&
+          !WidgetContextManager.hasBeenSeen(conversationId, new WidgetContext(context))) {
         sendContextResponse(context, conversationId);
-      }
+    }
+    if (FilterManager.getAllFilters(conversationId).size() < BotConstants.NUM_SUPPORTED_FILTERS) {
       sendFilterSelections(BotConstants.FROM_INVENTORY_CALLBACK, conversationId);
       return;
     }

@@ -113,6 +113,13 @@ public class UIManager {
           .setText(BotConstants.ACCEPT_CONTEXT_TEXT).setPostbackData(
             BotConstants.SHOP_COMMAND)));
 
+    suggestions.add(new BusinessMessagesSuggestion()
+      .setReply(new BusinessMessagesSuggestedReply()
+        .setText(BotConstants.REJECT_CONTEXT_TEXT).setPostbackData(
+          BotConstants.SHOP_COMMAND)));
+
+    return suggestions;
+
    }
 
    /**
