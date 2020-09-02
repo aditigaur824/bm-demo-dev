@@ -240,8 +240,8 @@ public interface BotConstants {
                         "8-10",
                 "11 A.M. - 1 P.M.",
                         "11-13",
-                "3 P.M. - 5 P.M.",
-                        "15-17");
+                "8 P.M. - 10 P.M.",
+                        "20-22");
 
         String SET_FILTER_RESPONSE_TEXT = "Thanks! Your %s filter has been set to %s.";
         
