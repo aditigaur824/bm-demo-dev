@@ -141,12 +141,11 @@ public interface BotConstants {
         String PICKUP_CHOOSE_STORE_ADDRESS_TEXT = "Way to go! 🙌 We will have this pickup scheduled in no time!\n\n"
                 + "First, let's choose a pickup location.";
 
-        String PICKUP_CHOOSE_TIME_TEXT = "I've got that store down!\n\n" 
-                + "Next, let's choose a time for your pickup!";
+        String PICKUP_CHOOSE_TIME_TEXT = "I've got that %s down! Next, let's choose a pickup time!";
 
-        String PICKUP_SCHEDULE_COMPLETED_TEXT = "Nice! I've got your pickup scheduled! 😊 \n\n"
-                + "I hope the details below look okay! \n\n"
-                + "On the day of your pick up, check back with me, and I'll guide you through "
+        String PICKUP_SCHEDULE_COMPLETED_TEXT = "Nice! I've got your pickup scheduled! 😊 I hope the details below look okay!";
+        
+        String PICKUP_SCHEDULE_COMPLETED_TEXT_2 = "On the day of your pick up, check back with me, and I'll guide you through "
                 + "checking in with your store!";
 
         String PICKUP_CANCELED_TEXT = "No worries! I've canceled this pickup.\n\n"
@@ -156,7 +155,7 @@ public interface BotConstants {
         
         String CHECK_IN_RESPONSE_TEXT = "Ooh, nice! What parking spot are you in?";
 
-        String PARKING_SPOT_RESPONSE_TEXT = "Woot! I've got you all checked in at parking slot %s! ✔️ \n\n"
+        String PARKING_SPOT_RESPONSE_TEXT = "Woot! I've got you all checked in at parking slot %s! ✔️"
                 + "A sales associate will be out with your order in about 2 minutes!";
 
         String NO_PICKUPS_TEXT = "You don't have any pickups scheduled at this time!"
@@ -175,7 +174,7 @@ public interface BotConstants {
         
         String SIZE_FILTER_RESPONSE_TEXT = "Alright! Let's get started! What shoe size are we looking for today?";
         
-        String BRAND_FILTER_RESPONSE_TEXT = "Awesome! I'll make sure we look for shoes in that size today! 😊 \n\n"
+        String BRAND_FILTER_RESPONSE_TEXT = "Awesome! I'll make sure we look for shoes in that size today! 😊 "
                 + "Next - what brand are you looking for?";
         
         String COLOR_FILTER_RESPONSE_TEXT = "Thanks! Lastly, what color? 🎨 ";

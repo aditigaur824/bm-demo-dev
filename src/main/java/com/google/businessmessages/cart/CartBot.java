@@ -217,7 +217,9 @@ public class CartBot {
       if (payload.startsWith(BotConstants.PICKUP_STORE_ADDRESS)) {
         String storeName = payload.substring(BotConstants.PICKUP_STORE_ADDRESS.length());
         PickupManager.updatePickupProperties(conversationId, orderId, BotConstants.PICKUP_STORE_ADDRESS, storeName);
-        sendTextResponse(BotConstants.PICKUP_CHOOSE_TIME_TEXT, conversationId);
+        sendTextResponse(
+          String.format(BotConstants.PICKUP_CHOOSE_TIME_TEXT, storeName), 
+          conversationId);
         sendPickupTimesCarousel(conversationId, orderId);
       } else if (payload.startsWith(BotConstants.PICKUP_DATE)) {
         int storeTimeZone = BotConstants.STORE_NAME_TO_TIME_ZONE_OFFSET
@@ -232,6 +234,7 @@ public class CartBot {
           Pickup.Status.SCHEDULED);
         Pickup currentPickup = PickupManager.getPickup(conversationId, orderId);
         sendTextResponse(BotConstants.PICKUP_SCHEDULE_COMPLETED_TEXT, conversationId);
+        sendTextResponse(BotConstants.PICKUP_SCHEDULE_COMPLETED_TEXT_2, conversationId);
         sendPickupConfirmation(conversationId, currentPickup);
       }
     }
