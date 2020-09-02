@@ -77,10 +77,11 @@ public class AgentCallback extends HttpServlet {
       
       // Checking from context from the bm widget
       String context = "none";
+      /*
       if (obj.has("context")) {
         context = obj.get("context").getAsJsonObject().get("widgetContext").getAsString();
         context = new String(Base64.getDecoder().decode(context));
-      }
+      }*/
 
       // Check to see if this message has already been seen, if so, ignore
       if (!syncCache.contains(messageId)) {
@@ -137,13 +138,15 @@ public class AgentCallback extends HttpServlet {
     if (obj.has("suggestionResponse")) {
       String postbackData = obj.get("suggestionResponse")
           .getAsJsonObject().get("postbackData").getAsString();
+      logger.info(postbackData);
 
       // Checking from context from the bm widget
       String context = "none";
+      /*
       if (obj.has("context")) {
         context = obj.get("context").getAsJsonObject().get("widgetContext").getAsString();
         context = new String(Base64.getDecoder().decode(context));
-      }
+      }*/
 
       routeTextResponse(conversationId, context, postbackData);
     } else if (obj.has("userStatus")) {
