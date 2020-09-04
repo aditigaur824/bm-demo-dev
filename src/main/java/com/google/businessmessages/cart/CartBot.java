@@ -105,13 +105,92 @@ public class CartBot {
       setFilter(normalizedMessage, conversationId);
     } else if (normalizedMessage.startsWith(BotConstants.REMOVE_FILTER_COMMAND)) {
       removeFilter(normalizedMessage, conversationId);
+    } else if (normalizedMessage.startsWith(BotConstants.SCHEDULE_PICKUP_COMMAND)) {
+      sendSchedulePickup(message.trim(), conversationId);
+    } else if (normalizedMessage.startsWith(BotConstants.CANCEL_PICKUP_COMMAND)) {
+      sendCancelPickupResponse(normalizedMessage, conversationId);
+    } else if (normalizedMessage.matches(BotConstants.VIEW_PICKUP_COMMAND)) {
+      sendPickupCarousel(conversationId);
+    } else if (normalizedMessage.startsWith(BotConstants.GCAL_LINK_COMMAND)) {
+      setPickupCalendarAdded(normalizedMessage, conversationId);
     } else {
       sendResponse(BotConstants.DEFAULT_RESPONSE_TEXT, conversationId);
     }
   }
 
   /**
+   * Initiates the schedule pickup workflow. Initially will only have the command and order id 
+   * appended to the callback. This will indicate that nothing else about the pickup has been set
+   * yet. Then, the workflow will prompt the user to select one characteristic of their pickup at a 
+   * time. The workflow will complete when all fields of the pickup have been set by the user.
+   * @param normalizedMessage The incoming callback from the user.
+   * @param conversationId The unique id mapping between the agent and the user.
+   */
+  private void sendSchedulePickup(String normalizedMessage, String conversationId) {
+    String[] orderIdAndPayload = normalizedMessage.substring(BotConstants.SCHEDULE_PICKUP_COMMAND.length())
+                                                  .split("-", 2);
+    if (orderIdAndPayload.length == 0) {
+      sendResponse(BotConstants.DEFAULT_RESPONSE_TEXT, conversationId);
+      return;
+    }
+    String orderId = orderIdAndPayload[0]; 
+    if (orderIdAndPayload.length == 1) {
+      //initial part of the workflow
+      PickupManager.addPickup(conversationId, orderId);
+      sendTextResponse(BotConstants.PICKUP_CHOOSE_STORE_ADDRESS_TEXT, conversationId);
+      sendStoreAddressCarousel(conversationId, orderId);
+    } else {
+      String payload = orderIdAndPayload[1];
+      if (payload.startsWith(BotConstants.PICKUP_STORE_ADDRESS)) {
+        String storeName = payload.substring(BotConstants.PICKUP_STORE_ADDRESS.length());
+        PickupManager.updatePickupProperties(conversationId, orderId, BotConstants.PICKUP_STORE_ADDRESS, storeName);
+        sendTextResponse(BotConstants.PICKUP_CHOOSE_TIME_TEXT, conversationId);
+        sendPickupTimesCarousel(conversationId, orderId);
+      } else if (payload.startsWith(BotConstants.PICKUP_DATE)) {
+        int storeTimeZone = BotConstants.STORE_NAME_TO_TIME_ZONE_OFFSET
+          .get(PickupManager.getPickup(conversationId, orderId)
+          .getStoreAddress());
+        String dateString = payload.substring(BotConstants.PICKUP_DATE.length());
+        PickupManager.updatePickupProperties(conversationId, orderId, 
+          BotConstants.PICKUP_DATE, 
+          PickupManager.createPickupDate(storeTimeZone, dateString));
+        PickupManager.updatePickupProperties(conversationId, orderId, 
+          BotConstants.PICKUP_STATUS,
+          Pickup.Status.SCHEDULED);
+        Pickup currentPickup = PickupManager.getPickup(conversationId, orderId);
+        sendTextResponse(BotConstants.PICKUP_SCHEDULE_COMPLETED_TEXT, conversationId);
+        sendPickupConfirmation(conversationId, currentPickup);
+      }
+    }
+  }
+
+  /**
+   * Sends the user confirmation that their pickup has been cancelled. 
+   * @param normalizedMessage The callback message from the user containing the orderId for
+   * which the associated pickup needs to be removed.
+   * @param conversationId The unique id mapping between the agent and the user.
+   */
+  private void sendCancelPickupResponse(String normalizedMessage, String conversationId) {
+    String orderId = normalizedMessage.substring(BotConstants.CANCEL_PICKUP_COMMAND.length());
+    PickupManager.cancelPickup(conversationId, orderId);
+    sendResponse(BotConstants.PICKUP_CANCELED_TEXT, conversationId);
+  }
+
+  /**
+   * Sets the specified pickup's calendar added field so the user is not prompted to add the event
+   * to their gcal after they have already done so.
+   * @param normalizedMessage The message that contains the pickup for which the order has been added.
+   * @param conversationId The unique id mapping between the agent and the user.
+   */
+  public void setPickupCalendarAdded(String normalizedMessage, String conversationId) {
+    String orderId = normalizedMessage.substring(BotConstants.GCAL_LINK_COMMAND.length());
+    PickupManager.updatePickupProperties(conversationId, orderId, 
+      BotConstants.PICKUP_ADDED_CALENDAR, BotConstants.PICKUP_ADDED_CALENDAR_TRUE);
+  }
+
+  /**
    * Adds specified item to the user's cart.
+   * 
    * @param message The message that contains which item to add to the cart.
    * @param conversationId The unique id that maps from the agent to the user.
    */
@@ -217,6 +296,86 @@ public class CartBot {
           .setSuggestions(suggestions), conversationId);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Exception thrown while sending single cart card.", e);
+    }
+  }
+
+  /**
+   * Sends a rich card with the user's pickup details as well as the option to cancel their 
+   * pickup, or add it to their gcal. 
+   * @param conversationId The unique id mapping between the user and the agent.
+   * @param pickup The pickup the user just finished scheduling.
+   */
+  private void sendPickupConfirmation(String conversationId, Pickup pickup) {
+    try {
+      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
+
+      BusinessMessagesStandaloneCard standaloneCard = UIManager.getPickupCard(pickup);
+      String fallbackText = standaloneCard.getCardContent().getTitle() + "\n\n"
+          + standaloneCard.getCardContent().getDescription() + "\n\n"
+          + standaloneCard.getCardContent().getMedia().getContentInfo().getFileUrl();
+
+      // Send the rich card message and suggestions to the user
+      sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setRichCard(new BusinessMessagesRichCard()
+              .setStandaloneCard(standaloneCard))
+          .setRepresentative(representative)
+          .setFallback(fallbackText)
+          .setSuggestions(suggestions), conversationId);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while sending single cart card.", e);
+    }
+  }
+
+  /**
+   * Sends a rich card carousel with all of the user's scheduled pickups so that 
+   * the user can see the store name and time they have scheduled various pickups 
+   * for. Should only be called when the user has non-zero pickups.
+   * @param conversationId The unique id mapping between the user and the agent.
+   */
+  private void sendPickupCarousel(String conversationId) {
+    try{
+      List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
+      List<Pickup> pickups = PickupManager.getAllPickups(conversationId);
+      if (pickups.isEmpty()) {
+        sendResponse(BotConstants.NO_PICKUPS_TEXT, conversationId);
+      } else if (pickups.size() == 1) {
+        BusinessMessagesStandaloneCard standaloneCard = UIManager.getPickupCard(pickups.get(0));
+        String fallbackText = standaloneCard.getCardContent().getTitle() + "\n\n"
+            + standaloneCard.getCardContent().getDescription() + "\n\n"
+            + standaloneCard.getCardContent().getMedia().getContentInfo().getFileUrl();
+
+        // Send the rich card message and suggestions to the user
+        sendResponse(new BusinessMessagesMessage()
+            .setMessageId(UUID.randomUUID().toString())
+            .setRichCard(new BusinessMessagesRichCard()
+                .setStandaloneCard(standaloneCard))
+            .setRepresentative(representative)
+            .setFallback(fallbackText)
+            .setSuggestions(suggestions), conversationId);
+      } else {
+        BusinessMessagesCarouselCard carouselCard = UIManager.getPickupCarousel(PickupManager.getAllPickups(conversationId));
+
+        StringBuilder fallbackTextBuilder = new StringBuilder();
+        for (BusinessMessagesCardContent cardContent : carouselCard.getCardContents()) {
+          fallbackTextBuilder.append(cardContent.getTitle() + "\n\n");
+          fallbackTextBuilder.append(cardContent.getDescription() + "\n\n");
+          fallbackTextBuilder.append(("---------------------------------------------\n\n"));
+        }
+  
+        // Send the text that indicates what the subsequent carousel consists of
+        sendTextResponse(BotConstants.CURRENT_FILTERS_RESPONSE_TEXT, conversationId);
+        // Send the carousel card message and suggestions to the user
+        sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setRichCard(new BusinessMessagesRichCard()
+              .setCarouselCard(carouselCard))
+          .setRepresentative(representative)
+          .setFallback(fallbackTextBuilder.toString())
+          .setSuggestions(suggestions), conversationId);
+      }
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while sending pickup carousel.", e);
     }
   }
 
@@ -383,12 +542,17 @@ public class CartBot {
   }
 
   /**
-   * Sends the cart rich card carousel to the user.
-   *
+   * Sends the cart rich card carousel to the user. Used when the user's cart
+   * has more than one item.
    * @param conversationId The conversation ID that uniquely maps to the user and agent.
    */
   private void sendCartCarousel(String conversationId) {
     try {
+      if (userCart.getItems().isEmpty()) {
+        sendResponse(BotConstants.NO_CART_ITEMS_TEXT, conversationId);
+        return;
+      }
+
       List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
 
       BusinessMessagesCarouselCard carouselCard = UIManager.getCartCarousel(this.storeInventory, this.userCart);
@@ -411,6 +575,73 @@ public class CartBot {
           .setSuggestions(suggestions), conversationId);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Exception thrown while sending cart carousel.", e);
+    }
+  }
+
+  /**
+   * Sends store location rich cards to the user. The user can choose one of these locations
+   * for a scheduled pickup.
+   *
+   * @param conversationId The unique id that maps between the user and agent.
+   * @param orderId The order for which the store pickup is being built.
+   */
+  private void sendStoreAddressCarousel(String conversationId, String orderId) {
+    try {
+      List<BusinessMessagesSuggestion> suggestions = UIManager.getCancelPickupSuggestion(orderId);
+
+      BusinessMessagesCarouselCard carouselCard = UIManager.getStoreAddressCarousel(orderId);
+
+      StringBuilder fallbackTextBuilder = new StringBuilder();
+      for (BusinessMessagesCardContent cardContent : carouselCard.getCardContents()) {
+        fallbackTextBuilder.append(cardContent.getTitle() + "\n\n");
+        fallbackTextBuilder.append(cardContent.getDescription() + "\n\n");
+        fallbackTextBuilder.append(cardContent.getMedia().getContentInfo().getFileUrl() + "\n");
+        fallbackTextBuilder.append(("---------------------------------------------\n\n"));
+      }
+
+      // Send the carousel card message and suggestions to the user
+      sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setRichCard(new BusinessMessagesRichCard()
+              .setCarouselCard(carouselCard))
+          .setRepresentative(representative)
+          .setFallback(fallbackTextBuilder.toString())
+          .setSuggestions(suggestions), conversationId);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while sending store address carousel.", e);
+    }
+  }
+
+  /**
+   * Sends pickup time rich cards to the user. The user can choose one of these dates/times 
+   * for a scheduled pickup.
+   * @param conversationId The unique id that maps between the user and agent.
+   * @param orderId The order for which the store pickup is being built.
+   */
+  private void sendPickupTimesCarousel(String conversationId, String orderId) {
+    try {
+      List<BusinessMessagesSuggestion> suggestions = UIManager.getCancelPickupSuggestion(orderId);
+
+      BusinessMessagesCarouselCard carouselCard = UIManager.getPickupTimesCarousel(orderId);
+
+      StringBuilder fallbackTextBuilder = new StringBuilder();
+      for (BusinessMessagesCardContent cardContent : carouselCard.getCardContents()) {
+        fallbackTextBuilder.append(cardContent.getTitle() + "\n\n");
+        fallbackTextBuilder.append(cardContent.getDescription() + "\n\n");
+        fallbackTextBuilder.append(cardContent.getMedia().getContentInfo().getFileUrl() + "\n");
+        fallbackTextBuilder.append(("---------------------------------------------\n\n"));
+      }
+
+      // Send the carousel card message and suggestions to the user
+      sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setRichCard(new BusinessMessagesRichCard()
+              .setCarouselCard(carouselCard))
+          .setRepresentative(representative)
+          .setFallback(fallbackTextBuilder.toString())
+          .setSuggestions(suggestions), conversationId);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while sending pickup time carousel.", e);
     }
   }
 

@@ -1,7 +1,10 @@
 package com.google.businessmessages.cart;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,7 +13,9 @@ import com.google.api.services.businessmessages.v1.model.BusinessMessagesCardCon
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesCarouselCard;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesContentInfo;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesMedia;
+import com.google.api.services.businessmessages.v1.model.BusinessMessagesOpenUrlAction;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesStandaloneCard;
+import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestedAction;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestedReply;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestion;
 import com.google.communications.businessmessages.v1.CardWidth;
@@ -36,6 +41,14 @@ public class UIManager {
   public static List<BusinessMessagesSuggestion> getDefaultMenu(String conversationId, Cart userCart) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
 
+    if (!OrderManager.getUnscheduledOrders(conversationId).isEmpty()) {
+      suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText(BotConstants.SCHEDULE_PICKUP_TEXT).setPostbackData(String.format(BotConstants.SCHEDULE_PICKUP_POSTBACK,
+              OrderManager.getUnscheduledOrders(conversationId).get(0).getId()))
+        ));
+    }
+
     if (!userCart.getItems().isEmpty()) {
       suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
@@ -57,6 +70,13 @@ public class UIManager {
       suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
             .setText(BotConstants.FILTERS_TEXT).setPostbackData(BotConstants.SEE_FILTERS_COMMAND)
+        ));
+    }
+
+    if (!PickupManager.getAllPickups(conversationId).isEmpty()) {
+      suggestions.add(new BusinessMessagesSuggestion()
+        .setReply(new BusinessMessagesSuggestedReply()
+            .setText(BotConstants.VIEW_PICKUPS_TEXT).setPostbackData(BotConstants.VIEW_PICKUP_COMMAND)
         ));
     }
 
@@ -94,7 +114,8 @@ public class UIManager {
       suggestions.add(
           new BusinessMessagesSuggestion()
               .setReply(new BusinessMessagesSuggestedReply()
-                  .setText(option).setPostbackData(BotConstants.INIT_FILTER_COMMAND + filterName + "-" + option)));
+                  .setText(option).setPostbackData(String.format(BotConstants.INIT_FILTER_POSTBACK, 
+                    filterName, option))));
     }
     return suggestions;
   }
@@ -121,12 +142,14 @@ public class UIManager {
     suggestions.add(
           new BusinessMessagesSuggestion()
               .setReply(new BusinessMessagesSuggestedReply()
-                  .setText("Remove").setPostbackData(BotConstants.REMOVE_FILTER_COMMAND + filterName)));
+                  .setText("Remove").setPostbackData(
+                    String.format(BotConstants.REMOVE_FILTER_POSTBACK, filterName))));
     for (String option : filterOptions) {
       suggestions.add(
           new BusinessMessagesSuggestion()
               .setReply(new BusinessMessagesSuggestedReply()
-                  .setText(option).setPostbackData(BotConstants.SET_FILTER_COMMAND + filterName + "-" + option)));
+                  .setText(option).setPostbackData(
+                    String.format(BotConstants.SET_FILTER_POSTBACK, filterName, option))));
     }
     return suggestions;
   }
@@ -142,11 +165,13 @@ public class UIManager {
     suggestions.add(
           new BusinessMessagesSuggestion()
               .setReply(new BusinessMessagesSuggestedReply()
-                  .setText("Remove").setPostbackData(BotConstants.REMOVE_FILTER_COMMAND + filterName)));
+                  .setText("Remove").setPostbackData(
+                    String.format(BotConstants.REMOVE_FILTER_POSTBACK, filterName))));
       suggestions.add(
           new BusinessMessagesSuggestion()
               .setReply(new BusinessMessagesSuggestedReply()
-                  .setText(BotConstants.EDIT_FILTER_TEXT).setPostbackData(BotConstants.SEE_FILTER_OPTIONS_COMMAND + filterName)));
+                  .setText(BotConstants.EDIT_FILTER_TEXT).setPostbackData(
+                      String.format(BotConstants.SEE_FILTER_OPTIONS_POSTBACK, filterName))));
     return suggestions;
   }
 
@@ -161,7 +186,8 @@ public class UIManager {
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText(BotConstants.ADD_ITEM_TEXT).setPostbackData(BotConstants.ADD_ITEM_COMMAND + itemId)));
+                .setText(BotConstants.ADD_ITEM_TEXT).setPostbackData(
+                  String.format(BotConstants.ADD_ITEM_POSTBACK, itemId))));
 
     return suggestions;
   }
@@ -177,12 +203,103 @@ public class UIManager {
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText(BotConstants.INCREMENT_COUNT_TEXT).setPostbackData(BotConstants.ADD_ITEM_COMMAND + itemId)));
+                .setText(BotConstants.INCREMENT_COUNT_TEXT).setPostbackData(
+                  String.format(BotConstants.ADD_ITEM_POSTBACK, itemId))));
 
     suggestions.add(
         new BusinessMessagesSuggestion()
             .setReply(new BusinessMessagesSuggestedReply()
-                .setText(BotConstants.DECREMENT_COUNT_TEXT).setPostbackData(BotConstants.DELETE_ITEM_COMMAND + itemId)));
+                .setText(BotConstants.DECREMENT_COUNT_TEXT).setPostbackData(
+                  String.format(BotConstants.DELETE_ITEM_POSTBACK, itemId))));
+
+    return suggestions;
+  }
+
+  /**
+   * Creates suggestions for cards hosting store addresses. These suggestions will route to a callback
+   * that will allow the user to select a store for pickup. 
+   * @param orderId The identifier of the order the callback will refer to.
+   * @param storeName The store the user will be choosing for pickup if they click on the suggestion.
+   */
+  public static List<BusinessMessagesSuggestion> getStoreCardSuggestions(String orderId, String storeName) {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText(BotConstants.CHOOSE_STORE_ADDRESS_TEXT).setPostbackData(
+                  String.format(BotConstants.CHOOSE_STORE_ADDRESS_POSTBACK, orderId, storeName))));
+    
+    return suggestions;
+  }
+
+  /**
+   * Creates suggestions for cards hosting pickup dates. These suggestions will route to a callback that 
+   * will allow the user to select a date/time for pickup. 
+   * @param orderId The identifier of the order the callback will refer to.
+   * @param date The date these suggestions are embedded in. 
+   */
+  public static List<BusinessMessagesSuggestion> getPickupTimeSuggestions(String orderId, String date) {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    for (Map.Entry<String, String> time : BotConstants.PICKUP_TIMES.entrySet()) {
+      suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText(time.getKey()).setPostbackData(
+                  String.format(BotConstants.CHOOSE_PICKUP_TIME_POSTBACK, orderId, date, time.getValue()))));
+    }
+
+    return suggestions;
+  }
+
+  /**
+   * Creates a cancel pickup suggestion chip. Clicking on this chip will cancel the pickup and remove the instance
+   * from the user's data.
+   */
+  public static List<BusinessMessagesSuggestion> getCancelPickupSuggestion(String orderId) {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText(BotConstants.CANCEL_TEXT).setPostbackData(
+                  String.format(BotConstants.CANCEL_PICKUP_POSTBACK, orderId))));
+    
+    return suggestions;
+  }
+
+  /**
+   * Creates suggestions to attach to a pickup confirmation card. Includes relevant 
+   * information about the pickup such as the pickup location and time. 
+   * Also includes an external link action to add the pickup to the user's google calendar.
+   * @param pickup The pickup the confirmation card is for.
+   * @return The cancel and add to calendar suggestions for the specified pickup.
+   */
+  public static List<BusinessMessagesSuggestion> getPickupCardSuggestions(Pickup pickup) {
+    List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    if (!pickup.getAddedToCal()) {
+      SimpleDateFormat formatter = new SimpleDateFormat("YYYYMMdd'T'HHmmssZ");
+      String startTime = formatter.format(pickup.getTime());
+      Calendar endTimeCal = new Calendar.Builder().setInstant(pickup.getTime()).build();
+      endTimeCal.add(Calendar.HOUR, BotConstants.TIME_SLOT_DURATION);
+      String endTime = formatter.format(endTimeCal.getTime());
+
+      String storeMapsLink = BotConstants.STORE_NAME_TO_MAPS_LINK.get(pickup.getStoreAddress());
+
+      String gcalLink = String.format(BotConstants.GCAL_LINK_TEMPLATE, startTime, endTime, storeMapsLink);
+
+      suggestions.add(new BusinessMessagesSuggestion()
+            .setAction(new BusinessMessagesSuggestedAction()
+                .setOpenUrlAction(
+                    new BusinessMessagesOpenUrlAction()
+                        .setUrl(gcalLink))
+                .setText(BotConstants.ADD_TO_CAL_TEXT).setPostbackData(
+                  String.format(BotConstants.GCAL_LINK_POSTBACK, pickup.getOrderId()))));
+    }
+
+    suggestions.addAll(getCancelPickupSuggestion(pickup.getOrderId()));
 
     return suggestions;
   }
@@ -194,8 +311,7 @@ public class UIManager {
   public static BusinessMessagesSuggestion getHelpMenuItem() {
     return new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
-            .setText(BotConstants.HELP_TEXT).setPostbackData(BotConstants.HELP_TEXT)
-        );
+            .setText(BotConstants.HELP_TEXT).setPostbackData(BotConstants.HELP_TEXT));
   }
 
   /**
@@ -215,6 +331,34 @@ public class UIManager {
           .setFileUrl(currentItem.getMediaUrl())
           .setForceRefresh(true)));
     }
+    return new BusinessMessagesStandaloneCard().setCardContent(card);
+  }
+
+  /**
+   * Creates pickup cards to detail relevant information about a scheduled pickup.
+   * Allows the user to cancel the pickup or add it to their google calendar.
+   * @param pickup The pickup for which the card is being generated.
+   * @return The rich card with pickup information.
+   */
+  public static BusinessMessagesStandaloneCard getPickupCard(Pickup pickup) {
+    SimpleDateFormat formatter = new SimpleDateFormat("EEE MM/dd hh:mm a");
+    Calendar pickupTimeCal = new Calendar.Builder().setInstant(pickup.getTime()).build();
+    pickupTimeCal.add(Calendar.HOUR, -1 * BotConstants.STORE_NAME_TO_TIME_ZONE_OFFSET.get(pickup.getStoreAddress()));
+    String startTime = formatter.format(pickupTimeCal.getTime());
+    pickupTimeCal.add(Calendar.HOUR, BotConstants.TIME_SLOT_DURATION);
+    formatter = new SimpleDateFormat("hh:mm a");
+    String endTime = formatter.format(pickupTimeCal.getTime());
+
+    BusinessMessagesCardContent card = new BusinessMessagesCardContent()
+      .setTitle(String.format(BotConstants.PICKUP_TITLE, pickup.getOrderId()))
+      .setDescription("Store: " + pickup.getStoreAddress() + "\n"
+        + "Time: " + startTime + " - " + endTime)
+      .setSuggestions(getPickupCardSuggestions(pickup))
+      .setMedia(new BusinessMessagesMedia()
+        .setHeight(MediaHeight.MEDIUM.toString())
+        .setContentInfo(new BusinessMessagesContentInfo()
+          .setFileUrl(BotConstants.PICKUP_IMAGE)
+          .setForceRefresh(true)));
     return new BusinessMessagesStandaloneCard().setCardContent(card);
   }
 
@@ -299,6 +443,25 @@ public class UIManager {
   }
 
   /**
+   * Creates a rich card carousel full of the user's scheduled pickups
+   * so that the user can see details of their pickups and cancel the ones
+   * they no longer want scheduled.
+   * @param pickups The list of the user's pickups.
+   * @return A carousel rich card.
+   */
+  public static BusinessMessagesCarouselCard getPickupCarousel(List<Pickup> pickups) {
+    List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
+
+    for (int i = 0; i < pickups.size() && i < MAX_CAROUSEL_LIMIT; i++) {
+      cardContents.add(getPickupCard(pickups.get(i)).getCardContent());
+    }
+
+    return new BusinessMessagesCarouselCard()
+        .setCardContents(cardContents)
+        .setCardWidth(CardWidth.MEDIUM.toString());
+  }
+
+  /**
    * Creates a rich card carousel out of items in business inventory.
    * @return A carousel rich card.
    */
@@ -344,6 +507,57 @@ public class UIManager {
       } catch (NoSuchElementException e) {
         logger.log(Level.SEVERE, "Item in cart not in inventory.", e);
       }
+    }
+
+    return new BusinessMessagesCarouselCard()
+        .setCardContents(cardContents)
+        .setCardWidth(CardWidth.MEDIUM.toString());
+  }
+
+  /**
+   * Constructs and returns a rich card carousel out of the different store locations such that the user
+   * can select one to be the location of their scheduled pickup.
+   * @param orderId The order identifier for which the pickup is being scheduled.
+   * @return The carousel of different store locations.
+   */
+  public static BusinessMessagesCarouselCard getStoreAddressCarousel(String orderId) {
+    List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
+
+    for (Map.Entry<String, String> ent : BotConstants.STORE_NAME_TO_LOCATION.entrySet()) {
+        cardContents.add(new BusinessMessagesCardContent()
+        .setTitle(ent.getKey())
+        .setDescription(BotConstants.STORE_NAME_TO_ADDRESS.get(ent.getKey()))
+        .setSuggestions(getStoreCardSuggestions(orderId, ent.getKey()))
+        .setMedia(new BusinessMessagesMedia()
+          .setHeight(MediaHeight.MEDIUM.toString())
+          .setContentInfo(new BusinessMessagesContentInfo()
+            .setFileUrl(ent.getValue())
+            .setForceRefresh(true))));
+    }
+
+    return new BusinessMessagesCarouselCard()
+        .setCardContents(cardContents)
+        .setCardWidth(CardWidth.MEDIUM.toString());
+  }
+
+  /**
+   * Constructs and returns a rich card carousel out of different dates such that the user 
+   * can select one to be the day of their scheduled pickup. 
+   * @param orderId The order identifier for which the pickup is being scheduled.
+   * @return The carousel of different dates with their respective times.
+   */
+  public static BusinessMessagesCarouselCard getPickupTimesCarousel(String orderId) {
+    List<BusinessMessagesCardContent> cardContents = new ArrayList<>();
+
+    for (Map.Entry<String, String> ent : BotConstants.PICKUP_DATES.entrySet()) {
+        cardContents.add(new BusinessMessagesCardContent()
+        .setTitle(ent.getKey())
+        .setSuggestions(getPickupTimeSuggestions(orderId, ent.getValue()))
+        .setMedia(new BusinessMessagesMedia()
+          .setHeight(MediaHeight.MEDIUM.toString())
+          .setContentInfo(new BusinessMessagesContentInfo()
+            .setFileUrl(BotConstants.CALENDAR_IMAGE)
+            .setForceRefresh(true))));
     }
 
     return new BusinessMessagesCarouselCard()
