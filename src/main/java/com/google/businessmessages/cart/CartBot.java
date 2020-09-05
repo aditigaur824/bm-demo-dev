@@ -95,7 +95,7 @@ public class CartBot {
     } else if (normalizedMessage.startsWith(BotConstants.INIT_FILTER_COMMAND)) {
       sendFilterSelections(normalizedMessage, conversationId);
     } else if (normalizedMessage.matches(BotConstants.SHOP_COMMAND)) {
-      sendInventoryCarousel(context, conversationId);
+      sendInventoryCarousel("Running Shoes", conversationId);
     } else if (normalizedMessage.matches(BotConstants.VIEW_CART_COMMAND)) {
       if (userCart.getItems().size() > 1) sendCartCarousel(conversationId);
       else sendSingleCartItem(conversationId);
@@ -411,7 +411,7 @@ public class CartBot {
   private void sendPickupCarousel(String conversationId) {
     try{
       List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
-      List<Pickup> pickups = PickupManager.getAllPickups(conversationId);
+      List<Pickup> pickups = PickupManager.getPickupsWithStatus(conversationId, Pickup.Status.SCHEDULED);
       if (pickups.isEmpty()) {
         sendResponse(BotConstants.NO_PICKUPS_TEXT, conversationId);
       } else if (pickups.size() == 1) {
@@ -562,10 +562,10 @@ public class CartBot {
         conversationId);
       sendResponse(new BusinessMessagesMessage()
         .setMessageId(UUID.randomUUID().toString())
-        .setText(BotConstants.CONTEXT_RESPONSE_TEXT_2)
+        .setText(String.format(BotConstants.CONTEXT_RESPONSE_TEXT_2, context))
         .setRepresentative(representative)
         .setSuggestions(UIManager.getContextResponseSuggestions())
-        .setFallback(BotConstants.CONTEXT_RESPONSE_TEXT_2), conversationId);
+        .setFallback(String.format(BotConstants.CONTEXT_RESPONSE_TEXT_2, context)), conversationId);
     } catch(Exception e) {
       logger.log(Level.SEVERE, "Exception thrown while sending context response where context was: "
         + context + ".");

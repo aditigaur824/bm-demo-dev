@@ -122,9 +122,12 @@ public interface BotConstants {
         //Pickup Card Constants
         String PICKUP_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pickup_art.png";
         String PICKUP_TITLE = "Pickup for Order: %s";
-        String GCAL_LINK_TEMPLATE = "https://www.google.com/calendar/render?action=TEMPLATE&text=Your+G-Shoes+Pick+Up&dates="
-        + "%s/%s" 
-        + "&details=For+location+details,+link+here:+%s";
+        String GCAL_RETURN_BOT_LINK = "https://business.google.com/initiateBusinessChat?args=CigIAxIkZGY5MTJjMGEtNjBiZS00ZDM2LTk4ZGUtMGU1Mzg0M2RmNjhiYgd3ZWJ2aWV3aiJodHRwOi8vYnVzaW5lc3NtZXNzYWdlcy5nb29nbGUuY29tckIIAxIkZGY5MTJjMGEtNjBiZS00ZDM2LTk4ZGUtMGU1Mzg0M2RmNjhiGgpjYy1saXN0aW5nIgw5Njg2MTA1NTQ1NDCaAYsBChJjYy1saXN0aW5nX2NvbnRleHQSdQo4dHlwZS5nb29nbGVhcGlzLmNvbS9jaGF0LmJvdC5wbGF0Zm9ybS5CdXNpbmVzc0h1YkNvbnRleHQSOUgIWiQKGG92ZXJyaWRlX2NybV9lbnRyeV9wb2ludBIIVEVTVF9VUkxaDwoHaXNfdGVzdBIEdHJ1ZQ&hl=en";
+        String GCAL_LINK_TEMPLATE = "https://www.google.com/calendar/render?action=TEMPLATE&text=Your+G-Shoes+Pick+Up"
+                + "&dates=%s/%s"
+                + "&location=%s"
+                + "&details=When+you+are+ready+to+check+in,+click+here:+"
+                + GCAL_RETURN_BOT_LINK;
 
         // List of pre-programmed responses
         String DEFAULT_RESPONSE_TEXT =
@@ -194,6 +197,14 @@ public interface BotConstants {
                 "G-Shoes New York", 
                         "85 10th Ave, New York, NY 10011");
 
+        ImmutableMap<String, String> STORE_NAME_TO_ADDRESS_HTML = ImmutableMap.of(
+                "G-Shoes Mountain View", 
+                        "1600+Amphitheatre+Pkwy,+Mountain+View,+CA+94043",
+                "G-Shoes Kirkland", 
+                        "747+6th+St+South,+Kirkland,+WA+98033",
+                "G-Shoes New York", 
+                        "85+10th+Ave,+New+York,+NY+10011");
+
         ImmutableMap<String, String> STORE_NAME_TO_LOCATION = ImmutableMap.of(
                 "G-Shoes Mountain View", 
                         "https://maps.googleapis.com/maps/api/staticmap?center=37.422128,-122.084045&zoom=12&size=250x250&markers=color:red%7C37.422128,-122.084045&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4",
@@ -226,10 +237,8 @@ public interface BotConstants {
         ImmutableList<Integer> PARKING_SLOTS =  ImmutableList.of(2, 4, 5, 9, 12);
 
         ImmutableMap<String, String> PICKUP_DATES = ImmutableMap.of(
-                "Tuesday, Sept. 1",
-                        "9/1",
-                "Saturday, Sept. 5",
-                        "9/5",
+                "Thursday, Sept. 3",
+                        "9/3",
                 "Monday, Sept. 7",
                         "9/7",
                 "Tuesday, Sept. 8",
@@ -238,10 +247,10 @@ public interface BotConstants {
         ImmutableMap<String, String> PICKUP_TIMES = ImmutableMap.of(
                 "8 A.M. - 10 A.M.",
                         "8-10",
-                "11 A.M. - 1 P.M.",
-                        "11-13",
-                "8 P.M. - 10 P.M.",
-                        "20-22");
+                "12 P.M. - 2 P.M.",
+                        "12-14",
+                "3 P.M. - 5 P.M.",
+                        "15-17");
 
         String SET_FILTER_RESPONSE_TEXT = "Thanks! Your %s filter has been set to %s.";
         

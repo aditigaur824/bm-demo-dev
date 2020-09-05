@@ -93,7 +93,7 @@ public class UIManager {
         ));
     }
 
-    if (!PickupManager.getAllPickups(conversationId).isEmpty()) {
+    if (!PickupManager.getPickupsWithStatus(conversationId, Pickup.Status.SCHEDULED).isEmpty()) {
       suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
             .setText(BotConstants.VIEW_PICKUPS_TEXT).setPostbackData(BotConstants.VIEW_PICKUP_COMMAND)
@@ -375,9 +375,13 @@ public class UIManager {
       endTimeCal.add(Calendar.HOUR, BotConstants.TIME_SLOT_DURATION);
       String endTime = formatter.format(endTimeCal.getTime());
 
-      String storeMapsLink = BotConstants.STORE_NAME_TO_MAPS_LINK.get(pickup.getStoreAddress());
+      String storeAddress = BotConstants.STORE_NAME_TO_ADDRESS_HTML.get(pickup.getStoreAddress());
 
-      String gcalLink = String.format(BotConstants.GCAL_LINK_TEMPLATE, startTime, endTime, storeMapsLink);
+      String gcalLink = String.format(
+        BotConstants.GCAL_LINK_TEMPLATE, 
+        startTime, 
+        endTime,
+        storeAddress);
 
       suggestions.add(new BusinessMessagesSuggestion()
             .setAction(new BusinessMessagesSuggestedAction()
