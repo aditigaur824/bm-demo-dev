@@ -95,7 +95,7 @@ public class CartBot {
     } else if (normalizedMessage.startsWith(BotConstants.INIT_FILTER_COMMAND)) {
       sendFilterSelections(normalizedMessage, conversationId);
     } else if (normalizedMessage.matches(BotConstants.SHOP_COMMAND)) {
-      sendInventoryCarousel("Running Shoes", conversationId);
+      sendInventoryCarousel(context, conversationId);
     } else if (normalizedMessage.matches(BotConstants.VIEW_CART_COMMAND)) {
       if (userCart.getItems().size() > 1) sendCartCarousel(conversationId);
       else sendSingleCartItem(conversationId);
