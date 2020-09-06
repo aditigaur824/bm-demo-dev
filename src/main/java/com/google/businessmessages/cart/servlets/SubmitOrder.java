@@ -61,7 +61,6 @@ public class SubmitOrder extends HttpServlet {
 
     @Override   
     public void doOptions(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "Content-Type");

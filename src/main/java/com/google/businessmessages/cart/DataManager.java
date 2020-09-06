@@ -312,8 +312,6 @@ public class DataManager {
         return null;
     }
 
-
-
     //Functions modifying/querying for CartItem objects.
     /**
      * Adds an item to the user's cart persisted in memory. If the item already exists in
