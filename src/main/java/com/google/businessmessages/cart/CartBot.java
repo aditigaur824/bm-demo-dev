@@ -88,7 +88,7 @@ public class CartBot {
     //begin parsing message
     String normalizedMessage = message.toLowerCase().trim();
 
-   if (normalizedMessage.matches(BotConstants.HELP_COMMAND)) {
+    if (normalizedMessage.matches(BotConstants.HELP_COMMAND)) {
       sendResponse(BotConstants.HELP_RESPONSE_TEXT, conversationId);
     } else if (normalizedMessage.matches(BotConstants.HOURS_COMMAND)) {
       sendResponse(BotConstants.HOURS_RESPONSE_TEXT, conversationId);
@@ -123,7 +123,8 @@ public class CartBot {
       sendCheckinResponse(normalizedMessage, conversationId);
     } else if (normalizedMessage.startsWith(BotConstants.CHOOSE_PARKING_COMMAND)) {
       sendChooseParkingResponse(normalizedMessage, conversationId);
-    } else {
+    } else if (!normalizedMessage.equals(BotConstants.CHECKOUT_COMMAND)
+      && !normalizedMessage.equals(BotConstants.VIEW_PROD_DETAILS_COMMAND)) {
       sendResponse(BotConstants.DEFAULT_RESPONSE_TEXT, conversationId);
     }
   }
@@ -216,7 +217,9 @@ public class CartBot {
       if (payload.startsWith(BotConstants.PICKUP_STORE_ADDRESS)) {
         String storeName = payload.substring(BotConstants.PICKUP_STORE_ADDRESS.length());
         PickupManager.updatePickupProperties(conversationId, orderId, BotConstants.PICKUP_STORE_ADDRESS, storeName);
-        sendTextResponse(BotConstants.PICKUP_CHOOSE_TIME_TEXT, conversationId);
+        sendTextResponse(
+          String.format(BotConstants.PICKUP_CHOOSE_TIME_TEXT, storeName), 
+          conversationId);
         sendPickupTimesCarousel(conversationId, orderId);
       } else if (payload.startsWith(BotConstants.PICKUP_DATE)) {
         int storeTimeZone = BotConstants.STORE_NAME_TO_TIME_ZONE_OFFSET
@@ -233,6 +236,7 @@ public class CartBot {
           Pickup.Status.SCHEDULED);
         Pickup currentPickup = PickupManager.getPickup(conversationId, orderId);
         sendTextResponse(BotConstants.PICKUP_SCHEDULE_COMPLETED_TEXT, conversationId);
+        sendTextResponse(BotConstants.PICKUP_SCHEDULE_COMPLETED_TEXT_2, conversationId);
         sendPickupConfirmation(conversationId, currentPickup);
       }
     }
@@ -409,7 +413,7 @@ public class CartBot {
   private void sendPickupCarousel(String conversationId) {
     try{
       List<BusinessMessagesSuggestion> suggestions = UIManager.getDefaultMenu(conversationId, this.userCart);
-      List<Pickup> pickups = PickupManager.getAllPickups(conversationId);
+      List<Pickup> pickups = PickupManager.getPickupsWithStatus(conversationId, Pickup.Status.SCHEDULED);
       if (pickups.isEmpty()) {
         sendResponse(BotConstants.NO_PICKUPS_TEXT, conversationId);
       } else if (pickups.size() == 1) {
@@ -529,6 +533,7 @@ public class CartBot {
         filterResponseText = BotConstants.COLOR_FILTER_RESPONSE_TEXT;
       } else {
         sendTextResponse(BotConstants.FILTER_SELECTION_COMPLETE_RESPONSE_TEXT, conversationId);
+        sendTextResponse(BotConstants.FILTER_SELECTION_COMPLETE_RESPONSE_TEXT_2, conversationId);
         sendInventoryCarousel(BotConstants.EMPTY_CONTEXT_STRING, conversationId);
         return;
       }
@@ -559,10 +564,10 @@ public class CartBot {
         conversationId);
       sendResponse(new BusinessMessagesMessage()
         .setMessageId(UUID.randomUUID().toString())
-        .setText(BotConstants.CONTEXT_RESPONSE_TEXT_2)
+        .setText(String.format(BotConstants.CONTEXT_RESPONSE_TEXT_2, context))
         .setRepresentative(representative)
         .setSuggestions(UIManager.getContextResponseSuggestions())
-        .setFallback(BotConstants.CONTEXT_RESPONSE_TEXT_2), conversationId);
+        .setFallback(String.format(BotConstants.CONTEXT_RESPONSE_TEXT_2, context)), conversationId);
     } catch(Exception e) {
       logger.log(Level.SEVERE, "Exception thrown while sending context response where context was: "
         + context + ".");

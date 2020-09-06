@@ -60,6 +60,17 @@ public class UIManager {
 
     if (!userCart.getItems().isEmpty()) {
       suggestions.add(new BusinessMessagesSuggestion()
+            .setAction(new BusinessMessagesSuggestedAction()
+                .setOpenUrlAction(
+                    new BusinessMessagesOpenUrlAction()
+                        .setUrl(
+                          String.format(BotConstants.CHECKOUT_LINK, userCart.getId())
+                        ))
+                .setText(BotConstants.CHECKOUT_TEXT).setPostbackData(
+                  BotConstants.CHECKOUT_COMMAND
+              )));
+
+      suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
             .setText(BotConstants.VIEW_CART_TEXT).setPostbackData(BotConstants.VIEW_CART_COMMAND)
         ));
@@ -82,7 +93,7 @@ public class UIManager {
         ));
     }
 
-    if (!PickupManager.getAllPickups(conversationId).isEmpty()) {
+    if (!PickupManager.getPickupsWithStatus(conversationId, Pickup.Status.SCHEDULED).isEmpty()) {
       suggestions.add(new BusinessMessagesSuggestion()
         .setReply(new BusinessMessagesSuggestedReply()
             .setText(BotConstants.VIEW_PICKUPS_TEXT).setPostbackData(BotConstants.VIEW_PICKUP_COMMAND)
@@ -229,16 +240,18 @@ public class UIManager {
   public static List<BusinessMessagesSuggestion> getFilterCardSuggestions(String filterName) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
 
-    suggestions.add(
-          new BusinessMessagesSuggestion()
-              .setReply(new BusinessMessagesSuggestedReply()
-                  .setText("Remove").setPostbackData(
-                    String.format(BotConstants.REMOVE_FILTER_POSTBACK, filterName))));
+    if (!filterName.equals(BotConstants.SIZE_FILTER_NAME)) {
       suggestions.add(
-          new BusinessMessagesSuggestion()
-              .setReply(new BusinessMessagesSuggestedReply()
-                  .setText(BotConstants.EDIT_FILTER_TEXT).setPostbackData(
-                      String.format(BotConstants.SEE_FILTER_OPTIONS_POSTBACK, filterName))));
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText("Remove").setPostbackData(
+                  String.format(BotConstants.REMOVE_FILTER_POSTBACK, filterName))));
+    }
+    suggestions.add(
+        new BusinessMessagesSuggestion()
+            .setReply(new BusinessMessagesSuggestedReply()
+                .setText(BotConstants.EDIT_FILTER_TEXT).setPostbackData(
+                    String.format(BotConstants.SEE_FILTER_OPTIONS_POSTBACK, filterName))));
     return suggestions;
   }
 
@@ -249,6 +262,15 @@ public class UIManager {
    */
   public static List<BusinessMessagesSuggestion> getInventorySuggestions(String itemId) {
     List<BusinessMessagesSuggestion> suggestions = new ArrayList<>();
+
+    suggestions.add(new BusinessMessagesSuggestion()
+            .setAction(new BusinessMessagesSuggestedAction()
+                .setOpenUrlAction(
+                    new BusinessMessagesOpenUrlAction()
+                        .setUrl(BotConstants.STORE_SITE_LINK))
+                .setText(BotConstants.VIEW_PROD_DETAILS_TEXT).setPostbackData(
+                  BotConstants.VIEW_PROD_DETAILS_COMMAND
+                )));
 
     suggestions.add(
         new BusinessMessagesSuggestion()
@@ -353,9 +375,13 @@ public class UIManager {
       endTimeCal.add(Calendar.HOUR, BotConstants.TIME_SLOT_DURATION);
       String endTime = formatter.format(endTimeCal.getTime());
 
-      String storeMapsLink = BotConstants.STORE_NAME_TO_MAPS_LINK.get(pickup.getStoreAddress());
+      String storeAddress = BotConstants.STORE_NAME_TO_ADDRESS_HTML.get(pickup.getStoreAddress());
 
-      String gcalLink = String.format(BotConstants.GCAL_LINK_TEMPLATE, startTime, endTime, storeMapsLink);
+      String gcalLink = String.format(
+        BotConstants.GCAL_LINK_TEMPLATE, 
+        startTime, 
+        endTime,
+        storeAddress);
 
       suggestions.add(new BusinessMessagesSuggestion()
             .setAction(new BusinessMessagesSuggestedAction()
@@ -391,6 +417,7 @@ public class UIManager {
     for (InventoryItem currentItem : validItems) {
       card = new BusinessMessagesCardContent()
       .setTitle(currentItem.getTitle())
+      .setDescription("In stock.")
       .setSuggestions(getInventorySuggestions(currentItem.getId()))
       .setMedia(new BusinessMessagesMedia()
         .setHeight(MediaHeight.MEDIUM.toString())
@@ -539,6 +566,7 @@ public class UIManager {
       InventoryItem currentItem = validItems.get(i);
       cardContents.add(new BusinessMessagesCardContent()
         .setTitle(currentItem.getTitle())
+        .setDescription("In stock.")
         .setSuggestions(getInventorySuggestions(currentItem.getId()))
         .setMedia(new BusinessMessagesMedia()
           .setHeight(MediaHeight.MEDIUM.toString())

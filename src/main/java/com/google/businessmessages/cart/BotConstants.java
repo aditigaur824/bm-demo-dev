@@ -52,10 +52,12 @@ public interface BotConstants {
         String ACCEPT_CONTEXT_TEXT = "Yes! 👍";
         String REJECT_CONTEXT_TEXT = "No thanks! 🤷";
         String CONTINUE_SHOPPING_TEXT = "Continue Shopping";
+        String CHECKOUT_TEXT = "Checkout";
         String SHOP_TEXT = "Shop Our Collection";
         String HOURS_TEXT = "Inquire About Hours";
         String HELP_TEXT = "Help";
         String ADD_ITEM_TEXT = "\uD83D\uDED2 Add to Cart";
+        String VIEW_PROD_DETAILS_TEXT = "Product Details";
         String INCREMENT_COUNT_TEXT = "\u2795";
         String DECREMENT_COUNT_TEXT = "\u2796";
         String SCHEDULE_PICKUP_TEXT = "Schedule Pickup";
@@ -73,7 +75,9 @@ public interface BotConstants {
         String REMOVE_FILTER_COMMAND = "remove-filter-";
         String DELETE_ITEM_COMMAND = "del-cart-";
         String ADD_ITEM_COMMAND = "add-cart-";
+        String VIEW_PROD_DETAILS_COMMAND = "view-product-details";
         String VIEW_CART_COMMAND = "cart";
+        String CHECKOUT_COMMAND = "checkout";
         String HOURS_COMMAND = "hours";
         String SHOP_COMMAND = "shop";
         String SCHEDULE_PICKUP_COMMAND = "schedule-pickup-";
@@ -110,12 +114,20 @@ public interface BotConstants {
         String CHECK_IN_POSTBACK = CHECK_IN_COMMAND + "%s";
         String CHOOSE_PARKING_SLOT_POSTBACK = CHOOSE_PARKING_COMMAND + "%d";
 
+        //Link to mock website
+        String STORE_SITE_LINK = "http://localhost:8000";
+        //Link that user will checkout with
+        String CHECKOUT_LINK = "http://localhost:8000/checkout.html?cartId=%s"; 
+
         //Pickup Card Constants
         String PICKUP_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pickup_art.png";
         String PICKUP_TITLE = "Pickup for Order: %s";
-        String GCAL_LINK_TEMPLATE = "https://www.google.com/calendar/render?action=TEMPLATE&text=Your+G-Shoes+Pick+Up&dates="
-        + "%s/%s" 
-        + "&details=For+location+details,+link+here:+%s";
+        String GCAL_RETURN_BOT_LINK = "https://business.google.com/initiateBusinessChat?args=CigIAxIkZGY5MTJjMGEtNjBiZS00ZDM2LTk4ZGUtMGU1Mzg0M2RmNjhiYgd3ZWJ2aWV3aiJodHRwOi8vYnVzaW5lc3NtZXNzYWdlcy5nb29nbGUuY29tckIIAxIkZGY5MTJjMGEtNjBiZS00ZDM2LTk4ZGUtMGU1Mzg0M2RmNjhiGgpjYy1saXN0aW5nIgw5Njg2MTA1NTQ1NDCaAYsBChJjYy1saXN0aW5nX2NvbnRleHQSdQo4dHlwZS5nb29nbGVhcGlzLmNvbS9jaGF0LmJvdC5wbGF0Zm9ybS5CdXNpbmVzc0h1YkNvbnRleHQSOUgIWiQKGG92ZXJyaWRlX2NybV9lbnRyeV9wb2ludBIIVEVTVF9VUkxaDwoHaXNfdGVzdBIEdHJ1ZQ&hl=en";
+        String GCAL_LINK_TEMPLATE = "https://www.google.com/calendar/render?action=TEMPLATE&text=Your+G-Shoes+Pick+Up"
+                + "&dates=%s/%s"
+                + "&location=%s"
+                + "&details=When+you+are+ready+to+check+in,+click+here:+"
+                + GCAL_RETURN_BOT_LINK;
 
         // List of pre-programmed responses
         String DEFAULT_RESPONSE_TEXT =
@@ -132,12 +144,11 @@ public interface BotConstants {
         String PICKUP_CHOOSE_STORE_ADDRESS_TEXT = "Way to go! 🙌 We will have this pickup scheduled in no time!\n\n"
                 + "First, let's choose a pickup location.";
 
-        String PICKUP_CHOOSE_TIME_TEXT = "I've got that store down!\n\n" 
-                + "Next, let's choose a time for your pickup!";
+        String PICKUP_CHOOSE_TIME_TEXT = "I've got that %s down! Next, let's choose a pickup time!";
 
-        String PICKUP_SCHEDULE_COMPLETED_TEXT = "Nice! I've got your pickup scheduled! 😊 \n\n"
-                + "I hope the details below look okay! \n\n"
-                + "On the day of your pick up, check back with me, and I'll guide you through "
+        String PICKUP_SCHEDULE_COMPLETED_TEXT = "Nice! I've got your pickup scheduled! 😊 I hope the details below look okay!";
+        
+        String PICKUP_SCHEDULE_COMPLETED_TEXT_2 = "On the day of your pick up, check back with me, and I'll guide you through "
                 + "checking in with your store!";
 
         String PICKUP_CANCELED_TEXT = "No worries! I've canceled this pickup.\n\n"
@@ -147,7 +158,7 @@ public interface BotConstants {
         
         String CHECK_IN_RESPONSE_TEXT = "Ooh, nice! What parking spot are you in?";
 
-        String PARKING_SPOT_RESPONSE_TEXT = "Woot! I've got you all checked in at parking slot %s! ✔️ \n\n"
+        String PARKING_SPOT_RESPONSE_TEXT = "Woot! I've got you all checked in at parking slot %s! ✔️"
                 + "A sales associate will be out with your order in about 2 minutes!";
 
         String NO_PICKUPS_TEXT = "You don't have any pickups scheduled at this time!"
@@ -166,16 +177,15 @@ public interface BotConstants {
         
         String SIZE_FILTER_RESPONSE_TEXT = "Alright! Let's get started! What shoe size are we looking for today?";
         
-        String BRAND_FILTER_RESPONSE_TEXT = "Awesome! I'll make sure we look for shoes in that size today! 😊 \n\n"
-                + "Do you mind telling me what brand of shoes you were looking for today? " 
-                + "If you don't have a preference for any of the brands listed below, feel free to select 'all'!";
+        String BRAND_FILTER_RESPONSE_TEXT = "Awesome! I'll make sure we look for shoes in that size today! 😊 "
+                + "Next - what brand are you looking for?";
         
-        String COLOR_FILTER_RESPONSE_TEXT = "Thanks! One final question: what color of shoes were you looking for? "
-                + "Once again, if you want to see shoes in all of our colors, you can select 'all'";
+        String COLOR_FILTER_RESPONSE_TEXT = "Thanks! Lastly, what color? 🎨 ";
 
         String FILTER_SELECTION_COMPLETE_RESPONSE_TEXT = "Whew! 😌 Thanks for bearing with all of my questions. "
-                + "I've saved all of your preferences as filters that you can view and edit whenever you'd like while you shop!\n\n" 
-                + "Now, I'll pull up your customized running shoe recommendations! 👟 ";
+                + "I've saved all of your preferences as filters that you can view and edit whenever you'd like while you shop! 📝"; 
+        
+        String FILTER_SELECTION_COMPLETE_RESPONSE_TEXT_2 = "Now, I'll pull up your customized running shoe recommendations! 👟 ";
         
         
         //Data pertaining to store locations
@@ -190,6 +200,14 @@ public interface BotConstants {
                         "747 6th St South, Kirkland, WA 98033",
                 NEW_YORK_STORE_NAME, 
                         "85 10th Ave, New York, NY 10011");
+
+        ImmutableMap<String, String> STORE_NAME_TO_ADDRESS_HTML = ImmutableMap.of(
+                "G-Shoes Mountain View", 
+                        "1600+Amphitheatre+Pkwy,+Mountain+View,+CA+94043",
+                "G-Shoes Kirkland", 
+                        "747+6th+St+South,+Kirkland,+WA+98033",
+                "G-Shoes New York", 
+                        "85+10th+Ave,+New+York,+NY+10011");
 
         ImmutableMap<String, String> STORE_NAME_TO_LOCATION = ImmutableMap.of(
                 MOUNTAIN_VIEW_STORE_NAME, 
@@ -223,10 +241,8 @@ public interface BotConstants {
         ImmutableList<Integer> PARKING_SLOTS =  ImmutableList.of(2, 4, 5, 9, 12);
 
         ImmutableMap<String, String> PICKUP_DATES = ImmutableMap.of(
-                "Tuesday, Sept. 1",
-                        "9/1",
-                "Saturday, Sept. 5",
-                        "9/5",
+                "Thursday, Sept. 3",
+                        "9/3",
                 "Monday, Sept. 7",
                         "9/7",
                 "Tuesday, Sept. 8",
@@ -237,16 +253,16 @@ public interface BotConstants {
                         "8-10",
                 "12 P.M. - 2 P.M.",
                         "12-14",
-                "12 A.M. - 2 A.M.",
-                        "0-2");
+                "3 P.M. - 5 P.M.",
+                        "15-17");
 
         String SET_FILTER_RESPONSE_TEXT = "Thanks! Your %s filter has been set to %s.";
         
-        String REMOVE_FILTER_RESPONSE_TEXT = "Your %s filter has been removed.";
+        String REMOVE_FILTER_RESPONSE_TEXT = "Your %s filter has been removed!";
 
-        String CURRENT_FILTERS_RESPONSE_TEXT = "Here are your current filters: ";
+        String CURRENT_FILTERS_RESPONSE_TEXT = "Here are your current filters:";
 
-        String NO_INVENTORY_RESULTS_RESPONSE_TEXT = "Sorry, we don't have any items that matched your filters.";
+        String NO_INVENTORY_RESULTS_RESPONSE_TEXT = "Sorry, we don't have any items that matched your filters. 😭";
 
         // Data pertaining to filters and inventory items.
         String COLOR_CARD_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/color_card_image.jpeg";
