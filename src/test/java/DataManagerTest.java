@@ -453,7 +453,7 @@ public class DataManagerTest {
         datamanager.updatePickupProperties(testUpdatePropertiesConversationId, testUpdatePropertiesOrderId, 
             "pickup-date", testDate);
         datamanager.updatePickupProperties(testUpdatePropertiesConversationId, testUpdatePropertiesOrderId, 
-            "pickup-status", Pickup.Status.SCHEDULED);
+            "pickup-status", Pickup.Status.COMPLETE);
 
         final Query q = new Query("Pickup")
             .setFilter(
@@ -468,7 +468,7 @@ public class DataManagerTest {
         assertThat(testPickup.get(0).getProperty("order_id")).isEqualTo(testUpdatePropertiesOrderId);
         assertThat(testPickup.get(0).getProperty("store_address")).isEqualTo(testStoreAddress);
         assertThat((Date) testPickup.get(0).getProperty("pickup_time")).isEqualTo(testDate);
-        assertThat(testPickup.get(0).getProperty("pickup_status")).isEqualTo("scheduled");
+        assertThat(testPickup.get(0).getProperty("pickup_status")).isEqualTo("complete");
     }
 
     @Test

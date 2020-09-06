@@ -58,6 +58,7 @@ public interface BotConstants {
         String ADD_TO_CAL_TEXT = "Add to Calendar";
         String CHOOSE_STORE_ADDRESS_TEXT = "Choose this Store";
         String CANCEL_TEXT = "Cancel";
+        String CHECK_IN_TEXT = "Check In";
 
         // List of recognized commands to produce certain responses
         String INIT_FILTER_COMMAND = "init-filter-";
@@ -74,6 +75,8 @@ public interface BotConstants {
         String CANCEL_PICKUP_COMMAND = "cancel-pickup-";
         String VIEW_PICKUP_COMMAND = "view-pickup";
         String GCAL_LINK_COMMAND = "open-cal-url-";
+        String CHECK_IN_COMMAND = "check-in-";
+        String CHOOSE_PARKING_COMMAND = "choose-parking-";
         String HELP_COMMAND = "^help.*|^commands\\s.*|see the help menu";
 
         //List of pickup properties for callbacks
@@ -99,6 +102,8 @@ public interface BotConstants {
                 + PICKUP_DATE + "%s-%s";
         String CANCEL_PICKUP_POSTBACK = CANCEL_PICKUP_COMMAND + "%s";
         String GCAL_LINK_POSTBACK = GCAL_LINK_COMMAND + "%s";
+        String CHECK_IN_POSTBACK = CHECK_IN_COMMAND + "%s";
+        String CHOOSE_PARKING_SLOT_POSTBACK = CHOOSE_PARKING_COMMAND + "%d";
 
         //Pickup Card Constants
         String PICKUP_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/pickup_art.png";
@@ -127,6 +132,10 @@ public interface BotConstants {
         String PICKUP_CANCELED_TEXT = "No worries! I've canceled this pickup.\n\n"
                 + "If you change your mind, you can always click schedule pickup again!";
 
+        String CHECK_IN_RESPONSE_TEXT = "Ooh, nice! What parking spot are you in?";
+
+        String PARKING_SPOT_RESPONSE_TEXT = "Woot! I've got you all checked in at parking slot %s! ✔️ \n\n"
+                + "A sales associate will be out with your order in about 2 minutes!";
         String NO_PICKUPS_TEXT = "You don't have any pickups scheduled at this time!"
                 + "But we can always fix that! 😉";
         
@@ -157,36 +166,40 @@ public interface BotConstants {
         
         
         //Data pertaining to store locations
+        String MOUNTAIN_VIEW_STORE_NAME = "G-Shoes Mountain View";
+        String KIRKLAND_STORE_NAME = "G-Shoes Kirkland";
+        String NEW_YORK_STORE_NAME = "G-Shoes New York";
+
         ImmutableMap<String, String> STORE_NAME_TO_ADDRESS = ImmutableMap.of(
-                "G-Shoes Mountain View", 
+                MOUNTAIN_VIEW_STORE_NAME, 
                         "1600 Amphitheatre Pkwy, Mountain View, CA 94043",
-                "G-Shoes Kirkland", 
+                KIRKLAND_STORE_NAME, 
                         "747 6th St South, Kirkland, WA 98033",
-                "G-Shoes New York", 
+                NEW_YORK_STORE_NAME, 
                         "85 10th Ave, New York, NY 10011");
 
         ImmutableMap<String, String> STORE_NAME_TO_LOCATION = ImmutableMap.of(
-                "G-Shoes Mountain View", 
+                MOUNTAIN_VIEW_STORE_NAME, 
                         "https://maps.googleapis.com/maps/api/staticmap?center=37.422128,-122.084045&zoom=12&size=250x250&markers=color:red%7C37.422128,-122.084045&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4",
-                "G-Shoes Kirkland", 
+                KIRKLAND_STORE_NAME, 
                         "https://maps.googleapis.com/maps/api/staticmap?center=47.669940,-122.197099&zoom=12&size=250x250&markers=color:red%7C47.669940,-122.197099&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4",
-                "G-Shoes New York", 
+                NEW_YORK_STORE_NAME, 
                         "https://maps.googleapis.com/maps/api/staticmap?center=40.743545,-74.007939&zoom=12&size=250x250&markers=color:red%7C40.743545,-74.007939&key=AIzaSyDtbmtNywHovIOr_XU7AEDAe6OAruCsWO4");
 
         ImmutableMap<String, String> STORE_NAME_TO_MAPS_LINK = ImmutableMap.of(
-                "G-Shoes Mountain View", 
+                MOUNTAIN_VIEW_STORE_NAME, 
                         "https://www.google.com/maps/place/Googleplex/@37.4219999,-122.0862462,17z/data=!3m1!4b1!4m5!3m4!1s0x808fba02425dad8f:0x6c296c66619367e0!8m2!3d37.4219999!4d-122.0840575",
-                "G-Shoes Kirkland", 
+                KIRKLAND_STORE_NAME, 
                         "https://www.google.com/maps/place/Google+Building+C/@47.669846,-122.1996099,17z/data=!3m1!4b1!4m5!3m4!1s0x549012dae8b1164f:0x94ca4b8d5cc5fb58!8m2!3d47.669846!4d-122.1974212",
-                "G-Shoes New York", 
+                NEW_YORK_STORE_NAME, 
                         "https://www.google.com/maps/place/Google+NYC:+8510+Building/@40.7420814,-74.0072099,17z/data=!4m8!1m2!2m1!1sgoogl+new+york!3m4!1s0x89c259c0b6279809:0xf0f85f5d47fed64c!8m2!3d40.7434001!4d-74.0079724");
 
         ImmutableMap<String, Integer> STORE_NAME_TO_TIME_ZONE_OFFSET = ImmutableMap.of(
-                "G-Shoes Mountain View", 
+                MOUNTAIN_VIEW_STORE_NAME, 
                         7,
-                "G-Shoes Kirkland", 
+                KIRKLAND_STORE_NAME, 
                         7,
-                "G-Shoes New York", 
+                NEW_YORK_STORE_NAME, 
                         4);
 
         //Data pertaining to pickup time slots
@@ -194,7 +207,11 @@ public interface BotConstants {
 
         String CALENDAR_IMAGE = "https://storage.googleapis.com/rbm-boot-camp-15.appspot.com/bot_assets/calendar_art.png";
 
+        ImmutableList<Integer> PARKING_SLOTS =  ImmutableList.of(2, 4, 5, 9, 12);
+
         ImmutableMap<String, String> PICKUP_DATES = ImmutableMap.of(
+                "Tuesday, Sept. 1",
+                        "9/1",
                 "Saturday, Sept. 5",
                         "9/5",
                 "Monday, Sept. 7",
@@ -207,8 +224,8 @@ public interface BotConstants {
                         "8-10",
                 "12 P.M. - 2 P.M.",
                         "12-14",
-                "3 P.M. - 5 P.M.",
-                        "15-17");
+                "12 A.M. - 2 A.M.",
+                        "0-2");
 
         String SET_FILTER_RESPONSE_TEXT = "Thanks! Your %s filter has been set to %s.";
         

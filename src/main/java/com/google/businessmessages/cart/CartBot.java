@@ -36,6 +36,7 @@ import com.google.api.services.businessmessages.v1.model.BusinessMessagesReprese
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesRichCard;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesStandaloneCard;
 import com.google.api.services.businessmessages.v1.model.BusinessMessagesSuggestion;
+import com.google.api.services.businessmessages.v1.model.BusinessMessagesSurvey;
 import com.google.communications.businessmessages.v1.EventType;
 import com.google.communications.businessmessages.v1.RepresentativeType;
 
@@ -113,8 +114,74 @@ public class CartBot {
       sendPickupCarousel(conversationId);
     } else if (normalizedMessage.startsWith(BotConstants.GCAL_LINK_COMMAND)) {
       setPickupCalendarAdded(normalizedMessage, conversationId);
+    } else if (normalizedMessage.startsWith(BotConstants.CHECK_IN_COMMAND)) {
+      sendCheckinResponse(normalizedMessage, conversationId);
+    } else if (normalizedMessage.startsWith(BotConstants.CHOOSE_PARKING_COMMAND)) {
+      sendChooseParkingResponse(normalizedMessage, conversationId);
     } else {
       sendResponse(BotConstants.DEFAULT_RESPONSE_TEXT, conversationId);
+    }
+  }
+
+  /**
+   * Sends a response to the user when the user checks in for a scheduled pickup.
+   * Prompts the user to select the parking spot that they are in so the associate knows
+   * where to bring their order. 
+   * @param normalizedMessage The message containing the order id that the user is picking up.
+   * @param conversationId The unique id mapping between the user and the agent.
+   */
+  private void sendCheckinResponse(String normalizedMessage, String conversationId) {
+    String orderId = normalizedMessage.substring(BotConstants.CHECK_IN_COMMAND.length());
+    PickupManager.updatePickupProperties(conversationId, orderId, BotConstants.PICKUP_STATUS, Pickup.Status.CHECKED_IN);
+    try {
+      sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setText(BotConstants.CHECK_IN_RESPONSE_TEXT)
+          .setRepresentative(representative)
+          .setFallback(BotConstants.CHECK_IN_RESPONSE_TEXT)
+          .setSuggestions(UIManager.getParkingSpotSuggestions()), conversationId);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while sending response.", e);
+    }
+  }
+
+  /**
+   * Sends the user a CSAT survey asking them how their pickup experience was.
+   * @param conversationId The conversation ID that uniquely maps to the user and agent.
+   */
+  private void sendPickupCSAT(String conversationId) {
+    try {
+      Businessmessages.Conversations.Surveys.Create request
+          = builder.build().conversations().surveys()
+          .create("conversations/" + conversationId,
+              new BusinessMessagesSurvey());
+
+      request.setSurveyId(UUID.randomUUID().toString());
+
+      request.execute();
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while sending user pickup satisfaction survey.", e);
+    }
+  }
+
+  /**
+   * Sends a response to the user confirming that they have chosen their parking spot
+   * and that their associate is on their way with their order. Approximates a wait time.
+   * @param normalizedMessage The message containing the parking spot the user has checked-in with.
+   * @param conversationId The unique id mapping between the user and the agent.
+   */
+  private void sendChooseParkingResponse(String normalizedMessage, String conversationId) {
+    try {
+      String parkingSpot = normalizedMessage.substring(BotConstants.CHOOSE_PARKING_COMMAND.length());
+      sendResponse(new BusinessMessagesMessage()
+          .setMessageId(UUID.randomUUID().toString())
+          .setText(String.format(BotConstants.PARKING_SPOT_RESPONSE_TEXT, parkingSpot))
+          .setRepresentative(representative)
+          .setFallback(String.format(BotConstants.PARKING_SPOT_RESPONSE_TEXT, parkingSpot))
+          .setSuggestions(UIManager.getCheckinSuggestions()), conversationId);
+      sendPickupCSAT(conversationId);
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Exception thrown while sending response.", e);
     }
   }
 
@@ -151,10 +218,12 @@ public class CartBot {
           .get(PickupManager.getPickup(conversationId, orderId)
           .getStoreAddress());
         String dateString = payload.substring(BotConstants.PICKUP_DATE.length());
-        PickupManager.updatePickupProperties(conversationId, orderId, 
+        PickupManager.updatePickupProperties(conversationId, 
+          orderId, 
           BotConstants.PICKUP_DATE, 
           PickupManager.createPickupDate(storeTimeZone, dateString));
-        PickupManager.updatePickupProperties(conversationId, orderId, 
+        PickupManager.updatePickupProperties(conversationId, 
+          orderId, 
           BotConstants.PICKUP_STATUS,
           Pickup.Status.SCHEDULED);
         Pickup currentPickup = PickupManager.getPickup(conversationId, orderId);
@@ -317,8 +386,7 @@ public class CartBot {
       // Send the rich card message and suggestions to the user
       sendResponse(new BusinessMessagesMessage()
           .setMessageId(UUID.randomUUID().toString())
-          .setRichCard(new BusinessMessagesRichCard()
-              .setStandaloneCard(standaloneCard))
+          .setRichCard(new BusinessMessagesRichCard().setStandaloneCard(standaloneCard))
           .setRepresentative(representative)
           .setFallback(fallbackText)
           .setSuggestions(suggestions), conversationId);
@@ -348,8 +416,7 @@ public class CartBot {
         // Send the rich card message and suggestions to the user
         sendResponse(new BusinessMessagesMessage()
             .setMessageId(UUID.randomUUID().toString())
-            .setRichCard(new BusinessMessagesRichCard()
-                .setStandaloneCard(standaloneCard))
+            .setRichCard(new BusinessMessagesRichCard().setStandaloneCard(standaloneCard))
             .setRepresentative(representative)
             .setFallback(fallbackText)
             .setSuggestions(suggestions), conversationId);
@@ -368,8 +435,7 @@ public class CartBot {
         // Send the carousel card message and suggestions to the user
         sendResponse(new BusinessMessagesMessage()
           .setMessageId(UUID.randomUUID().toString())
-          .setRichCard(new BusinessMessagesRichCard()
-              .setCarouselCard(carouselCard))
+          .setRichCard(new BusinessMessagesRichCard().setCarouselCard(carouselCard))
           .setRepresentative(representative)
           .setFallback(fallbackTextBuilder.toString())
           .setSuggestions(suggestions), conversationId);
@@ -422,8 +488,7 @@ public class CartBot {
       // Send the carousel card message and suggestions to the user
       sendResponse(new BusinessMessagesMessage()
         .setMessageId(UUID.randomUUID().toString())
-        .setRichCard(new BusinessMessagesRichCard()
-            .setCarouselCard(carouselCard))
+        .setRichCard(new BusinessMessagesRichCard().setCarouselCard(carouselCard))
         .setRepresentative(representative)
         .setFallback(fallbackTextBuilder.toString())
         .setSuggestions(suggestions), conversationId);
@@ -511,8 +576,7 @@ public class CartBot {
         // Send the rich card message and suggestions to the user
         sendResponse(new BusinessMessagesMessage()
             .setMessageId(UUID.randomUUID().toString())
-            .setRichCard(new BusinessMessagesRichCard()
-                .setStandaloneCard(standaloneCard))
+            .setRichCard(new BusinessMessagesRichCard().setStandaloneCard(standaloneCard))
             .setRepresentative(representative)
             .setFallback(fallbackText)
             .setSuggestions(suggestions), conversationId);
@@ -530,8 +594,7 @@ public class CartBot {
         // Send the carousel card message and suggestions to the user
         sendResponse(new BusinessMessagesMessage()
             .setMessageId(UUID.randomUUID().toString())
-            .setRichCard(new BusinessMessagesRichCard()
-                .setCarouselCard(carouselCard))
+            .setRichCard(new BusinessMessagesRichCard().setCarouselCard(carouselCard))
             .setRepresentative(representative)
             .setFallback(fallbackTextBuilder.toString())
             .setSuggestions(suggestions), conversationId);
@@ -568,8 +631,7 @@ public class CartBot {
       // Send the carousel card message and suggestions to the user
       sendResponse(new BusinessMessagesMessage()
           .setMessageId(UUID.randomUUID().toString())
-          .setRichCard(new BusinessMessagesRichCard()
-              .setCarouselCard(carouselCard))
+          .setRichCard(new BusinessMessagesRichCard().setCarouselCard(carouselCard))
           .setRepresentative(representative)
           .setFallback(fallbackTextBuilder.toString())
           .setSuggestions(suggestions), conversationId);
@@ -602,8 +664,7 @@ public class CartBot {
       // Send the carousel card message and suggestions to the user
       sendResponse(new BusinessMessagesMessage()
           .setMessageId(UUID.randomUUID().toString())
-          .setRichCard(new BusinessMessagesRichCard()
-              .setCarouselCard(carouselCard))
+          .setRichCard(new BusinessMessagesRichCard().setCarouselCard(carouselCard))
           .setRepresentative(representative)
           .setFallback(fallbackTextBuilder.toString())
           .setSuggestions(suggestions), conversationId);
@@ -635,8 +696,7 @@ public class CartBot {
       // Send the carousel card message and suggestions to the user
       sendResponse(new BusinessMessagesMessage()
           .setMessageId(UUID.randomUUID().toString())
-          .setRichCard(new BusinessMessagesRichCard()
-              .setCarouselCard(carouselCard))
+          .setRichCard(new BusinessMessagesRichCard().setCarouselCard(carouselCard))
           .setRepresentative(representative)
           .setFallback(fallbackTextBuilder.toString())
           .setSuggestions(suggestions), conversationId);

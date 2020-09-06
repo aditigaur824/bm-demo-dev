@@ -43,7 +43,11 @@ public class PickupManager {
      */
     public static void updatePickupProperties(String conversationId, String orderId, String propertyName, Object propertyValue) {
         DataManager dataManager = DataManager.getInstance();
-        dataManager.updatePickupProperties(conversationId, orderId, propertyName, propertyValue);
+        dataManager.updatePickupProperties(
+            conversationId, 
+            orderId, 
+            propertyName, 
+            propertyValue);
     }
 
     /**
@@ -76,10 +80,36 @@ public class PickupManager {
      * @return The list of pickups. Empty if there are none.
      */
     public static ImmutableList<Pickup> getPickupsWithStatus(String conversationId, Pickup.Status status) {
-        return ImmutableList.copyOf(DataManager.getInstance().getPickupsWithStatus(conversationId, status)
+        return ImmutableList.copyOf(
+            DataManager.getInstance().getPickupsWithStatus(conversationId, status)
             .stream()
             .map(ent -> entityToPickup(ent))
             .collect(Collectors.toList()));
+    }
+
+    /**
+     * Gets all pickups whose pickup time windows are active and are therefore 
+     * ready for check-in. 
+     * @param conversationId The unique id mapping between the agent and the user.
+     * @return The list of pickups ready for pickup. Empty if there are none.
+     */
+    public static ImmutableList<Pickup> getPickupsReadyForCheckin(String conversationId) {
+        ImmutableList.Builder<Pickup> builder = new ImmutableList.Builder<>();
+        ImmutableList<Pickup> activePickups = getPickupsWithStatus(
+            conversationId, 
+            Pickup.Status.SCHEDULED);
+        Date currentTime = new Date();
+        for (Pickup pickup : activePickups) {
+            Calendar endTimeCal = new Calendar.Builder()
+                .setInstant(pickup.getTime())
+                .build();
+            endTimeCal.add(Calendar.HOUR, BotConstants.TIME_SLOT_DURATION);
+            Date endTime = endTimeCal.getTime();
+            if (currentTime.after(pickup.getTime()) && currentTime.before(endTime)) {
+                builder.add(pickup);
+            }
+        }
+        return builder.build();
     }
 
     /**
