@@ -223,10 +223,12 @@ public class CartBot {
           .get(PickupManager.getPickup(conversationId, orderId)
           .getStoreAddress());
         String dateString = payload.substring(BotConstants.PICKUP_DATE.length());
-        PickupManager.updatePickupProperties(conversationId, orderId, 
+        PickupManager.updatePickupProperties(conversationId, 
+          orderId, 
           BotConstants.PICKUP_DATE, 
           PickupManager.createPickupDate(storeTimeZone, dateString));
-        PickupManager.updatePickupProperties(conversationId, orderId, 
+        PickupManager.updatePickupProperties(conversationId, 
+          orderId, 
           BotConstants.PICKUP_STATUS,
           Pickup.Status.SCHEDULED);
         Pickup currentPickup = PickupManager.getPickup(conversationId, orderId);
