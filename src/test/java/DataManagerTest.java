@@ -11,6 +11,7 @@ import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestC
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.businessmessages.cart.DataManager;
 import com.google.businessmessages.cart.Pickup;
+import com.google.businessmessages.cart.WidgetContext;
 import com.google.common.collect.ImmutableList;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -84,6 +85,62 @@ public class DataManagerTest {
         assertThat((String) testResult.getProperty("item_id")).isEqualTo(testGetItemId);
         assertThat((String) testResult.getProperty("item_title")).isEqualTo(testGetItemTitle);
         assertThat(((Long) testResult.getProperty("count")).intValue()).isEqualTo(1);
+    }
+
+    @Test
+    public void testStoreContext() {
+        String testStoreContextConversationId = "testStoreContextConversationId";
+        String testContext = "testContext";
+
+        datamanager.storeContext(testStoreContextConversationId, new WidgetContext(testContext));
+
+        final Query q = new Query("WidgetContext")
+        .setFilter(
+                new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
+                    new Query.FilterPredicate("conversation_id", Query.FilterOperator.EQUAL, testStoreContextConversationId),
+                    new Query.FilterPredicate("widget_context_string", Query.FilterOperator.EQUAL, testContext))));
+        PreparedQuery pq = DatastoreServiceFactory.getDatastoreService().prepare(q);
+        List<Entity> contextResult = pq.asList(FetchOptions.Builder.withLimit(1));
+        assertThat(contextResult).isNotEmpty();
+        assertThat((String) contextResult.get(0).getProperty("conversation_id")).isEqualTo(testStoreContextConversationId);
+        assertThat((String) contextResult.get(0).getProperty("widget_context_string")).isEqualTo(testContext);
+    }
+
+    @Test
+    public void testDeleteContext() {
+        String testDeleteContextConversationId = "testDeleteContextConversationId";
+        String testContext = "testContext";
+        Entity testContextEntity = new Entity("WidgetContext");
+        testContextEntity.setProperty("conversation_id", testDeleteContextConversationId);
+        testContextEntity.setProperty("widget_context_string", testContext);
+        DatastoreServiceFactory.getDatastoreService().put(testContextEntity);
+
+        datamanager.deleteContext(testDeleteContextConversationId, new WidgetContext(testContext));
+
+        final Query q = new Query("WidgetContext")
+        .setFilter(
+                new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
+                    new Query.FilterPredicate("conversation_id", Query.FilterOperator.EQUAL, testDeleteContextConversationId),
+                    new Query.FilterPredicate("widget_context_string", Query.FilterOperator.EQUAL, testContext))));
+        PreparedQuery pq = DatastoreServiceFactory.getDatastoreService().prepare(q);
+        List<Entity> contextResult = pq.asList(FetchOptions.Builder.withLimit(1));
+        assertThat(contextResult).isEmpty();
+    }
+
+    @Test
+    public void testGetContext() {
+        String testGetContextConversationId = "testGetContextConversationId";
+        String testContext = "testContext";
+        Entity testContextEntity = new Entity("WidgetContext");
+        testContextEntity.setProperty("conversation_id", testGetContextConversationId);
+        testContextEntity.setProperty("widget_context_string", testContext);
+        DatastoreServiceFactory.getDatastoreService().put(testContextEntity);
+
+        Entity resultContext = datamanager.getContext(testGetContextConversationId, new WidgetContext(testContext));
+
+        assertThat(resultContext).isNotNull();
+        assertThat((String) resultContext.getProperty("conversation_id")).isEqualTo(testGetContextConversationId);
+        assertThat((String) resultContext.getProperty("widget_context_string")).isEqualTo(testContext);
     }
 
     @Test
@@ -256,6 +313,37 @@ public class DataManagerTest {
             assertThat((String) ent.getProperty("cart_id")).isEqualTo(testGetCartId);
             assertThat((String) ent.getProperty("item_id")).isIn(testIds);
         }
+    }
+
+    @Test
+    public void testEmptyCart() {
+        String testEmptyCartId = "testEmptyCartId";
+        String testEmptyCartItemId1 = "testEmptyCartItemId1";
+        String testEmptyCartItemId2 = "testEmptyCartItemId2";
+        Entity testEmptyCartItem1 = new Entity("CartItem");
+        testEmptyCartItem1.setProperty("cart_id", testEmptyCartId);
+        testEmptyCartItem1.setProperty("item_id", testEmptyCartItemId1);
+        testEmptyCartItem1.setProperty("count", 1);
+        Entity testEmptyCartItem2 = new Entity("CartItem");
+        testEmptyCartItem2.setProperty("cart_id", testEmptyCartId);
+        testEmptyCartItem2.setProperty("item_id", testEmptyCartItemId2);
+        testEmptyCartItem2.setProperty("count", 1);
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        datastore.put(testEmptyCartItem1);
+        datastore.put(testEmptyCartItem2);
+
+        datamanager.emptyCart(testEmptyCartId);
+
+        final Query q = new Query("CartItem")
+                .setFilter(
+                        new Query.FilterPredicate("cart_id",
+                                Query.FilterOperator.EQUAL,
+                                testEmptyCartId)
+                );
+
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(50));
+        assertThat(currentCart).isEmpty();
     }
 
     @Test

@@ -27,6 +27,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
@@ -73,12 +74,19 @@ public class AgentCallback extends HttpServlet {
     if (obj.has("message")) {
       String message = obj.get("message").getAsJsonObject().get("text").getAsString();
       String messageId = obj.get("message").getAsJsonObject().get("messageId").getAsString();
+      
+      // Checking from context from the bm widget
+      String context = "none";
+      if (obj.has("context") && obj.get("context").getAsJsonObject().has("widgetContext")) {
+        context = obj.get("context").getAsJsonObject().get("widgetContext").getAsString();
+        context = new String(Base64.getDecoder().decode(context));
+      }
 
       // Check to see if this message has already been seen, if so, ignore
       if (!syncCache.contains(messageId)) {
         syncCache.put(messageId, true);
 
-        routeTextResponse(conversationId, message);
+        routeTextResponse(conversationId, message, context);
       }
     } else if (obj.has("requestId")) {
       String requestId = obj.get("requestId").getAsString();
@@ -130,7 +138,14 @@ public class AgentCallback extends HttpServlet {
       String postbackData = obj.get("suggestionResponse")
           .getAsJsonObject().get("postbackData").getAsString();
 
-      routeTextResponse(conversationId, postbackData);
+      // Checking from context from the bm widget
+      String context = "none";
+      if (obj.has("context") && obj.get("context").getAsJsonObject().has("widgetContext")) {
+        context = obj.get("context").getAsJsonObject().get("widgetContext").getAsString();
+        context = new String(Base64.getDecoder().decode(context));
+      }
+
+      routeTextResponse(conversationId, postbackData, context);
     } else if (obj.has("userStatus")) {
       obj = obj.get("userStatus").getAsJsonObject();
 
@@ -150,8 +165,8 @@ public class AgentCallback extends HttpServlet {
     }
   }
 
-  private void routeTextResponse(String conversationId, String message) {
-      new CartBot(getRepresentative()).routeMessage(message, conversationId);
+  private void routeTextResponse(String conversationId, String message, String context) {
+      new CartBot(getRepresentative()).routeMessage(message, context, conversationId);
   }
 }
 // [END callback for receiving consumer messages]

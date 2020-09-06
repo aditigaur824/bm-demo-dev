@@ -22,6 +22,7 @@ public class DataManager {
     protected static final String FILTER_TYPE = "Filter";
     protected static final String ORDER_TYPE = "Order";
     protected static final String PICKUP_TYPE = "Pickup";
+    protected static final String WIDGET_CONTEXT_TYPE = "WidgetContext";
     //Properties of entities in datastore
     protected static final String PROPERTY_CONVERSATION_ID = "conversation_id";
     protected static final String PROPERTY_CART_ID = "cart_id";
@@ -35,6 +36,7 @@ public class DataManager {
     protected static final String PROPERTY_PICKUP_TIME = "pickup_time";
     protected static final String PROPERTY_PICKUP_STATUS = "pickup_status";
     protected static final String PROPERTY_PICKUP_ADDED_CAL = "pickup_cal";
+    protected static final String PROPERTY_WIDGET_CONTEXT_STRING = "widget_context_string";
     //Types of pickup statuses in datastore
     protected static final String PICKUP_INCOMPLETE_STATUS = "incomplete";
     protected static final String PICKUP_SCHEDULED_STATUS = "scheduled";
@@ -56,6 +58,87 @@ public class DataManager {
     public static DataManager getInstance() {
         return dataManager;
     }
+
+    //Functions modifing/querying WidgetContext objects
+    /**
+     * Stores the widget context in the datastore so the bot can track that
+     * this context has already been seen and responded to.
+     * @param conversationId The unique id mapping between the agent and user.
+     * @param context The context being stored.
+     */
+    public void storeContext(String conversationId, WidgetContext context) {
+        Transaction transaction = datastore.beginTransaction();
+        try {
+            Entity contextEntity = new Entity(WIDGET_CONTEXT_TYPE);
+            contextEntity.setProperty(PROPERTY_CONVERSATION_ID, conversationId);
+            contextEntity.setProperty(PROPERTY_WIDGET_CONTEXT_STRING, context.getContext());
+            datastore.put(transaction, contextEntity);
+            transaction.commit();
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to add the item.", e);
+        } finally {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+        }
+    }
+
+    /**
+     * Deletes the widget context so that the user can have the same context
+     * recognized in a later conversation.
+     * @param conversationId The unique id mapping between the agent and user.
+     * @param context The context being deleted.
+     */
+    public void deleteContext(String conversationId, WidgetContext context) {
+        Transaction transaction = datastore.beginTransaction();
+        Entity contextEntity = getContext(conversationId, context);
+        try {
+            if (contextEntity == null) {
+                logger.log(Level.SEVERE, "Attempted deletion on null item.");
+            } else {
+                Key key = contextEntity.getKey();
+                datastore.delete(transaction, key);
+            }
+            transaction.commit();
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to add the item.", e);
+        } finally {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+        }
+    }
+
+    /**
+     * Gets an existing widget context entity that matches the one given. If none
+     * exist, returns null.
+     * @param conversationId The unique id mapping between the agent and the user.
+     * @param context The web widget context being queried for.
+     * @return Gets the matching widget entity if it exists, returns null otherwise.
+     */
+    public Entity getContext(String conversationId, WidgetContext context) {
+        final Query q = new Query(WIDGET_CONTEXT_TYPE)
+        .setFilter(
+                new Query.CompositeFilter(CompositeFilterOperator.AND, Arrays.asList(
+                    new Query.FilterPredicate(PROPERTY_CONVERSATION_ID, Query.FilterOperator.EQUAL, conversationId),
+                    new Query.FilterPredicate(PROPERTY_WIDGET_CONTEXT_STRING, Query.FilterOperator.EQUAL, context.getContext()))));
+
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> contextResult = pq.asList(FetchOptions.Builder.withLimit(1));
+        if (!contextResult.isEmpty()) {
+            return contextResult.get(0);
+        }
+        return null;
+    }
+
 
     //Functions modifying/querying Filter objects
     /**
@@ -208,6 +291,27 @@ public class DataManager {
         return null;
     }
 
+    /**
+     * Gets the user's conversationId by querying with the cartId.
+     * @param cartId The cartId that will be used to return the user is exists.
+     * Returns null otherwise.
+     */
+    public Entity getUserFromCartId(String cartId) {
+        final Query q = new Query(CART_TYPE)
+                .setFilter(
+                        new Query.FilterPredicate(PROPERTY_CART_ID,
+                                Query.FilterOperator.EQUAL,
+                                cartId)
+                );
+
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> user = pq.asList(FetchOptions.Builder.withLimit(1));
+        if (!user.isEmpty()) {
+            return user.get(0);
+        }
+        return null;
+    }
+
     //Functions modifying/querying for CartItem objects.
     /**
      * Adds an item to the user's cart persisted in memory. If the item already exists in
@@ -270,6 +374,39 @@ public class DataManager {
                 datastore.put(transaction, currentItem);
               }
             }
+            transaction.commit();
+        } catch (IllegalStateException e) {
+            logger.log(Level.SEVERE, "The transaction is not active.", e);
+        } catch (ConcurrentModificationException e) {
+            logger.log(Level.SEVERE, "The item is being concurrently modified.", e);
+        } catch (DatastoreFailureException e) {
+            logger.log(Level.SEVERE, "Datastore was not able to delete the item.", e);
+        } finally {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+        }
+    }
+
+    /**
+     * Empties the cart when the user has already checked out with all items in their cart.
+     * @param cartId The identifier of the user's cart.
+     */
+    public void emptyCart(String cartId) {
+        final Query q = new Query(CART_ITEM_TYPE)
+                .setFilter(
+                        new Query.FilterPredicate(PROPERTY_CART_ID,
+                                Query.FilterOperator.EQUAL,
+                                cartId)
+                );
+
+        PreparedQuery pq = datastore.prepare(q);
+        List<Entity> currentCart = pq.asList(FetchOptions.Builder.withLimit(MAX_QUERY_LIMIT));
+        
+        TransactionOptions options = TransactionOptions.Builder.withXG(true);
+        Transaction transaction = datastore.beginTransaction(options);
+        try {
+            currentCart.stream().forEach(ent -> datastore.delete(transaction, ent.getKey()));
             transaction.commit();
         } catch (IllegalStateException e) {
             logger.log(Level.SEVERE, "The transaction is not active.", e);
